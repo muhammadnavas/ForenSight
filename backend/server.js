@@ -3,25 +3,38 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+require('dotenv').config();
 
 // Import routes
 const caseRoutes = require('./routes/cases');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || 'localhost';
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite dev server
-  credentials: true
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: process.env.CORS_CREDENTIALS === 'true' || true
 }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Body parsing middleware with configurable limits
+const maxFileSize = process.env.MAX_FILE_SIZE || '50mb';
+app.use(express.json({ limit: maxFileSize }));
+app.use(express.urlencoded({ extended: true, limit: maxFileSize }));
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.join(__dirname, process.env.UPLOAD_DIR || 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Create logs directory if logging is enabled
+if (process.env.LOG_FILE) {
+  const logsDir = path.dirname(process.env.LOG_FILE);
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
 }
 
 // Multer configuration for file uploads
@@ -45,9 +58,15 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB limit
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 100 * 1024 * 1024, // Configurable limit
+    files: parseInt(process.env.MAX_FILES_PER_UPLOAD) || 10
   },
   fileFilter: (req, file, cb) => {
+    if (process.env.ENABLE_FILE_VALIDATION === 'false') {
+      cb(null, true);
+      return;
+    }
+
     // Allow common forensic file types
     const allowedTypes = [
       'application/octet-stream',
@@ -59,10 +78,17 @@ const upload = multer({
       'application/x-zip-compressed'
     ];
     
-    if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(dd|e01|ufdr|json|csv|txt|zip)$/i)) {
+    // Get allowed extensions from environment or use defaults
+    const allowedExtensions = process.env.ALLOWED_FILE_TYPES 
+      ? process.env.ALLOWED_FILE_TYPES.split(',')
+      : ['.dd', '.e01', '.ufdr', '.json', '.csv', '.txt', '.zip', '.db', '.sqlite', '.xml', '.rar', '.7z', '.log', '.img'];
+    
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only forensic files are allowed.'), false);
+      cb(new Error(`Invalid file type. Allowed types: ${allowedExtensions.join(', ')}`), false);
     }
   }
 });
@@ -169,7 +195,16 @@ app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     message: 'ForenSight API is running',
-    timestamp: new Date().toISOString()
+    version: process.env.API_VERSION || 'v1',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    features: {
+      aiAnalysis: process.env.ENABLE_AI_ANALYSIS === 'true',
+      networkAnalysis: process.env.ENABLE_NETWORK_ANALYSIS === 'true',
+      realTimeUpdates: process.env.ENABLE_REAL_TIME_UPDATES === 'true',
+      fileValidation: process.env.ENABLE_FILE_VALIDATION !== 'false'
+    }
   });
 });
 
@@ -191,9 +226,17 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`ForenSight API server running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 ForenSight API server running on http://${HOST}:${PORT}`);
+  console.log(`📊 Health check: http://${HOST}:${PORT}/api/health`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔧 API Version: ${process.env.API_VERSION || 'v1'}`);
+  
+  if (process.env.DEBUG_MODE === 'true') {
+    console.log(`🐛 Debug mode enabled`);
+    console.log(`📁 Upload directory: ${uploadsDir}`);
+    console.log(`💾 Max file size: ${(parseInt(process.env.MAX_FILE_SIZE) || 100 * 1024 * 1024) / (1024 * 1024)}MB`);
+  }
 });
 
 module.exports = app;

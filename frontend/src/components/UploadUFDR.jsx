@@ -17,7 +17,9 @@ const UploadUFDR = () => {
     backgroundColor: '#1e293b',
     minHeight: '100vh',
     width: '100%',
-    color: 'white'
+    color: 'white',
+    overflowX: 'hidden',
+    boxSizing: 'border-box'
   };
 
   const headerStyle = {
@@ -177,35 +179,67 @@ const UploadUFDR = () => {
 
   const uploadToBackend = async (fileMetadata) => {
     try {
+      // Show initial progress
+      updateFileStatus(fileMetadata.id, 'uploading', { progress: 5 });
+      
       const formData = new FormData();
       formData.append('file', fileMetadata.originalFile);
       
-      const response = await fetch(`http://localhost:5000/api/cases/${selectedCase}/upload`, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
+      // Create XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
       
-      if (data.success) {
-        updateFileStatus(fileMetadata.id, 'completed', { 
-          progress: 100,
-          completedAt: new Date().toISOString(),
-          backendFileId: data.fileId
-        });
-      } else {
-        throw new Error(data.error || 'Upload failed');
-      }
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 90); // Reserve 10% for server processing
+          updateFileStatus(fileMetadata.id, 'uploading', { progress });
+        }
+      });
+      
+      // Handle completion
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.success) {
+              updateFileStatus(fileMetadata.id, 'completed', { 
+                progress: 100,
+                completedAt: new Date().toISOString(),
+                backendFileId: data.fileId
+              });
+            } else {
+              throw new Error(data.error || 'Upload failed');
+            }
+          } catch (parseError) {
+            throw new Error('Invalid server response');
+          }
+        } else {
+          throw new Error(`Upload failed with status: ${xhr.status}`);
+        }
+      });
+      
+      // Handle errors
+      xhr.addEventListener('error', () => {
+        throw new Error('Network error during upload');
+      });
+      
+      // Handle timeout
+      xhr.addEventListener('timeout', () => {
+        throw new Error('Upload timed out');
+      });
+      
+      // Configure and send request
+      xhr.timeout = 300000; // 5 minute timeout
+      xhr.open('POST', `http://localhost:5000/api/cases/${selectedCase}/upload`);
+      xhr.send(formData);
+      
     } catch (error) {
       console.error('Upload failed:', error);
       updateFileStatus(fileMetadata.id, 'failed', { 
         error: error.message,
         progress: 0
       });
+      setError(`Upload failed for ${fileMetadata.name}: ${error.message}`);
     }
   };
   
@@ -296,11 +330,21 @@ const UploadUFDR = () => {
 
   const activeCases = getActiveCases();
 
+  // Add spinner animation
+  const spinnerAnimation = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+
   return (
+    <>
+      <style>{spinnerAnimation}</style>
     <div style={containerStyle}>
       <div style={headerStyle}>
         <h1 style={titleStyle}>
-          U Upload UFDR Data
+          📤 Upload UFDR Data
         </h1>
         <p style={subtitleStyle}>
           Upload your UFDR (Universal Forensic Data Repository) files for AI-powered analysis. 
@@ -351,7 +395,23 @@ const UploadUFDR = () => {
         </p>
         
         {casesLoading ? (
-          <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '20px', 
+            color: '#64748b',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <div style={{
+              width: '20px',
+              height: '20px',
+              border: '2px solid #0ea5e9',
+              borderTop: '2px solid transparent',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
             Loading cases...
           </div>
         ) : activeCases.length > 0 ? (
@@ -742,6 +802,7 @@ const UploadUFDR = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

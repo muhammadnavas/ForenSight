@@ -1,8 +1,11 @@
 const { MongoClient, ObjectId } = require('mongodb');
+require('dotenv').config();
 
-// MongoDB connection string
-const MONGODB_URI = 'mongodb+srv://navasns0409:rx4Fvt8un1dCovaz@cluster0.lz452k4.mongodb.net/forensight?retryWrites=true&w=majority';
-const DATABASE_NAME = 'forensight';
+// MongoDB configuration from environment variables
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/forensight';
+const DATABASE_NAME = process.env.MONGODB_DB_NAME || 'forensight';
+const CONNECT_TIMEOUT = parseInt(process.env.MONGODB_CONNECT_TIMEOUT) || 30000;
+const SERVER_SELECTION_TIMEOUT = parseInt(process.env.MONGODB_SERVER_SELECTION_TIMEOUT) || 30000;
 
 let client;
 let db;
@@ -24,14 +27,21 @@ async function connectToMongoDB() {
     }
     
     isConnecting = true;
-    console.log('Connecting to MongoDB...');
+    console.log('🔌 Connecting to MongoDB...');
+    console.log(`📍 Database: ${DATABASE_NAME}`);
     
-    client = new MongoClient(MONGODB_URI);
+    client = new MongoClient(MONGODB_URI, {
+      connectTimeoutMS: CONNECT_TIMEOUT,
+      serverSelectionTimeoutMS: SERVER_SELECTION_TIMEOUT,
+      retryWrites: true,
+      w: 'majority'
+    });
+    
     await client.connect();
     
     // Test the connection
     await client.db(DATABASE_NAME).admin().ping();
-    console.log('Successfully connected to MongoDB Atlas');
+    console.log('✅ Successfully connected to MongoDB');
     
     db = client.db(DATABASE_NAME);
     isConnecting = false;
@@ -51,9 +61,16 @@ class CaseAPI {
       const database = await connectToMongoDB();
       const cases = database.collection('cases');
       
+      // Generate case ID using environment configuration
+      const caseIdPrefix = process.env.CASE_ID_PREFIX || 'FS';
+      const caseIdLength = parseInt(process.env.CASE_ID_LENGTH) || 8;
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 2 + caseIdLength);
+      const caseId = `${caseIdPrefix}-${timestamp}-${randomSuffix}`;
+
       const newCase = {
         ...caseData,
-        caseId: `FS-${Date.now()}`,
+        caseId: caseId,
         createdAt: new Date(),
         updatedAt: new Date(),
         status: 'active',
