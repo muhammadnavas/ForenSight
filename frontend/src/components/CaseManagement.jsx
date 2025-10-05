@@ -91,7 +91,7 @@ const CaseManagement = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={titleStyle}>
-              C Case Management
+              Case Management
             </h1>
             <p style={subtitleStyle}>
               Manage and organize your forensic investigation cases with comprehensive tracking and collaboration tools.

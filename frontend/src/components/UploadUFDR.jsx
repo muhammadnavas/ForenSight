@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCases } from '../contexts/CaseContext';
 import { useFiles } from './Dashboard';
 
-const UploadUFDR = () => {
+const UploadUFDR = ({ setCurrentView }) => {
   const { uploadedFiles, addFiles, updateFileStatus, removeFile: removeFileFromContext } = useFiles();
   const { cases, loading: casesLoading, error: casesError, getActiveCases } = useCases();
   const [isDragging, setIsDragging] = useState(false);
@@ -470,8 +470,11 @@ const UploadUFDR = () => {
             </p>
             <button
               onClick={() => {
-                // Navigate to case management (you could use react-router here)
-                window.location.href = '#case-management';
+                if (setCurrentView) {
+                  setCurrentView('cases');
+                } else {
+                  console.error('setCurrentView function not provided to UploadUFDR component');
+                }
               }}
               style={{
                 backgroundColor: '#0ea5e9',
@@ -481,7 +484,16 @@ const UploadUFDR = () => {
                 borderRadius: '8px',
                 fontSize: '14px',
                 fontWeight: '500',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#0284c7';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#0ea5e9';
+                e.target.style.transform = 'translateY(0)';
               }}
             >
               Create New Case

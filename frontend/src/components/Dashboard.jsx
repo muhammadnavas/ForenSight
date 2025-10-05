@@ -1,5 +1,4 @@
 import { createContext, useContext, useState } from 'react';
-import forensicLogo from '../assets/forensic.svg';
 
 import { CaseDataProvider, useCaseData } from '../contexts/CaseDataContext';
 import CaseManagement from './CaseManagement';
@@ -25,6 +24,117 @@ export const useFiles = () => {
 const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { uploadedFiles, processedFiles, fileAnalytics } = useFiles();
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
+
+  // If no data, show centered empty state
+  if (!hasData) {
+    return (
+      <div style={{ 
+        padding: '24px', 
+        width: '100%', 
+        height: 'calc(100vh - 140px)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        boxSizing: 'border-box'
+      }}>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px 40px',
+          backgroundColor: '#334155',
+          borderRadius: '20px',
+          border: '1px solid #475569',
+          maxWidth: '500px',
+          width: '100%',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📁</div>
+          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            No Case Data Available
+          </h3>
+          <p style={{ fontSize: '16px', color: '#94a3b8', marginBottom: '32px', lineHeight: '1.6' }}>
+            Upload UFDR files or case data to begin your forensic investigation
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button 
+              style={{
+                backgroundColor: '#0ea5e9',
+                color: 'white',
+                border: 'none',
+                padding: '14px 28px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.3)'
+              }}
+              onClick={() => setCurrentView('upload')}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#0284c7';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#0ea5e9';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              📤 Upload Files
+            </button>
+            <button 
+              style={{
+                backgroundColor: '#059669',
+                color: 'white',
+                border: 'none',
+                padding: '14px 28px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 4px 6px -1px rgba(5, 150, 105, 0.3)'
+              }}
+              onClick={async () => {
+                try {
+                  const response = await fetch('/sample-case-data.json');
+                  const data = await response.json();
+                  await processUploadedFile({ text: async () => JSON.stringify(data) });
+                } catch (error) {
+                  console.error('Error loading sample data:', error);
+                  // Fallback sample data
+                  const sampleData = {
+                    caseName: "SAMPLE_CASE_001",
+                    suspects: 3,
+                    victims: 2,
+                    evidence: 45,
+                    locations: 7,
+                    financialImpact: 125000,
+                    networkComplexity: 28
+                  };
+                  processUploadedFile(sampleData);
+                }
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#047857';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#059669';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              📋 Load Sample Data
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box' }} className="standard-scrollbar">
@@ -796,6 +906,38 @@ const DashboardInner = ({ onNavigateToHome }) => {
       scrollbar-width: thin;
       scrollbar-color: #64748b #334155;
     }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .dashboard-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .dashboard-sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .dashboard-main-content {
+        margin-left: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+      }
+      
+      .dashboard-header {
+        padding: 0 16px !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .dashboard-header {
+        padding: 0 12px !important;
+      }
+      
+      .dashboard-header h1 {
+        font-size: 16px !important;
+      }
+    }
   `;
   
   // Global file management state
@@ -892,19 +1034,22 @@ const DashboardInner = ({ onNavigateToHome }) => {
     justifyContent: 'space-between',
     padding: '0 24px',
     zIndex: 1001,
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    backdropFilter: 'blur(8px)'
   };
 
   const sidebarStyle = {
     width: '240px',
     backgroundColor: '#0f172a',
     color: 'white',
-    height: '100vh',
+    height: 'calc(100vh - 70px)',
     position: 'fixed',
     left: 0,
     top: '70px',
     overflowY: 'auto',
-    zIndex: 1000
+    overflowX: 'hidden',
+    zIndex: 1000,
+    borderRight: '1px solid #334155'
   };
 
   const mainContentStyle = {
@@ -917,7 +1062,8 @@ const DashboardInner = ({ onNavigateToHome }) => {
     overflowY: 'auto',
     overflowX: 'hidden',
     maxWidth: 'calc(100vw - 240px)',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    position: 'relative'
   };
 
   const menuSections = [
@@ -991,108 +1137,30 @@ const DashboardInner = ({ onNavigateToHome }) => {
   return (
     <FileContext.Provider value={fileContextValue}>
       <style>{scrollbarStyles}</style>
-      <div style={{ backgroundColor: '#1e293b', minHeight: '100vh' }}>
-        {/* Unified Header */}
-        <div style={unifiedHeaderStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '8px 16px',
-                backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(14, 165, 233, 0.2)',
-                cursor: onNavigateToHome ? 'pointer' : 'default',
-                transition: 'all 0.2s ease'
-              }}
-              onClick={onNavigateToHome}
-              onMouseEnter={(e) => {
-                if (onNavigateToHome) {
-                  e.currentTarget.style.backgroundColor = 'rgba(14, 165, 233, 0.2)';
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (onNavigateToHome) {
-                  e.currentTarget.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }
-              }}
-              title={onNavigateToHome ? 'Click to return to home page' : ''}
-            >
-              <img 
-                src={forensicLogo} 
-                alt="ForenSight Logo" 
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  objectFit: 'contain'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-              <div 
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  backgroundColor: '#0ea5e9',
-                  borderRadius: '6px',
-                  display: 'none',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  color: 'white'
-                }}
-              >
-                FS
-              </div>
-              <div>
-                <div style={{ 
-                  fontSize: '18px', 
-                  fontWeight: '700',
-                  color: '#0ea5e9',
-                  lineHeight: '1.2'
-                }}>
-                  ForenSight
-                </div>
-                <div style={{ 
-                  fontSize: '11px', 
-                  color: '#64748b',
-                  lineHeight: '1.2',
-                  fontWeight: '500'
-                }}>
-                  Digital Forensics Platform
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              padding: '6px 12px',
-              backgroundColor: '#059669',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
-              color: 'white'
-            }}>
-              ONLINE
-            </div>
-            <div style={{
-              fontSize: '14px',
-              color: '#64748b'
-            }}>
-              System Status: Active
-            </div>
+      <div style={{ 
+        backgroundColor: '#1e293b', 
+        minHeight: '100vh',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Simple Header */}
+        <div style={unifiedHeaderStyle} className="dashboard-header">
+          <div 
+            style={{
+              fontSize: '18px', 
+              fontWeight: '700',
+              color: '#ffffff',
+              cursor: onNavigateToHome ? 'pointer' : 'default'
+            }}
+            onClick={onNavigateToHome}
+            title={onNavigateToHome ? 'Click to return to home page' : ''}
+          >
+            ForenSight
           </div>
         </div>
 
         {/* Sidebar */}
-        <div style={sidebarStyle} className="sidebar-scrollbar">
+        <div style={sidebarStyle} className="sidebar-scrollbar dashboard-sidebar">
           {/* Menu */}
           <div style={{ padding: '20px 0' }}>
             {menuSections.map((section, sectionIndex) => (
@@ -1113,7 +1181,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
         </div>
 
         {/* Main Content */}
-        <div style={mainContentStyle} className="standard-scrollbar">
+        <div style={mainContentStyle} className="standard-scrollbar dashboard-main-content">
           {/* Main Content Based on Current View */}
           {currentView === 'dashboard' && <DashboardContent setCurrentView={setCurrentView} processUploadedFile={processUploadedFile} />}
 
@@ -1122,7 +1190,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
           {currentView === 'evidence' && <EvidenceViewer />}
           {currentView === 'network' && <NetworkAnalysis />}
           {currentView === 'cases' && <CaseManagement />}
-          {currentView === 'upload' && <UploadUFDR />}
+          {currentView === 'upload' && <UploadUFDR setCurrentView={setCurrentView} />}
           {currentView === 'reports' && <Reports />}
 
           {currentView === 'analytics' && (
