@@ -1147,7 +1147,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
         <div style={unifiedHeaderStyle} className="dashboard-header">
           <div 
             style={{
-              fontSize: '18px', 
+              fontSize: '28px', 
               fontWeight: '700',
               color: '#ffffff',
               cursor: onNavigateToHome ? 'pointer' : 'default'
@@ -1530,11 +1530,313 @@ const DashboardInner = ({ onNavigateToHome }) => {
           )}
 
           {currentView === 'ai' && (
-            <div style={{ padding: '24px' }}>
-              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                🤖 AI Investigation
-              </h1>
-              <p style={{ color: '#64748b' }}>No evidence data available for AI analysis. Please upload UFDR files first.</p>
+            <div style={{ 
+              padding: '24px', 
+              height: 'calc(100vh - 70px)', 
+              display: 'flex', 
+              flexDirection: 'column',
+              boxSizing: 'border-box'
+            }}>
+              {/* Clean Header */}
+              <div style={{ 
+                marginBottom: '24px',
+                paddingBottom: '16px',
+                borderBottom: '1px solid #334155'
+              }}>
+                <h1 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: '700', 
+                  marginBottom: '6px',
+                  color: '#f1f5f9',
+                  letterSpacing: '-0.025em'
+                }}>
+                  AI Case Assistant
+                </h1>
+                <p style={{ 
+                  color: '#94a3b8', 
+                  fontSize: '15px',
+                  margin: 0,
+                  lineHeight: '1.4'
+                }}>
+                  Professional AI assistant for forensic investigation support
+                </p>
+              </div>
+
+              {/* Professional Chat Container */}
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                overflow: 'hidden',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              }}>
+                {/* Professional Chat Header */}
+                <div style={{
+                  padding: '20px 24px',
+                  backgroundColor: '#f8fafc',
+                  borderBottom: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    backgroundColor: '#0ea5e9',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px'
+                  }}>
+                    🤖
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontSize: '16px', 
+                      fontWeight: '600', 
+                      color: '#1e293b',
+                      marginBottom: '2px'
+                    }}>
+                      ForenSight AI
+                    </div>
+                    <div style={{ 
+                      fontSize: '13px', 
+                      color: '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        backgroundColor: '#10b981',
+                        borderRadius: '50%'
+                      }}></div>
+                      Online and ready to assist
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clean Chat Messages Area */}
+                <div style={{
+                  flex: 1,
+                  padding: '24px',
+                  overflowY: 'auto',
+                  backgroundColor: '#ffffff'
+                }} className="standard-scrollbar">
+                  {/* Welcome Message */}
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '12px',
+                    marginBottom: '20px'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      backgroundColor: '#0ea5e9',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      flexShrink: 0,
+                      marginTop: '2px'
+                    }}>
+                      🤖
+                    </div>
+                    <div style={{
+                      backgroundColor: '#f1f5f9',
+                      padding: '16px 20px',
+                      borderRadius: '16px',
+                      borderTopLeftRadius: '6px',
+                      maxWidth: '85%',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ 
+                        fontSize: '15px',
+                        color: '#1e293b', 
+                        lineHeight: '1.6',
+                        marginBottom: '12px',
+                        fontWeight: '500'
+                      }}>
+                        Welcome! I'm your AI forensic assistant specialized in digital investigations.
+                      </div>
+                      <div style={{ 
+                        fontSize: '14px',
+                        color: '#475569',
+                        lineHeight: '1.5'
+                      }}>
+                        I can assist you with evidence analysis, investigation strategies, forensic procedures, and technical guidance throughout your case.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Professional Suggested Questions */}
+                  <div style={{ 
+                    backgroundColor: '#f8fafc',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <div style={{ 
+                      fontSize: '14px', 
+                      color: '#374151', 
+                      fontWeight: '600',
+                      marginBottom: '12px'
+                    }}>
+                      Common Investigation Questions
+                    </div>
+                    <div style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                      gap: '8px'
+                    }}>
+                      {[
+                        "What evidence should I prioritize?",
+                        "How should I analyze encrypted files?",
+                        "What patterns indicate suspicious activity?",
+                        "Help me build a case timeline",
+                        "Which forensic tools are most effective?"
+                      ].map((question, index) => (
+                        <button
+                          key={index}
+                          style={{
+                            backgroundColor: '#ffffff',
+                            color: '#374151',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            padding: '10px 14px',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            textAlign: 'left',
+                            fontWeight: '500'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#0ea5e9';
+                            e.target.style.color = '#ffffff';
+                            e.target.style.borderColor = '#0ea5e9';
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 4px 6px -1px rgba(14, 165, 233, 0.3)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#ffffff';
+                            e.target.style.color = '#374151';
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                          onClick={() => {
+                            console.log('Send question:', question);
+                          }}
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Chat Input */}
+                <div style={{
+                  padding: '20px 24px',
+                  backgroundColor: '#f8fafc',
+                  borderTop: '1px solid #e2e8f0'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '12px', 
+                    alignItems: 'flex-end'
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <textarea
+                        placeholder="Type your forensic question or case inquiry..."
+                        style={{
+                          width: '100%',
+                          minHeight: '44px',
+                          maxHeight: '120px',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '12px',
+                          padding: '12px 16px',
+                          color: '#1e293b',
+                          fontSize: '14px',
+                          resize: 'none',
+                          outline: 'none',
+                          fontFamily: 'inherit',
+                          boxSizing: 'border-box',
+                          lineHeight: '1.5',
+                          transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#0ea5e9';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            console.log('Send message:', e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                    <button
+                      style={{
+                        backgroundColor: '#0ea5e9',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '12px 20px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease',
+                        minWidth: '100px',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 4px -1px rgba(14, 165, 233, 0.3)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#0284c7';
+                        e.target.style.transform = 'translateY(-1px)';
+                        e.target.style.boxShadow = '0 4px 6px -1px rgba(14, 165, 233, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#0ea5e9';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 2px 4px -1px rgba(14, 165, 233, 0.3)';
+                      }}
+                      onClick={() => {
+                        console.log('Send button clicked');
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                      </svg>
+                      Send
+                    </button>
+                  </div>
+                  <div style={{ 
+                    fontSize: '12px', 
+                    color: '#64748b', 
+                    marginTop: '8px',
+                    textAlign: 'center'
+                  }}>
+                    Press Enter to send • Shift+Enter for new line
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
