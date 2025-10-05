@@ -4,7 +4,7 @@ import { useFiles } from './Dashboard';
 
 const UploadUFDR = ({ setCurrentView }) => {
   const { uploadedFiles, addFiles, updateFileStatus, removeFile: removeFileFromContext } = useFiles();
-  const { cases, loading: casesLoading, error: casesError, getActiveCases } = useCases();
+  const { cases, loading: casesLoading, error: casesError, getActiveCases, addFileToCase } = useCases();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -207,6 +207,13 @@ const UploadUFDR = ({ setCurrentView }) => {
                 completedAt: new Date().toISOString(),
                 backendFileId: data.fileId
               });
+              
+              // Update the case context with the new file
+              if (data.file && addFileToCase) {
+                addFileToCase(selectedCase, data.file).catch(contextError => {
+                  console.warn('Failed to update case context:', contextError);
+                });
+              }
             } else {
               throw new Error(data.error || 'Upload failed');
             }
