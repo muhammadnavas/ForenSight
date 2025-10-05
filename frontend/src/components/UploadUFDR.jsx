@@ -1,11 +1,16 @@
 import { useState } from 'react';
+import { useCases } from '../contexts/CaseContext';
 import { useFiles } from './Dashboard';
 
 const UploadUFDR = () => {
   const { uploadedFiles, addFiles, updateFileStatus, removeFile: removeFileFromContext } = useFiles();
+  const { cases, loading: casesLoading, error: casesError, getActiveCases } = useCases();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedCase, setSelectedCase] = useState('');
+  const [showCaseSelector, setShowCaseSelector] = useState(true);
+  const [error, setError] = useState(null);
 
   const containerStyle = {
     padding: '24px',
@@ -124,7 +129,13 @@ const UploadUFDR = () => {
     return { valid: true };
   };
 
-  const handleFiles = (files) => {
+  const handleFiles = async (files) => {
+    // Check if a case is selected
+    if (!selectedCase) {
+      setError('Please select a case before uploading files');
+      return;
+    }
+
     const validFiles = [];
     const errors = [];
     
@@ -141,6 +152,7 @@ const UploadUFDR = () => {
           error: null,
           uploadedAt: new Date().toISOString(),
           fileType: getFileType(file.name),
+          caseId: selectedCase, // Associate with selected case
           originalFile: file // Keep reference to original File object
         };
         validFiles.push(fileMetadata);
@@ -150,17 +162,49 @@ const UploadUFDR = () => {
     });
 
     if (errors.length > 0) {
-      // Show errors to user
-      console.warn('File validation errors:', errors);
-      alert(`Some files were rejected:\n${errors.map(e => `${e.fileName}: ${e.error}`).join('\n')}`);
+      setError(`Some files were rejected:\n${errors.map(e => `${e.fileName}: ${e.error}`).join('\n')}`);
     }
 
     if (validFiles.length > 0) {
       addFiles(validFiles);
       
-      // Start upload simulation for valid files
+      // Start upload to backend for valid files
       validFiles.forEach(file => {
-        simulateUpload(file.id);
+        uploadToBackend(file);
+      });
+    }
+  };
+
+  const uploadToBackend = async (fileMetadata) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', fileMetadata.originalFile);
+      
+      const response = await fetch(`http://localhost:5000/api/cases/${selectedCase}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        updateFileStatus(fileMetadata.id, 'completed', { 
+          progress: 100,
+          completedAt: new Date().toISOString(),
+          backendFileId: data.fileId
+        });
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      updateFileStatus(fileMetadata.id, 'failed', { 
+        error: error.message,
+        progress: 0
       });
     }
   };
@@ -250,26 +294,159 @@ const UploadUFDR = () => {
     }
   };
 
+  const activeCases = getActiveCases();
+
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
         <h1 style={titleStyle}>
-          📤 Upload UFDR Data
+          U Upload UFDR Data
         </h1>
         <p style={subtitleStyle}>
           Upload your UFDR (Universal Forensic Data Repository) files for AI-powered analysis. 
-          Supported formats include SQLite databases, XML exports, and compressed archives.
+          Files must be associated with an active case before upload.
         </p>
+        
+        {/* Error Display */}
+        {(error || casesError) && (
+          <div style={{
+            backgroundColor: '#dc2626',
+            color: 'white',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontSize: '14px'
+          }}>
+            {error || casesError}
+            <button
+              onClick={() => setError(null)}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'white',
+                border: 'none',
+                float: 'right',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Case Selection */}
+      <div style={{
+        backgroundColor: '#334155',
+        borderRadius: '12px',
+        padding: '24px',
+        marginBottom: '32px',
+        border: '1px solid #475569'
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+          📁 Select Case
+        </h3>
+        <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '16px' }}>
+          All uploaded files must be associated with an active case. Select a case to continue.
+        </p>
+        
+        {casesLoading ? (
+          <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
+            Loading cases...
+          </div>
+        ) : activeCases.length > 0 ? (
+          <div>
+            <select
+              value={selectedCase}
+              onChange={(e) => {
+                setSelectedCase(e.target.value);
+                setShowCaseSelector(false);
+                setError(null);
+              }}
+              style={{
+                width: '100%',
+                backgroundColor: '#1e293b',
+                border: '1px solid #475569',
+                borderRadius: '8px',
+                padding: '12px',
+                color: 'white',
+                fontSize: '14px',
+                marginBottom: '16px'
+              }}
+            >
+              <option value="">Select a case...</option>
+              {activeCases.map((caseItem) => (
+                <option key={caseItem._id || caseItem.caseId} value={caseItem._id || caseItem.caseId}>
+                  {caseItem.caseId} - {caseItem.name} (Lead: {caseItem.investigator})
+                </option>
+              ))}
+            </select>
+            
+            {selectedCase && (
+              <div style={{
+                backgroundColor: '#059669',
+                color: 'white',
+                padding: '12px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                ✓ Case selected: {activeCases.find(c => (c._id || c.caseId) === selectedCase)?.name}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{
+            textAlign: 'center',
+            padding: '40px 20px',
+            color: '#64748b'
+          }}>
+            <div style={{ fontSize: '32px', marginBottom: '16px' }}>📁</div>
+            <p style={{ marginBottom: '16px' }}>No active cases found</p>
+            <p style={{ fontSize: '14px', marginBottom: '20px' }}>
+              You need to create an active case before uploading files.
+            </p>
+            <button
+              onClick={() => {
+                // Navigate to case management (you could use react-router here)
+                window.location.href = '#case-management';
+              }}
+              style={{
+                backgroundColor: '#0ea5e9',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              Create New Case
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Upload Area */}
       <div
-        style={uploadAreaStyle}
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        style={{
+          ...uploadAreaStyle,
+          opacity: selectedCase ? 1 : 0.5,
+          cursor: selectedCase ? 'pointer' : 'not-allowed',
+          backgroundColor: selectedCase ? (isDragging ? '#1e40af' : '#334155') : '#1e293b'
+        }}
+        onDragOver={selectedCase ? handleDragOver : undefined}
+        onDragEnter={selectedCase ? handleDragEnter : undefined}
+        onDragLeave={selectedCase ? handleDragLeave : undefined}
+        onDrop={selectedCase ? handleDrop : undefined}
         onClick={(e) => {
+          if (!selectedCase) {
+            setError('Please select a case first');
+            return;
+          }
           e.stopPropagation();
           document.getElementById('fileInput').click();
         }}
@@ -278,10 +455,11 @@ const UploadUFDR = () => {
           {isDragging ? '⬇️' : '📤'}
         </div>
         <div style={uploadTextStyle}>
-          {isDragging ? 'Drop files here' : 'Drag & Drop UFDR files'}
+          {!selectedCase ? 'Select a case first' : 
+           isDragging ? 'Drop files here' : 'Drag & Drop UFDR files'}
         </div>
         <div style={uploadSubtextStyle}>
-          or click to browse your computer
+          {selectedCase ? 'or click to browse your computer' : 'Case selection required for file upload'}
         </div>
         <div style={{
           fontSize: '12px',
@@ -290,7 +468,14 @@ const UploadUFDR = () => {
         }}>
           Maximum file size: 500MB • Supported formats: DB, XML, ZIP, TXT, JSON, IMG
         </div>
-        <button style={browseButtonStyle}>
+        <button 
+          style={{
+            ...browseButtonStyle,
+            backgroundColor: selectedCase ? '#0ea5e9' : '#64748b',
+            cursor: selectedCase ? 'pointer' : 'not-allowed'
+          }}
+          disabled={!selectedCase}
+        >
           Browse Files
         </button>
         <input
@@ -300,6 +485,7 @@ const UploadUFDR = () => {
           accept=".db,.sqlite,.xml,.zip,.rar,.7z,.txt,.log,.json"
           style={{ display: 'none' }}
           onChange={handleFileSelect}
+          disabled={!selectedCase}
         />
       </div>
 

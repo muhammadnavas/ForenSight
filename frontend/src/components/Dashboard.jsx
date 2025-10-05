@@ -3,6 +3,7 @@ import forensicLogo from '../assets/forensic.svg';
 
 import { CaseDataProvider, useCaseData } from '../contexts/CaseDataContext';
 import CaseManagement from './CaseManagement';
+import DatabaseSearch from './DatabaseSearch';
 import EvidenceViewer from './EvidenceViewer';
 import NetworkAnalysis from './NetworkAnalysis';
 import QueryInterface from './QueryInterface';
@@ -26,8 +27,8 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
 
   return (
-    <div style={{ padding: '24px', width: '100%', height: '100%', overflowY: 'auto' }} className="standard-scrollbar">
-      <div style={{ width: '100%' }}>
+    <div style={{ padding: '24px', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box' }} className="standard-scrollbar">
+      <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'left' }}>
@@ -146,7 +147,9 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '24px',
           marginBottom: '32px',
-          width: '100%'
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box'
         }}>
           {/* Suspects */}
           <div style={{
@@ -166,20 +169,22 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#dc2626',
-                borderRadius: '12px',
+                backgroundColor: '#475569',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px'
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white'
               }}>
-                👤
+                S
               </div>
               <div style={{
-                backgroundColor: statistics.totalSuspects > 0 ? '#dc2626' : '#64748b',
+                backgroundColor: '#475569',
                 color: 'white',
                 padding: '4px 12px',
-                borderRadius: '20px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600'
               }}>
@@ -193,7 +198,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               Suspects
             </div>
             <div style={{ color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🎯</span> Identified individuals
+              Identified individuals
             </div>
           </div>
 
@@ -215,20 +220,22 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#f59e0b',
-                borderRadius: '12px',
+                backgroundColor: '#475569',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px'
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white'
               }}>
-                🛡️
+                V
               </div>
               <div style={{
-                backgroundColor: statistics.totalVictims > 0 ? '#f59e0b' : '#64748b',
+                backgroundColor: '#475569',
                 color: 'white',
                 padding: '4px 12px',
-                borderRadius: '20px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600'
               }}>
@@ -242,7 +249,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               Victims
             </div>
             <div style={{ color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>⚠️</span> Affected individuals
+              Affected individuals
             </div>
           </div>
 
@@ -261,23 +268,25 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               justifyContent: 'space-between',
               marginBottom: '16px' 
             }}>
-              <div style={{
+                            <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#0ea5e9',
-                borderRadius: '12px',
+                backgroundColor: '#475569',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px'
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white'
               }}>
-                📁
+                E
               </div>
               <div style={{
-                backgroundColor: statistics.totalEvidence > 0 ? '#0ea5e9' : '#64748b',
+                backgroundColor: '#475569',
                 color: 'white',
                 padding: '4px 12px',
-                borderRadius: '20px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600'
               }}>
@@ -291,7 +300,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               Evidence Items
             </div>
             <div style={{ color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🔍</span> Digital & physical evidence
+              Digital & physical evidence
             </div>
           </div>
 
@@ -313,20 +322,22 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#059669',
-                borderRadius: '12px',
+                backgroundColor: '#475569',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px'
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white'
               }}>
-                📍
+                L
               </div>
               <div style={{
-                backgroundColor: statistics.totalLocations > 0 ? '#059669' : '#64748b',
+                backgroundColor: '#475569',
                 color: 'white',
                 padding: '4px 12px',
-                borderRadius: '20px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600'
               }}>
@@ -340,7 +351,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               Locations
             </div>
             <div style={{ color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🌍</span> Geographic points of interest
+              Geographic points of interest
             </div>
           </div>
 
@@ -362,20 +373,22 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#7c3aed',
-                borderRadius: '12px',
+                backgroundColor: '#475569',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px'
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white'
               }}>
-                💰
+                F
               </div>
               <div style={{
-                backgroundColor: statistics.financialImpact > 0 ? '#7c3aed' : '#64748b',
+                backgroundColor: '#475569',
                 color: 'white',
                 padding: '4px 12px',
-                borderRadius: '20px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600'
               }}>
@@ -389,7 +402,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               Financial Impact
             </div>
             <div style={{ color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>💸</span> Total estimated losses
+              Total estimated losses
             </div>
           </div>
 
@@ -411,20 +424,22 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#8b5cf6',
-                borderRadius: '12px',
+                backgroundColor: '#475569',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px'
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: 'white'
               }}>
-                🌐
+                N
               </div>
               <div style={{
-                backgroundColor: statistics.networkComplexity > 0 ? '#8b5cf6' : '#64748b',
+                backgroundColor: '#475569',
                 color: 'white',
                 padding: '4px 12px',
-                borderRadius: '20px',
+                borderRadius: '6px',
                 fontSize: '11px',
                 fontWeight: '600'
               }}>
@@ -438,7 +453,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               Network Elements
             </div>
             <div style={{ color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🔗</span> Nodes and connections
+              Nodes and connections
             </div>
           </div>
         </div>
@@ -534,9 +549,11 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
         {/* System Status and Recent Activity */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '24px',
-          width: '100%'
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box'
         }}>
           {/* System Status */}
           <div style={{
@@ -671,9 +688,19 @@ const DashboardInner = () => {
   
   // Standard scrollbar styles
   const scrollbarStyles = `
-    /* Global smooth scrolling */
+    /* Global smooth scrolling and prevent horizontal overflow */
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+    
+    body {
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+    
+    *, *::before, *::after {
+      box-sizing: border-box;
     }
     
     /* Standard scrollbar for webkit browsers (Chrome, Safari, Edge) */
@@ -888,7 +915,9 @@ const DashboardInner = () => {
     color: 'white',
     width: 'calc(100vw - 240px)',
     overflowY: 'auto',
-    overflowX: 'hidden'
+    overflowX: 'hidden',
+    maxWidth: 'calc(100vw - 240px)',
+    boxSizing: 'border-box'
   };
 
   const menuSections = [
@@ -1096,14 +1125,7 @@ const DashboardInner = () => {
             </div>
           )}
 
-          {currentView === 'search' && (
-            <div style={{ padding: '24px' }}>
-              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                🔍 Database Search
-              </h1>
-              <p style={{ color: '#64748b' }}>No database files available for search. Upload UFDR data to enable database queries.</p>
-            </div>
-          )}
+          {currentView === 'search' && <DatabaseSearch />}
 
           {currentView === 'users' && (
             <div style={{ padding: '24px' }}>

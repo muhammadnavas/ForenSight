@@ -1,6 +1,18 @@
 import { useState } from 'react';
+import { useCases } from '../contexts/CaseContext';
 
 const CaseManagement = () => {
+  const { 
+    cases, 
+    loading, 
+    error, 
+    createCase, 
+    getActiveCases, 
+    getCompletedCases, 
+    getArchivedCases,
+    clearError 
+  } = useCases();
+  
   const [activeTab, setActiveTab] = useState('active');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCase, setNewCase] = useState({
@@ -37,25 +49,12 @@ const CaseManagement = () => {
     marginBottom: '24px'
   };
 
-  const [cases, setCases] = useState({
-    active: [],
-    completed: [],
-    archived: []
-  });
-
-  // TODO: Load cases from API
-  // useEffect(() => {
-  //   const loadCases = async () => {
-  //     try {
-  //       const response = await fetch('/api/cases');
-  //       const casesData = await response.json();
-  //       setCases(casesData);
-  //     } catch (error) {
-  //       console.error('Failed to load cases:', error);
-  //     }
-  //   };
-  //   loadCases();
-  // }, []);
+  // Organize cases by status
+  const organizedCases = {
+    active: getActiveCases(),
+    completed: getCompletedCases(),
+    archived: getArchivedCases()
+  };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -77,23 +76,12 @@ const CaseManagement = () => {
 
   const handleCreateCase = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/cases', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(newCase)
-      // });
-      // const createdCase = await response.json();
-      // setCases(prev => ({
-      //   ...prev,
-      //   active: [createdCase, ...prev.active]
-      // }));
-      
-      console.log('Creating case:', newCase);
+      await createCase(newCase);
       setShowCreateModal(false);
       setNewCase({ name: '', investigator: '', priority: 'medium', description: '' });
     } catch (error) {
       console.error('Failed to create case:', error);
+      // Error is already handled in the context
     }
   };
 
@@ -103,29 +91,55 @@ const CaseManagement = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={titleStyle}>
-              📁 Case Management
+              C Case Management
             </h1>
             <p style={subtitleStyle}>
               Manage and organize your forensic investigation cases with comprehensive tracking and collaboration tools.
             </p>
+            {error && (
+              <div style={{
+                backgroundColor: '#dc2626',
+                color: 'white',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}>
+                {error}
+                <button
+                  onClick={clearError}
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: 'white',
+                    border: 'none',
+                    float: 'right',
+                    cursor: 'pointer',
+                    fontSize: '16px'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
+            disabled={loading}
             style={{
-              backgroundColor: '#0ea5e9',
+              backgroundColor: loading ? '#64748b' : '#0ea5e9',
               color: 'white',
               border: 'none',
               padding: '12px 20px',
               borderRadius: '8px',
               fontSize: '14px',
               fontWeight: '500',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}
           >
-            ➕ New Case
+            + New Case
           </button>
         </div>
       </div>
@@ -138,9 +152,9 @@ const CaseManagement = () => {
         borderBottom: '1px solid #334155'
       }}>
         {[
-          { key: 'active', label: 'Active Cases', count: cases.active.length },
-          { key: 'completed', label: 'Completed', count: cases.completed.length },
-          { key: 'archived', label: 'Archived', count: cases.archived.length }
+          { key: 'active', label: 'Active Cases', count: organizedCases.active.length },
+          { key: 'completed', label: 'Completed', count: organizedCases.completed.length },
+          { key: 'archived', label: 'Archived', count: organizedCases.archived.length }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -176,155 +190,182 @@ const CaseManagement = () => {
       </div>
 
       {/* Cases Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-        gap: '24px'
-      }}>
-        {cases[activeTab].map((caseItem) => (
-          <div
-            key={caseItem.id}
-            style={{
-              backgroundColor: '#334155',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #475569',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            {/* Case Header */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: '16px'
-            }}>
-              <div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '8px'
-                }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
-                    Case {caseItem.id}
-                  </h3>
-                  <span style={{
-                    backgroundColor: getPriorityColor(caseItem.priority),
-                    color: 'white',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase'
-                  }}>
-                    {caseItem.priority}
-                  </span>
-                </div>
-                <p style={{ 
-                  fontSize: '16px', 
-                  fontWeight: '500', 
-                  margin: '0 0 4px 0',
-                  color: '#e2e8f0' 
-                }}>
-                  {caseItem.name}
-                </p>
-                <p style={{ 
-                  fontSize: '12px', 
-                  color: '#64748b', 
-                  margin: 0 
-                }}>
-                  Lead: {caseItem.investigator}
-                </p>
-              </div>
-              <span style={{
-                backgroundColor: getStatusColor(caseItem.status),
-                color: 'white',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '600'
-              }}>
-                {caseItem.status}
-              </span>
-            </div>
-
-            {/* Case Stats */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '16px',
-              marginBottom: '20px'
-            }}>
+      {loading ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '200px',
+          fontSize: '16px',
+          color: '#64748b'
+        }}>
+          Loading cases...
+        </div>
+      ) : organizedCases[activeTab].length === 0 ? (
+        <div style={{
+          textAlign: 'center',
+          padding: '60px 20px',
+          color: '#64748b',
+          fontSize: '16px'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>📁</div>
+          <p>No {activeTab} cases found</p>
+          <p style={{ fontSize: '14px', marginTop: '8px' }}>
+            {activeTab === 'active' ? 'Create your first case to get started!' : `No ${activeTab} cases yet.`}
+          </p>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+          gap: '24px'
+        }}>
+          {organizedCases[activeTab].map((caseItem) => (
+            <div
+              key={caseItem._id || caseItem.caseId}
+              style={{
+                backgroundColor: '#334155',
+                borderRadius: '16px',
+                padding: '24px',
+                border: '1px solid #475569',
+                transition: 'all 0.2s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              {/* Case Header */}
               <div style={{
-                backgroundColor: '#1e293b',
-                padding: '12px',
-                borderRadius: '8px'
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '16px'
               }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>
-                  {caseItem.evidenceCount}
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
-                  Evidence Files
-                </div>
-              </div>
-              <div style={{
-                backgroundColor: '#1e293b',
-                padding: '12px',
-                borderRadius: '8px'
-              }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>
-                  {caseItem.progress}%
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
-                  Complete
-                </div>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            {caseItem.status === 'ACTIVE' && (
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{
-                  width: '100%',
-                  height: '6px',
-                  backgroundColor: '#1e293b',
-                  borderRadius: '3px',
-                  overflow: 'hidden'
-                }}>
+                <div>
                   <div style={{
-                    width: `${caseItem.progress}%`,
-                    height: '100%',
-                    backgroundColor: '#059669',
-                    transition: 'width 0.3s ease'
-                  }} />
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '8px'
+                  }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
+                      {caseItem.caseId}
+                    </h3>
+                    <span style={{
+                      backgroundColor: getPriorityColor(caseItem.priority),
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '10px',
+                      fontWeight: '600',
+                      textTransform: 'uppercase'
+                    }}>
+                      {caseItem.priority}
+                    </span>
+                  </div>
+                  <p style={{ 
+                    fontSize: '16px', 
+                    fontWeight: '500', 
+                    margin: '0 0 4px 0',
+                    color: '#e2e8f0' 
+                  }}>
+                    {caseItem.name}
+                  </p>
+                  <p style={{ 
+                    fontSize: '12px', 
+                    color: '#64748b', 
+                    margin: 0 
+                  }}>
+                    Lead: {caseItem.investigator}
+                  </p>
+                </div>
+                <span style={{
+                  backgroundColor: getStatusColor(caseItem.status),
+                  color: 'white',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase'
+                }}>
+                  {caseItem.status}
+                </span>
+              </div>
+
+              {/* Case Stats */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '16px',
+                marginBottom: '20px'
+              }}>
+                <div style={{
+                  backgroundColor: '#1e293b',
+                  padding: '12px',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>
+                    {caseItem.files?.length || 0}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                    Evidence Files
+                  </div>
+                </div>
+                <div style={{
+                  backgroundColor: '#1e293b',
+                  padding: '12px',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>
+                    {Math.round(((caseItem.files?.length || 0) / Math.max(1, (caseItem.files?.length || 1))) * 100)}%
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                    Progress
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Case Footer */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '12px',
-              color: '#64748b'
-            }}>
-              <span>Created: {caseItem.created}</span>
-              <span>Last: {caseItem.lastActivity}</span>
+              {/* Progress Bar */}
+              {caseItem.status === 'active' && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{
+                    width: '100%',
+                    height: '6px',
+                    backgroundColor: '#1e293b',
+                    borderRadius: '3px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${Math.round(((caseItem.files?.length || 0) / Math.max(1, (caseItem.files?.length || 1))) * 100)}%`,
+                      height: '100%',
+                      backgroundColor: '#059669',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Case Footer */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '12px',
+                color: '#64748b'
+              }}>
+                <span>Created: {new Date(caseItem.createdAt).toLocaleDateString()}</span>
+                <span>Updated: {new Date(caseItem.updatedAt).toLocaleDateString()}</span>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Create Case Modal */}
       {showCreateModal && (
