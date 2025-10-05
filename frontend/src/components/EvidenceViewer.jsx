@@ -5,7 +5,6 @@ const EvidenceViewer = () => {
   const { uploadedFiles, processedFiles } = useFiles();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFile, setSelectedFile] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
   // Convert uploaded files to evidence format
   const evidenceFiles = uploadedFiles.map(file => ({
@@ -197,25 +196,25 @@ const EvidenceViewer = () => {
   ];
 
   const containerStyle = {
-    display: 'flex',
-    height: '100vh',
-    width: '100%',
+    padding: '24px',
     backgroundColor: '#1e293b',
-    color: 'white'
+    minHeight: '100vh',
+    color: 'white',
+    width: '100%',
+    boxSizing: 'border-box'
   };
 
   const sidebarStyle = {
     width: '280px',
     backgroundColor: '#334155',
-    borderRight: '1px solid #475569',
+    borderRadius: '12px',
+    border: '1px solid #475569',
     padding: '24px',
-    overflowY: 'auto'
+    marginBottom: '24px'
   };
 
   const mainContentStyle = {
-    flex: 1,
-    padding: '24px',
-    overflowY: 'auto'
+    flex: 1
   };
 
   const categoryItemStyle = (isActive) => ({
@@ -339,57 +338,71 @@ const EvidenceViewer = () => {
 
   return (
     <div style={containerStyle}>
-      {/* Sidebar */}
-      <div style={sidebarStyle}>
-        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '24px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           👁️ Evidence Viewer
-        </h2>
+        </h1>
+        <p style={{ color: '#64748b', fontSize: '16px' }}>
+          Comprehensive evidence file management and analysis for your forensic investigations
+        </p>
+      </div>
 
-        {/* View Mode Toggle */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', backgroundColor: '#1e293b', borderRadius: '8px', padding: '4px' }}>
-            <button
-              style={{
-                flex: 1,
-                padding: '8px',
-                backgroundColor: viewMode === 'grid' ? '#1e40af' : 'transparent',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-              onClick={() => setViewMode('grid')}
-            >
-              🔳 Grid
-            </button>
-            <button
-              style={{
-                flex: 1,
-                padding: '8px',
-                backgroundColor: viewMode === 'list' ? '#1e40af' : 'transparent',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-              onClick={() => setViewMode('list')}
-            >
-              📋 List
-            </button>
-          </div>
-        </div>
+      {/* Controls Bar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginBottom: '24px'
+      }}>
+        <button style={{
+          backgroundColor: '#1e40af',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '12px 20px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '14px',
+          fontWeight: '600'
+        }}>
+          📤 Upload New Evidence
+        </button>
+      </div>
 
-        {/* Categories */}
-        <div>
-          <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#64748b' }}>
-            CATEGORIES
-          </h3>
+      {/* Categories Filter */}
+      <div style={{
+        backgroundColor: '#334155',
+        borderRadius: '12px',
+        border: '1px solid #475569',
+        padding: '24px',
+        marginBottom: '24px'
+      }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#e2e8f0' }}>
+          Filter by Category
+        </h3>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '12px' 
+        }}>
           {categories.map(category => (
-            <div
+            <button
               key={category.id}
-              style={categoryItemStyle(selectedCategory === category.id)}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                backgroundColor: selectedCategory === category.id ? '#1e40af' : '#1e293b',
+                border: selectedCategory === category.id ? '2px solid #3b82f6' : '1px solid #475569',
+                color: 'white',
+                transition: 'all 0.2s ease'
+              }}
               onClick={() => setSelectedCategory(category.id)}
               onMouseEnter={(e) => {
                 if (selectedCategory !== category.id) {
@@ -398,109 +411,152 @@ const EvidenceViewer = () => {
               }}
               onMouseLeave={(e) => {
                 if (selectedCategory !== category.id) {
-                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.backgroundColor = '#1e293b';
                 }
               }}
             >
-              <span style={{ fontSize: '14px' }}>{category.name}</span>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>{category.name}</span>
               <span style={{
-                backgroundColor: '#64748b',
+                backgroundColor: selectedCategory === category.id ? 'rgba(255,255,255,0.2)' : '#64748b',
                 color: 'white',
-                padding: '2px 6px',
-                borderRadius: '8px',
-                fontSize: '12px'
+                padding: '4px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '600'
               }}>
                 {category.count}
               </span>
-            </div>
+            </button>
           ))}
         </div>
+      </div>
 
-        {/* File Stats */}
-        <div style={{ marginTop: '32px', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
-          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Statistics</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#64748b' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Total Files:</span>
-              <span style={{ color: 'white' }}>{evidenceFiles.length}</span>
+      {/* Statistics */}
+      <div style={{
+        backgroundColor: '#334155',
+        borderRadius: '12px',
+        border: '1px solid #475569',
+        padding: '24px',
+        marginBottom: '24px'
+      }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#e2e8f0' }}>
+          📊 File Statistics
+        </h3>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '16px'
+        }}>
+          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0ea5e9', marginBottom: '4px' }}>
+              {evidenceFiles.length}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Processed:</span>
-              <span style={{ color: '#059669' }}>{evidenceFiles.filter(f => f.processed).length}</span>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Total Files</div>
+          </div>
+          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669', marginBottom: '4px' }}>
+              {evidenceFiles.filter(f => f.processed).length}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Pending:</span>
-              <span style={{ color: '#f59e0b' }}>{evidenceFiles.filter(f => !f.processed).length}</span>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Processed</div>
+          </div>
+          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px' }}>
+              {evidenceFiles.filter(f => !f.processed).length}
             </div>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Pending</div>
           </div>
         </div>
       </div>
 
+      {/* File Results Header */}
+      <div style={{ marginBottom: '16px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px' }}>
+          Evidence Files
+        </h2>
+        <p style={{ color: '#64748b' }}>
+          {filteredFiles.length} files in {selectedCategory === 'all' ? 'all categories' : categories.find(c => c.id === selectedCategory)?.name}
+        </p>
+      </div>
+
       {/* Main Content */}
       <div style={mainContentStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div>
-            <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>
-              Evidence Files
-            </h1>
-            <p style={{ color: '#64748b' }}>
-              {filteredFiles.length} files in {selectedCategory === 'all' ? 'all categories' : categories.find(c => c.id === selectedCategory)?.name}
-            </p>
-          </div>
-          <button style={{
-            backgroundColor: '#1e40af',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            fontWeight: '600'
-          }}>
-            📤 Upload New Evidence
-          </button>
-        </div>
-
         {/* File Grid/List */}
         {filteredFiles.length === 0 ? (
           <div style={{
             textAlign: 'center',
             padding: '60px 20px',
-            color: '#64748b'
+            backgroundColor: '#334155',
+            borderRadius: '16px',
+            border: '1px solid #475569'
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📂</div>
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: 'white' }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📂</div>
+            <h3 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: '#e2e8f0' }}>
               No Evidence Files Found
             </h3>
-            <p style={{ marginBottom: '24px' }}>
-              Upload UFDR files to begin your forensic investigation.
+            <p style={{ fontSize: '16px', color: '#94a3b8', marginBottom: '32px', lineHeight: '1.6' }}>
+              {selectedCategory === 'all' 
+                ? 'Upload UFDR files to begin your forensic investigation.' 
+                : `No files found in the ${categories.find(c => c.id === selectedCategory)?.name} category.`}
             </p>
-            <button 
-              style={{
-                backgroundColor: '#0ea5e9',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-              onClick={() => window.location.hash = '#upload'}
-            >
-              📤 Upload Evidence Files
-            </button>
-          </div>
-        ) : viewMode === 'grid' ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '20px'
-          }}>
-            {filteredFiles.map(renderFileCard)}
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button 
+                style={{
+                  backgroundColor: '#0ea5e9',
+                  color: 'white',
+                  border: 'none',
+                  padding: '14px 28px',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.3)'
+                }}
+                onClick={() => window.location.hash = '#upload'}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#0284c7';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#0ea5e9';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                📤 Upload Evidence Files
+              </button>
+              {selectedCategory !== 'all' && (
+                <button 
+                  style={{
+                    backgroundColor: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    padding: '14px 28px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => setSelectedCategory('all')}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#4b5563';
+                    e.target.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#6b7280';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
+                  📋 View All Files
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div>
