@@ -74,8 +74,44 @@ const DashboardContent = () => {
               </div>
             </div>
           )}
+          {!hasData && (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '40px 20px',
+              backgroundColor: '#334155',
+              borderRadius: '12px',
+              border: '1px solid #475569',
+              marginBottom: '32px'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.7 }}>📁</div>
+              <h3 style={{ fontSize: '20px', marginBottom: '8px', color: '#e2e8f0' }}>No Case Data Available</h3>
+              <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px' }}>
+                Upload UFDR files or case data to begin your forensic investigation
+              </p>
+              <button 
+                style={{
+                  backgroundColor: '#0ea5e9',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => setCurrentView('upload')}
+              >
+                📤 Upload Files
+              </button>
+            </div>
+          )}
         </div>
         
+        {hasData && (
+        <>
         {/* Case Statistics Grid */}
         <div style={{
           display: 'grid',
@@ -599,8 +635,9 @@ const DashboardContent = () => {
   );
 };
 
-const Dashboard = () => {
+const DashboardInner = () => {
   const [currentView, setCurrentView] = useState('dashboard');
+  const { processUploadedFile } = useCaseData();
   
   // Standard scrollbar styles
   const scrollbarStyles = `
@@ -715,9 +752,27 @@ const Dashboard = () => {
   });
   
   // File operations
-  const addFiles = (files) => {
+  const addFiles = async (files) => {
     setUploadedFiles(prev => [...prev, ...files]);
     updateAnalytics(files);
+    
+    // Process uploaded files for case data
+    for (const file of files) {
+      if (file.name.toLowerCase().includes('case') || file.name.toLowerCase().includes('.json')) {
+        try {
+          await processUploadedFile(file);
+          updateFileStatus(file.id, 'processed', { 
+            message: 'Case data loaded successfully',
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          updateFileStatus(file.id, 'failed', { 
+            error: error.message,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+    }
   };
   
   const updateFileStatus = (fileId, status, additionalData = {}) => {
@@ -870,172 +925,178 @@ const Dashboard = () => {
   };
 
   return (
-    <CaseDataProvider>
-      <FileContext.Provider value={fileContextValue}>
-        <style>{scrollbarStyles}</style>
-        <div style={{ backgroundColor: '#1e293b', minHeight: '100vh' }}>
-          {/* Unified Header */}
-          <div style={unifiedHeaderStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '8px 16px',
-                backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(14, 165, 233, 0.2)'
-              }}>
-                <img 
-                  src={forensicLogo} 
-                  alt="ForenSight Logo" 
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    objectFit: 'contain'
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div 
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: '#0ea5e9',
-                    borderRadius: '6px',
-                    display: 'none',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    color: 'white'
-                  }}
-                >
-                  FS
-                </div>
-                <div>
-                  <div style={{ 
-                    fontSize: '18px', 
-                    fontWeight: '700',
-                    color: '#0ea5e9',
-                    lineHeight: '1.2'
-                  }}>
-                    ForenSight
-                  </div>
-                  <div style={{ 
-                    fontSize: '11px', 
-                    color: '#64748b',
-                    lineHeight: '1.2',
-                    fontWeight: '500'
-                  }}>
-                    Digital Forensics Platform
-                  </div>
-                </div>
+    <FileContext.Provider value={fileContextValue}>
+      <style>{scrollbarStyles}</style>
+      <div style={{ backgroundColor: '#1e293b', minHeight: '100vh' }}>
+        {/* Unified Header */}
+        <div style={unifiedHeaderStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '8px 16px',
+              backgroundColor: 'rgba(14, 165, 233, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid rgba(14, 165, 233, 0.2)'
+            }}>
+              <img 
+                src={forensicLogo} 
+                alt="ForenSight Logo" 
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  objectFit: 'contain'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div 
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  backgroundColor: '#0ea5e9',
+                  borderRadius: '6px',
+                  display: 'none',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  color: 'white'
+                }}
+              >
+                FS
               </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                padding: '6px 12px',
-                backgroundColor: '#059669',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                color: 'white'
-              }}>
-                ONLINE
-              </div>
-              <div style={{
-                fontSize: '14px',
-                color: '#64748b'
-              }}>
-                System Status: Active
+              <div>
+                <div style={{ 
+                  fontSize: '18px', 
+                  fontWeight: '700',
+                  color: '#0ea5e9',
+                  lineHeight: '1.2'
+                }}>
+                  ForenSight
+                </div>
+                <div style={{ 
+                  fontSize: '11px', 
+                  color: '#64748b',
+                  lineHeight: '1.2',
+                  fontWeight: '500'
+                }}>
+                  Digital Forensics Platform
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div style={sidebarStyle} className="sidebar-scrollbar">
-            {/* Menu */}
-            <div style={{ padding: '20px 0' }}>
-              {menuSections.map((section, sectionIndex) => (
-                <div key={sectionIndex} style={{ marginBottom: '24px' }}>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    color: '#64748b',
-                    padding: '0 24px 8px',
-                    letterSpacing: '0.05em'
-                  }}>
-                    {section.title}
-                  </div>
-                  {section.items.map(renderMenuItem)}
-                </div>
-              ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              padding: '6px 12px',
+              backgroundColor: '#059669',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: 'white'
+            }}>
+              ONLINE
             </div>
-          </div>
-
-          {/* Main Content */}
-          <div style={mainContentStyle} className="standard-scrollbar">
-            {/* Main Content Based on Current View */}
-            {currentView === 'dashboard' && <DashboardContent />}
-
-            {/* Other Views */}
-            {currentView === 'query' && <QueryInterface />}
-            {currentView === 'evidence' && <EvidenceViewer />}
-            {currentView === 'network' && <NetworkAnalysis />}
-            {currentView === 'cases' && <CaseManagement />}
-            {currentView === 'upload' && <UploadUFDR />}
-            {currentView === 'reports' && <Reports />}
-
-            {currentView === 'analytics' && (
-              <div style={{ padding: '24px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                  📈 Analytics
-                </h1>
-                <p style={{ color: '#64748b' }}>No analytics data available. Upload evidence files to view analysis.</p>
-              </div>
-            )}
-
-            {currentView === 'ai' && (
-              <div style={{ padding: '24px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                  🤖 AI Investigation
-                </h1>
-                <p style={{ color: '#64748b' }}>No evidence data available for AI analysis. Please upload UFDR files first.</p>
-              </div>
-            )}
-
-            {currentView === 'search' && (
-              <div style={{ padding: '24px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                  🔍 Database Search
-                </h1>
-                <p style={{ color: '#64748b' }}>No database files available for search. Upload UFDR data to enable database queries.</p>
-              </div>
-            )}
-
-            {currentView === 'users' && (
-              <div style={{ padding: '24px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                  👥 User Management
-                </h1>
-                <p style={{ color: '#64748b' }}>User management requires administrator privileges. Contact your system administrator.</p>
-              </div>
-            )}
-
-            {currentView === 'settings' && (
-              <div style={{ padding: '24px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                  ⚙️ System Settings
-                </h1>
-                <p style={{ color: '#64748b' }}>System configuration requires administrator access. Please contact your system administrator.</p>
-              </div>
-            )}
+            <div style={{
+              fontSize: '14px',
+              color: '#64748b'
+            }}>
+              System Status: Active
+            </div>
           </div>
         </div>
-      </FileContext.Provider>
+
+        {/* Sidebar */}
+        <div style={sidebarStyle} className="sidebar-scrollbar">
+          {/* Menu */}
+          <div style={{ padding: '20px 0' }}>
+            {menuSections.map((section, sectionIndex) => (
+              <div key={sectionIndex} style={{ marginBottom: '24px' }}>
+                <div style={{
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: '#64748b',
+                  padding: '0 24px 8px',
+                  letterSpacing: '0.05em'
+                }}>
+                  {section.title}
+                </div>
+                {section.items.map(renderMenuItem)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div style={mainContentStyle} className="standard-scrollbar">
+          {/* Main Content Based on Current View */}
+          {currentView === 'dashboard' && <DashboardContent />}
+
+          {/* Other Views */}
+          {currentView === 'query' && <QueryInterface />}
+          {currentView === 'evidence' && <EvidenceViewer />}
+          {currentView === 'network' && <NetworkAnalysis />}
+          {currentView === 'cases' && <CaseManagement />}
+          {currentView === 'upload' && <UploadUFDR />}
+          {currentView === 'reports' && <Reports />}
+
+          {currentView === 'analytics' && (
+            <div style={{ padding: '24px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
+                📈 Analytics
+              </h1>
+              <p style={{ color: '#64748b' }}>No analytics data available. Upload evidence files to view analysis.</p>
+            </div>
+          )}
+
+          {currentView === 'ai' && (
+            <div style={{ padding: '24px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
+                🤖 AI Investigation
+              </h1>
+              <p style={{ color: '#64748b' }}>No evidence data available for AI analysis. Please upload UFDR files first.</p>
+            </div>
+          )}
+
+          {currentView === 'search' && (
+            <div style={{ padding: '24px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
+                🔍 Database Search
+              </h1>
+              <p style={{ color: '#64748b' }}>No database files available for search. Upload UFDR data to enable database queries.</p>
+            </div>
+          )}
+
+          {currentView === 'users' && (
+            <div style={{ padding: '24px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
+                👥 User Management
+              </h1>
+              <p style={{ color: '#64748b' }}>User management requires administrator privileges. Contact your system administrator.</p>
+            </div>
+          )}
+
+          {currentView === 'settings' && (
+            <div style={{ padding: '24px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
+                ⚙️ System Settings
+              </h1>
+              <p style={{ color: '#64748b' }}>System configuration requires administrator access. Please contact your system administrator.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </FileContext.Provider>
+  );
+};
+
+const Dashboard = () => {
+  return (
+    <CaseDataProvider>
+      <DashboardInner />
     </CaseDataProvider>
   );
 };

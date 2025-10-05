@@ -25,62 +25,55 @@ export const CaseDataProvider = ({ children }) => {
     completionPercentage: 0
   });
 
-  // Load case data automatically
-  useEffect(() => {
-    loadCaseData();
-  }, []);
+  // Case data will be loaded when files are uploaded
+  // No automatic loading of mock data
 
-  const loadCaseData = async () => {
+  const loadCaseData = async (fileData = null) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Try to load the case file we created
-      const response = await fetch('/src/data/case-2025-001.json');
-      if (!response.ok) {
-        throw new Error('Failed to load case data');
+      if (fileData) {
+        // Load data from uploaded file
+        setCaseData(fileData);
+        calculateStatistics(fileData);
+      } else {
+        // No data available - set empty state
+        setCaseData(null);
+        setStatistics({
+          totalSuspects: 0,
+          totalVictims: 0,
+          totalEvidence: 0,
+          totalLocations: 0,
+          riskLevel: 'UNKNOWN',
+          caseStatus: 'INACTIVE',
+          completionPercentage: 0,
+          financialImpact: 0,
+          networkComplexity: 0,
+          investigationProgress: 0
+        });
       }
-      
-      const data = await response.json();
-      setCaseData(data);
-      calculateStatistics(data);
       
     } catch (err) {
       console.error('Error loading case data:', err);
       setError(err.message);
-      // Set fallback data for demonstration
-      setFallbackData();
     } finally {
       setLoading(false);
     }
   };
 
-  const setFallbackData = () => {
-    const fallbackData = {
-      caseId: "DEMO-CASE",
-      caseName: "Demo Case - No Data Available",
-      status: "DEMO",
-      suspects: [],
-      victims: [],
-      evidence: [],
-      geographicData: {
-        suspectLocations: [],
-        criminalActivity: [],
-        infrastructure: []
-      },
-      networkTopology: {
-        nodes: [],
-        edges: []
-      },
-      financialFlows: {
-        cryptoWallets: [],
-        transactions: [],
-        bankAccounts: []
-      },
-      timeline: []
-    };
-    setCaseData(fallbackData);
-    calculateStatistics(fallbackData);
+  // Function to process uploaded file data
+  const processUploadedFile = async (file) => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await loadCaseData(data);
+      return data;
+    } catch (err) {
+      console.error('Error processing uploaded file:', err);
+      setError('Failed to process uploaded file: ' + err.message);
+      throw err;
+    }
   };
 
   const calculateStatistics = (data) => {
@@ -279,10 +272,11 @@ export const CaseDataProvider = ({ children }) => {
     // Utilities
     searchData,
     loadCaseData,
+    processUploadedFile,
     
     // Computed properties
-    hasData: !!caseData && caseData.caseId !== "DEMO-CASE",
-    isDemo: caseData?.caseId === "DEMO-CASE"
+    hasData: !!caseData && caseData.suspects?.length > 0,
+    isDemo: false
   };
 
   return (
