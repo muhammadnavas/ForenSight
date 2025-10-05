@@ -21,7 +21,7 @@ export const useFiles = () => {
 };
 
 // Dashboard Content Component
-const DashboardContent = () => {
+const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { uploadedFiles, processedFiles, fileAnalytics } = useFiles();
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
 
@@ -100,11 +100,39 @@ const DashboardContent = () => {
                   fontWeight: '500',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  marginRight: '12px'
                 }}
                 onClick={() => setCurrentView('upload')}
               >
                 📤 Upload Files
+              </button>
+              <button 
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/sample-case-data.json');
+                    const data = await response.json();
+                    await processUploadedFile({ text: async () => JSON.stringify(data) });
+                  } catch (error) {
+                    console.error('Error loading sample data:', error);
+                    alert('Failed to load sample data: ' + error.message);
+                  }
+                }}
+              >
+                📋 Load Sample Data
               </button>
             </div>
           )}
@@ -630,6 +658,8 @@ const DashboardContent = () => {
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );
@@ -753,20 +783,25 @@ const DashboardInner = () => {
   
   // File operations
   const addFiles = async (files) => {
+    console.log('Adding files:', files);
     setUploadedFiles(prev => [...prev, ...files]);
     updateAnalytics(files);
     
     // Process uploaded files for case data
-    for (const file of files) {
-      if (file.name.toLowerCase().includes('case') || file.name.toLowerCase().includes('.json')) {
+    for (const fileMetadata of files) {
+      const originalFile = fileMetadata.originalFile;
+      console.log('Processing file:', fileMetadata.name, 'Original file:', originalFile);
+      if (originalFile && (fileMetadata.name.toLowerCase().includes('case') || fileMetadata.name.toLowerCase().includes('.json'))) {
         try {
-          await processUploadedFile(file);
-          updateFileStatus(file.id, 'processed', { 
+          console.log('Processing case data file:', fileMetadata.name);
+          await processUploadedFile(originalFile);
+          updateFileStatus(fileMetadata.id, 'processed', { 
             message: 'Case data loaded successfully',
             timestamp: new Date().toISOString()
           });
         } catch (error) {
-          updateFileStatus(file.id, 'failed', { 
+          console.error('Failed to process file:', error);
+          updateFileStatus(fileMetadata.id, 'failed', { 
             error: error.message,
             timestamp: new Date().toISOString()
           });
@@ -1033,7 +1068,7 @@ const DashboardInner = () => {
         {/* Main Content */}
         <div style={mainContentStyle} className="standard-scrollbar">
           {/* Main Content Based on Current View */}
-          {currentView === 'dashboard' && <DashboardContent />}
+          {currentView === 'dashboard' && <DashboardContent setCurrentView={setCurrentView} processUploadedFile={processUploadedFile} />}
 
           {/* Other Views */}
           {currentView === 'query' && <QueryInterface />}

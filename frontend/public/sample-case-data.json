@@ -1,0 +1,400 @@
+{
+  "caseId": "CASE-2025-001",
+  "caseName": "Digital Forensics Investigation - Sample Case",
+  "status": "ACTIVE",
+  "createdDate": "2025-01-15T10:00:00Z",
+  "lastModified": "2025-01-20T15:30:00Z",
+  "investigator": "Forensic Analyst",
+  "priority": "HIGH",
+  "riskAssessment": {
+    "overallRisk": "HIGH",
+    "factors": ["Financial crimes", "Identity theft", "Network intrusion"]
+  },
+  "suspects": [
+    {
+      "id": "S001",
+      "name": "John Doe",
+      "age": 34,
+      "location": "New York, NY",
+      "role": "Primary suspect",
+      "charges": ["Identity theft", "Wire fraud"],
+      "riskLevel": "HIGH",
+      "lastKnownLocation": {
+        "coordinates": [-74.006, 40.7128],
+        "address": "Manhattan, NY",
+        "timestamp": "2025-01-18T14:00:00Z"
+      }
+    },
+    {
+      "id": "S002",
+      "name": "Jane Smith",
+      "age": 28,
+      "location": "Los Angeles, CA",
+      "role": "Accomplice",
+      "charges": ["Money laundering"],
+      "riskLevel": "MEDIUM",
+      "lastKnownLocation": {
+        "coordinates": [-118.2437, 34.0522],
+        "address": "Downtown LA, CA",
+        "timestamp": "2025-01-19T09:30:00Z"
+      }
+    }
+  ],
+  "victims": [
+    {
+      "id": "V001",
+      "name": "Alice Johnson",
+      "age": 45,
+      "location": "Chicago, IL",
+      "impactType": "Financial",
+      "financialLoss": 25000,
+      "reportedDate": "2025-01-10T12:00:00Z"
+    },
+    {
+      "id": "V002",
+      "name": "Bob Wilson",
+      "age": 52,
+      "location": "Houston, TX",
+      "impactType": "Identity theft",
+      "financialLoss": 15000,
+      "reportedDate": "2025-01-12T14:30:00Z"
+    },
+    {
+      "id": "V003",
+      "name": "Carol Davis",
+      "age": 38,
+      "location": "Phoenix, AZ",
+      "impactType": "Credit card fraud",
+      "financialLoss": 8500,
+      "reportedDate": "2025-01-14T11:15:00Z"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E001",
+      "type": "Digital",
+      "category": "Email communications",
+      "description": "Suspicious email exchanges between suspects",
+      "source": "Email server logs",
+      "collectedDate": "2025-01-16T10:00:00Z",
+      "relevance": "HIGH",
+      "location": "Evidence locker A-15"
+    },
+    {
+      "id": "E002",
+      "type": "Digital",
+      "category": "Financial records",
+      "description": "Bank transaction logs showing suspicious transfers",
+      "source": "Banking system",
+      "collectedDate": "2025-01-17T13:45:00Z",
+      "relevance": "CRITICAL",
+      "location": "Digital archive"
+    },
+    {
+      "id": "E003",
+      "type": "Physical",
+      "category": "Device",
+      "description": "Laptop computer seized from suspect's residence",
+      "source": "Search warrant execution",
+      "collectedDate": "2025-01-18T16:20:00Z",
+      "relevance": "HIGH",
+      "location": "Evidence locker B-08"
+    },
+    {
+      "id": "E004",
+      "type": "Digital",
+      "category": "Network logs",
+      "description": "VPN connection logs and IP address tracking",
+      "source": "ISP records",
+      "collectedDate": "2025-01-19T08:30:00Z",
+      "relevance": "MEDIUM",
+      "location": "Digital archive"
+    }
+  ],
+  "geographicData": {
+    "suspectLocations": [
+      {
+        "id": "SL001",
+        "coordinates": [-74.006, 40.7128],
+        "address": "Manhattan, NY",
+        "type": "Residence",
+        "suspectId": "S001",
+        "timestamp": "2025-01-18T14:00:00Z",
+        "confidence": "HIGH"
+      },
+      {
+        "id": "SL002",
+        "coordinates": [-118.2437, 34.0522],
+        "address": "Downtown LA, CA",
+        "type": "Workplace",
+        "suspectId": "S002",
+        "timestamp": "2025-01-19T09:30:00Z",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "criminalActivity": [
+      {
+        "id": "CA001",
+        "coordinates": [-87.6298, 41.8781],
+        "address": "Chicago, IL",
+        "type": "ATM fraud",
+        "timestamp": "2025-01-10T12:00:00Z",
+        "financialImpact": 25000,
+        "evidenceIds": ["E002"]
+      },
+      {
+        "id": "CA002",
+        "coordinates": [-95.3698, 29.7604],
+        "address": "Houston, TX",
+        "type": "Identity theft",
+        "timestamp": "2025-01-12T14:30:00Z",
+        "financialImpact": 15000,
+        "evidenceIds": ["E001", "E004"]
+      }
+    ],
+    "infrastructure": [
+      {
+        "id": "I001",
+        "coordinates": [-122.4194, 37.7749],
+        "address": "San Francisco, CA",
+        "type": "Server location",
+        "description": "Compromised web server",
+        "timestamp": "2025-01-15T18:00:00Z",
+        "status": "SECURED"
+      }
+    ]
+  },
+  "networkTopology": {
+    "nodes": [
+      {
+        "id": "N001",
+        "label": "John Doe",
+        "type": "suspect",
+        "category": "person",
+        "riskLevel": "HIGH",
+        "attributes": {
+          "age": 34,
+          "location": "New York, NY",
+          "charges": ["Identity theft", "Wire fraud"]
+        }
+      },
+      {
+        "id": "N002",
+        "label": "Jane Smith",
+        "type": "suspect",
+        "category": "person",
+        "riskLevel": "MEDIUM",
+        "attributes": {
+          "age": 28,
+          "location": "Los Angeles, CA",
+          "charges": ["Money laundering"]
+        }
+      },
+      {
+        "id": "N003",
+        "label": "Alice Johnson",
+        "type": "victim",
+        "category": "person",
+        "riskLevel": "LOW",
+        "attributes": {
+          "age": 45,
+          "location": "Chicago, IL",
+          "loss": 25000
+        }
+      },
+      {
+        "id": "N004",
+        "label": "Compromised Server",
+        "type": "infrastructure",
+        "category": "system",
+        "riskLevel": "HIGH",
+        "attributes": {
+          "location": "San Francisco, CA",
+          "status": "SECURED"
+        }
+      },
+      {
+        "id": "N005",
+        "label": "Bank Transfer",
+        "type": "transaction",
+        "category": "financial",
+        "riskLevel": "CRITICAL",
+        "attributes": {
+          "amount": 25000,
+          "date": "2025-01-10"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "E001",
+        "from": "N001",
+        "to": "N002",
+        "type": "communication",
+        "label": "Email exchanges",
+        "weight": 5,
+        "timestamp": "2025-01-16T10:00:00Z"
+      },
+      {
+        "id": "E002",
+        "from": "N001",
+        "to": "N005",
+        "type": "financial",
+        "label": "Initiated transfer",
+        "weight": 8,
+        "timestamp": "2025-01-10T12:00:00Z"
+      },
+      {
+        "id": "E003",
+        "from": "N005",
+        "to": "N003",
+        "type": "financial",
+        "label": "Victim impact",
+        "weight": 9,
+        "timestamp": "2025-01-10T12:15:00Z"
+      },
+      {
+        "id": "E004",
+        "from": "N001",
+        "to": "N004",
+        "type": "network",
+        "label": "Server access",
+        "weight": 7,
+        "timestamp": "2025-01-15T18:00:00Z"
+      },
+      {
+        "id": "E005",
+        "from": "N002",
+        "to": "N005",
+        "type": "financial",
+        "label": "Money laundering",
+        "weight": 6,
+        "timestamp": "2025-01-12T16:30:00Z"
+      }
+    ]
+  },
+  "financialFlows": {
+    "cryptoWallets": [
+      {
+        "id": "CW001",
+        "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+        "currency": "Bitcoin",
+        "balance": 2.5,
+        "transactions": 15,
+        "suspectId": "S001",
+        "riskLevel": "HIGH"
+      }
+    ],
+    "transactions": [
+      {
+        "id": "T001",
+        "from": "Account-001",
+        "to": "Account-002",
+        "amount": 25000,
+        "currency": "USD",
+        "timestamp": "2025-01-10T12:00:00Z",
+        "type": "Wire transfer",
+        "status": "SUSPICIOUS",
+        "relatedEvidence": ["E002"]
+      },
+      {
+        "id": "T002",
+        "from": "CW001",
+        "to": "Unknown wallet",
+        "amount": 1.2,
+        "currency": "Bitcoin",
+        "timestamp": "2025-01-12T18:45:00Z",
+        "type": "Cryptocurrency transfer",
+        "status": "FLAGGED",
+        "relatedEvidence": ["E004"]
+      }
+    ],
+    "bankAccounts": [
+      {
+        "id": "BA001",
+        "accountNumber": "****1234",
+        "bank": "First National Bank",
+        "owner": "John Doe",
+        "balance": -5000,
+        "status": "FROZEN",
+        "suspectId": "S001"
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "id": "TL001",
+      "timestamp": "2025-01-10T12:00:00Z",
+      "event": "Suspicious wire transfer initiated",
+      "category": "Financial",
+      "severity": "HIGH",
+      "relatedEntities": ["S001", "V001"],
+      "evidenceIds": ["E002"]
+    },
+    {
+      "id": "TL002",
+      "timestamp": "2025-01-12T14:30:00Z",
+      "event": "Identity theft reported by victim",
+      "category": "Crime",
+      "severity": "HIGH",
+      "relatedEntities": ["V002"],
+      "evidenceIds": []
+    },
+    {
+      "id": "TL003",
+      "timestamp": "2025-01-15T18:00:00Z",
+      "event": "Server compromise detected",
+      "category": "Cybersecurity",
+      "severity": "CRITICAL",
+      "relatedEntities": ["S001"],
+      "evidenceIds": ["E004"]
+    },
+    {
+      "id": "TL004",
+      "timestamp": "2025-01-18T16:20:00Z",
+      "event": "Suspect device seized",
+      "category": "Investigation",
+      "severity": "MEDIUM",
+      "relatedEntities": ["S001"],
+      "evidenceIds": ["E003"]
+    }
+  ],
+  "nextSteps": [
+    {
+      "id": "NS001",
+      "task": "Analyze seized laptop for digital evidence",
+      "priority": "HIGH",
+      "assignee": "Digital Forensics Team",
+      "dueDate": "2025-01-25T17:00:00Z",
+      "status": "IN_PROGRESS",
+      "dependencies": ["E003"]
+    },
+    {
+      "id": "NS002",
+      "task": "Interview primary suspect",
+      "priority": "HIGH",
+      "assignee": "Lead Investigator",
+      "dueDate": "2025-01-23T10:00:00Z",
+      "status": "PENDING",
+      "dependencies": []
+    },
+    {
+      "id": "NS003",
+      "task": "Trace cryptocurrency transactions",
+      "priority": "MEDIUM",
+      "assignee": "Financial Crimes Unit",
+      "dueDate": "2025-01-30T17:00:00Z",
+      "status": "NOT_STARTED",
+      "dependencies": ["E004"]
+    },
+    {
+      "id": "NS004",
+      "task": "Compile final evidence report",
+      "priority": "LOW",
+      "assignee": "Case Manager",
+      "dueDate": "2025-02-05T17:00:00Z",
+      "status": "NOT_STARTED",
+      "dependencies": ["NS001", "NS002", "NS003"]
+    }
+  ]
+}

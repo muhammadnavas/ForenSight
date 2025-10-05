@@ -131,7 +131,7 @@ const UploadUFDR = () => {
     files.forEach(file => {
       const validation = validateFile(file);
       if (validation.valid) {
-        validFiles.push({
+        const fileMetadata = {
           id: Date.now() + Math.random(),
           name: file.name,
           size: file.size,
@@ -140,8 +140,10 @@ const UploadUFDR = () => {
           progress: 0,
           error: null,
           uploadedAt: new Date().toISOString(),
-          fileType: getFileType(file.name)
-        });
+          fileType: getFileType(file.name),
+          originalFile: file // Keep reference to original File object
+        };
+        validFiles.push(fileMetadata);
       } else {
         errors.push({ fileName: file.name, error: validation.error });
       }

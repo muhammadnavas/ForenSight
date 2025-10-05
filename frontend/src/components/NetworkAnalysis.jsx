@@ -1,10 +1,31 @@
 import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
 import { useCaseData } from '../contexts/CaseDataContext';
 import { useFiles } from './Dashboard';
 
+// Fix for default markers in React Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom icons for different location types
+const createCustomIcon = (color, symbol) => {
+  return L.divIcon({
+    html: `<div style="background-color: ${color}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${symbol}</div>`,
+    className: 'custom-div-icon',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
+  });
+};
+
 const NetworkAnalysis = () => {
   const { uploadedFiles, processedFiles } = useFiles();
-  const { caseData, hasData, getNetworkData, statistics } = useCaseData();
+  const { caseData, hasData, getNetworkData, getGeographicData, statistics } = useCaseData();
   const [selectedNode, setSelectedNode] = useState(null);
   const [analysisMode, setAnalysisMode] = useState('contacts'); // 'contacts', 'locations', 'transactions'
   const [timeRange, setTimeRange] = useState('all');
@@ -40,12 +61,8 @@ const NetworkAnalysis = () => {
           )
         },
         locations: {
-          nodes: realNetworkData.nodes.filter(node => 
-            node.type === 'location' || node.group === 'location'
-          ),
-          connections: realNetworkData.edges.filter(edge => 
-            edge.type === 'travel' || edge.type === 'presence'
-          )
+          nodes: getLocationNodes(),
+          connections: getLocationConnections()
         },
         transactions: {
           nodes: realNetworkData.nodes.filter(node => 
@@ -60,6 +77,105 @@ const NetworkAnalysis = () => {
       setNetworkData(organizedData);
     }
   }, [hasData, caseData, getNetworkData]);
+
+  // Helper functions for location data
+  const getLocationNodes = () => {
+    if (!hasData || !caseData) return [];
+    
+    const geoData = getGeographicData();
+    const locationNodes = [];
+    
+    // Add suspect locations
+    geoData.suspectLocations.forEach((location, index) => {
+      locationNodes.push({
+        id: `suspect-loc-${index}`,
+        label: location.address || 'Unknown Location',
+        type: 'suspect-location',
+        category: 'location',
+        lat: location.lat,
+        lng: location.lng,
+        x: 100 + (location.lng + 180) * 3, // Convert to screen coordinates
+        y: 100 + (90 - location.lat) * 3,
+        suspectId: location.suspectId,
+        confidence: location.confidence,
+        riskLevel: 'HIGH',
+        details: location
+      });
+    });
+    
+    // Add crime locations
+    geoData.crimeLocations.forEach((location, index) => {
+      locationNodes.push({
+        id: `crime-loc-${index}`,
+        label: location.address || 'Crime Scene',
+        type: 'crime-location',
+        category: 'location',
+        lat: location.lat,
+        lng: location.lng,
+        x: 100 + (location.lng + 180) * 3,
+        y: 100 + (90 - location.lat) * 3,
+        criminalActivity: location.type,
+        financialImpact: location.financialImpact,
+        riskLevel: 'CRITICAL',
+        details: location
+      });
+    });
+    
+    // Add infrastructure locations
+    geoData.infrastructureLocations.forEach((location, index) => {
+      locationNodes.push({
+        id: `infra-loc-${index}`,
+        label: location.description || 'Infrastructure',
+        type: 'infrastructure-location',
+        category: 'location',
+        lat: location.lat,
+        lng: location.lng,
+        x: 100 + (location.lng + 180) * 3,
+        y: 100 + (90 - location.lat) * 3,
+        status: location.status,
+        riskLevel: 'MEDIUM',
+        details: location
+      });
+    });
+    
+    return locationNodes;
+  };
+  
+  const getLocationConnections = () => {
+    if (!hasData || !caseData) return [];
+    
+    const connections = [];
+    const locationNodes = getLocationNodes();
+    
+    // Connect suspect locations to crime locations if they're related
+    locationNodes.forEach(fromNode => {
+      if (fromNode.type === 'suspect-location') {
+        locationNodes.forEach(toNode => {
+          if (toNode.type === 'crime-location' && fromNode.suspectId) {
+            // Check if this suspect is related to this crime
+            const suspectInEvidence = toNode.details.evidenceIds?.some(evidenceId => 
+              caseData.evidence?.some(evidence => 
+                evidence.id === evidenceId && evidence.description?.includes(fromNode.suspectId)
+              )
+            );
+            
+            if (suspectInEvidence) {
+              connections.push({
+                id: `${fromNode.id}-${toNode.id}`,
+                from: fromNode.id,
+                to: toNode.id,
+                type: 'suspect-crime-link',
+                strength: 8,
+                label: 'Suspected involvement'
+              });
+            }
+          }
+        });
+      }
+    });
+    
+    return connections;
+  };
   
   const hasProcessedData = processedFiles.length > 0 || hasData;
   const availableDataTypes = processedFiles.map(file => file.fileType).filter(Boolean);
@@ -146,12 +262,37 @@ const NetworkAnalysis = () => {
   const renderNetworkGraph = () => {
     const data = networkData[analysisMode];
     
+    // Safety check - ensure data exists and has required properties
+    if (!data || !data.nodes || !data.connections) {
+      return (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100%', 
+          color: '#64748b' 
+        }}>
+          No network data available for {analysisMode} analysis
+        </div>
+      );
+    }
+    
+    // For locations mode, render a map-like view
+    if (analysisMode === 'locations') {
+      return renderLocationMap(data);
+    }
+    
     return (
       <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
         {/* Render connections */}
         {data.connections.map((connection, index) => {
           const fromNode = data.nodes.find(n => n.id === connection.from);
           const toNode = data.nodes.find(n => n.id === connection.to);
+          
+          // Skip rendering if either node is not found
+          if (!fromNode || !toNode) {
+            return null;
+          }
           
           return (
             <g key={index}>
@@ -179,32 +320,309 @@ const NetworkAnalysis = () => {
         })}
         
         {/* Render nodes */}
-        {data.nodes.map((node, index) => (
-          <g key={index}>
-            <circle
-              cx={node.x}
-              cy={node.y}
-              r={Math.max(20, node.connections * 3)}
-              fill={getNodeColor(node)}
-              stroke={selectedNode?.id === node.id ? '#ffffff' : 'transparent'}
-              strokeWidth="3"
-              style={{ cursor: 'pointer' }}
-              onClick={() => setSelectedNode(node)}
-            />
-            <text
-              x={node.x}
-              y={node.y + 35}
+        {data.nodes.map((node, index) => {
+          // Skip rendering if node doesn't have position data
+          if (!node || typeof node.x === 'undefined' || typeof node.y === 'undefined') {
+            return null;
+          }
+          
+          return (
+            <g key={index}>
+              <circle
+                cx={node.x}
+                cy={node.y}
+                r={Math.max(20, node.connections * 3)}
+                fill={getNodeColor(node)}
+                stroke={selectedNode?.id === node.id ? '#ffffff' : 'transparent'}
+                strokeWidth="3"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setSelectedNode(node)}
+              />
+              <text
+                x={node.x}
+                y={node.y + 35}
               fill="white"
               fontSize="12"
               textAnchor="middle"
               style={{ cursor: 'pointer', userSelect: 'none' }}
               onClick={() => setSelectedNode(node)}
             >
-              {node.name.length > 15 ? node.name.substring(0, 15) + '...' : node.name}
+              {(node.label || node.name || 'Unknown').length > 15 ? (node.label || node.name || 'Unknown').substring(0, 15) + '...' : (node.label || node.name || 'Unknown')}
             </text>
           </g>
-        ))}
+        );
+        })}
       </svg>
+    );
+  };
+
+  const renderLocationMap = (data) => {
+    // Convert geographic data to lat/lng coordinates
+    const locations = data.nodes.map(node => {
+      let lat = 40.7128; // Default to NYC
+      let lng = -74.0060;
+      
+      // Extract coordinates from node data
+      if (node.latitude && node.longitude) {
+        lat = parseFloat(node.latitude);
+        lng = parseFloat(node.longitude);
+      } else if (node.coordinates) {
+        const coords = node.coordinates.split(',');
+        if (coords.length === 2) {
+          lat = parseFloat(coords[0].trim());
+          lng = parseFloat(coords[1].trim());
+        }
+      } else if (node.location && typeof node.location === 'object') {
+        lat = node.location.lat || node.location.latitude || lat;
+        lng = node.location.lng || node.location.longitude || lng;
+      }
+      
+      return {
+        ...node,
+        lat,
+        lng,
+        icon: getLocationIcon(node)
+      };
+    });
+
+    // Get center point for map
+    const centerLat = locations.length > 0 
+      ? locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length 
+      : 40.7128;
+    const centerLng = locations.length > 0 
+      ? locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length 
+      : -74.0060;
+
+    // Create polylines for connections
+    const connectionLines = data.connections
+      .map(connection => {
+        const fromNode = locations.find(n => n.id === connection.from);
+        const toNode = locations.find(n => n.id === connection.to);
+        
+        if (fromNode && toNode) {
+          return {
+            positions: [[fromNode.lat, fromNode.lng], [toNode.lat, toNode.lng]],
+            color: getConnectionColor(connection),
+            weight: Math.max(2, connection.strength / 10),
+            opacity: 0.7
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return (
+      <div style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
+        height: '100%',
+        zIndex: 1
+      }}>
+        <MapContainer
+          center={[centerLat, centerLng]}
+          zoom={10}
+          style={{ height: '100%', width: '100%' }}
+          zoomControl={true}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          
+          {/* Render connection lines */}
+          {connectionLines.map((line, index) => (
+            <Polyline
+              key={index}
+              positions={line.positions}
+              color={line.color}
+              weight={line.weight}
+              opacity={line.opacity}
+            />
+          ))}
+          
+          {/* Render location markers */}
+          {locations.map((location, index) => (
+            <Marker
+              key={index}
+              position={[location.lat, location.lng]}
+              icon={location.icon}
+            >
+              <Popup>
+                <div style={{ minWidth: '200px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: '#1f2937' }}>
+                    {location.label || location.name || 'Unknown Location'}
+                  </h3>
+                  <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
+                    <strong>Type:</strong> {location.type || 'Unknown'}
+                  </p>
+                  <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
+                    <strong>Coordinates:</strong> {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  </p>
+                  {location.address && (
+                    <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
+                      <strong>Address:</strong> {location.address}
+                    </p>
+                  )}
+                  {location.connections && (
+                    <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
+                      <strong>Connections:</strong> {location.connections}
+                    </p>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+
+        {/* Location Connections */}
+        <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
+          {data.connections.map((connection, index) => {
+            const fromNode = data.nodes.find(n => n.id === connection.from);
+            const toNode = data.nodes.find(n => n.id === connection.to);
+            
+            if (!fromNode || !toNode) return null;
+            
+            return (
+              <g key={index}>
+                <line
+                  x1={fromNode.x}
+                  y1={fromNode.y}
+                  x2={toNode.x}
+                  y2={toNode.y}
+                  stroke="#ef4444"
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                  strokeOpacity={0.7}
+                />
+                <text
+                  x={(fromNode.x + toNode.x) / 2}
+                  y={(fromNode.y + toNode.y) / 2 - 10}
+                  fill="#ef4444"
+                  fontSize="11"
+                  textAnchor="middle"
+                  fontWeight="600"
+                >
+                  {connection.label}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Location Markers */}
+        {data.nodes.map((node, index) => {
+          const getLocationIcon = (type) => {
+            switch (type) {
+              case 'suspect-location': return '👤';
+              case 'crime-location': return '⚠️';
+              case 'infrastructure-location': return '🏢';
+              default: return '📍';
+            }
+          };
+
+          const getLocationColor = (type) => {
+            switch (type) {
+              case 'suspect-location': return '#dc2626';
+              case 'crime-location': return '#f59e0b';
+              case 'infrastructure-location': return '#0ea5e9';
+              default: return '#64748b';
+            }
+          };
+
+          return (
+            <div
+              key={index}
+              style={{
+                position: 'absolute',
+                left: node.x - 30,
+                top: node.y - 30,
+                width: '60px',
+                height: '60px',
+                backgroundColor: getLocationColor(node.type),
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '20px',
+                border: selectedNode?.id === node.id ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.3)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s ease',
+                transform: selectedNode?.id === node.id ? 'scale(1.1)' : 'scale(1)',
+                zIndex: selectedNode?.id === node.id ? 10 : 1
+              }}
+              onClick={() => setSelectedNode(node)}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.1)';
+                e.target.style.zIndex = '10';
+              }}
+              onMouseLeave={(e) => {
+                if (selectedNode?.id !== node.id) {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.zIndex = '1';
+                }
+              }}
+            >
+              {getLocationIcon(node.type)}
+            </div>
+          );
+        })}
+
+        {/* Location Labels */}
+        {data.nodes.map((node, index) => (
+          <div
+            key={`label-${index}`}
+            style={{
+              position: 'absolute',
+              left: node.x - 50,
+              top: node.y + 35,
+              width: '100px',
+              textAlign: 'center',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: 'white',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              pointerEvents: 'none',
+              zIndex: 5
+            }}
+          >
+            {node.label.length > 15 ? node.label.substring(0, 15) + '...' : node.label}
+          </div>
+        ))}
+
+        {/* Map Legend */}
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#334155',
+          padding: '16px',
+          borderRadius: '8px',
+          border: '1px solid #475569',
+          minWidth: '200px'
+        }}>
+          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Location Types</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>👤</span>
+              <span>Suspect Locations</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>⚠️</span>
+              <span>Crime Scenes</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>🏢</span>
+              <span>Infrastructure</span>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -227,31 +645,97 @@ const NetworkAnalysis = () => {
             borderRadius: '50%',
             backgroundColor: getNodeColor(selectedNode)
           }}></div>
-          <h3 style={{ fontSize: '18px', fontWeight: '600' }}>{selectedNode.name}</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '600' }}>{selectedNode.label || selectedNode.name || 'Unknown'}</h3>
         </div>
 
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ color: '#64748b' }}>Type:</span>
-            <span style={{ textTransform: 'capitalize' }}>{selectedNode.type}</span>
+            <span style={{ textTransform: 'capitalize' }}>{selectedNode.type?.replace('-', ' ')}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ color: '#64748b' }}>Connections:</span>
-            <span>{selectedNode.connections}</span>
-          </div>
+          
+          {/* Location-specific details */}
+          {analysisMode === 'locations' && (
+            <>
+              {selectedNode.lat && selectedNode.lng && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#64748b' }}>Coordinates:</span>
+                  <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+                    {selectedNode.lat.toFixed(4)}, {selectedNode.lng.toFixed(4)}
+                  </span>
+                </div>
+              )}
+              
+              {selectedNode.confidence && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#64748b' }}>Confidence:</span>
+                  <span style={{
+                    backgroundColor: selectedNode.confidence === 'HIGH' ? '#10b981' : 
+                                  selectedNode.confidence === 'MEDIUM' ? '#f59e0b' : '#6b7280',
+                    color: 'white',
+                    padding: '2px 8px',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}>
+                    {selectedNode.confidence}
+                  </span>
+                </div>
+              )}
+              
+              {selectedNode.financialImpact && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#64748b' }}>Financial Impact:</span>
+                  <span style={{ color: '#ef4444', fontWeight: '600' }}>
+                    ${selectedNode.financialImpact.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              
+              {selectedNode.criminalActivity && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#64748b' }}>Activity:</span>
+                  <span>{selectedNode.criminalActivity}</span>
+                </div>
+              )}
+              
+              {selectedNode.status && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#64748b' }}>Status:</span>
+                  <span style={{
+                    backgroundColor: selectedNode.status === 'SECURED' ? '#10b981' : '#f59e0b',
+                    color: 'white',
+                    padding: '2px 8px',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}>
+                    {selectedNode.status}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+          
+          {/* Non-location details */}
+          {analysisMode !== 'locations' && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ color: '#64748b' }}>Connections:</span>
+              <span>{selectedNode.connections || 0}</span>
+            </div>
+          )}
+          
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ color: '#64748b' }}>Risk Level:</span>
             <span style={{
-              backgroundColor: selectedNode.risk === 'critical' ? '#ef4444' : 
-                            selectedNode.risk === 'high' ? '#f59e0b' :
-                            selectedNode.risk === 'medium' ? '#10b981' : '#6b7280',
+              backgroundColor: selectedNode.riskLevel === 'CRITICAL' ? '#ef4444' : 
+                            selectedNode.riskLevel === 'HIGH' ? '#f59e0b' :
+                            selectedNode.riskLevel === 'MEDIUM' ? '#10b981' : '#6b7280',
               color: 'white',
               padding: '2px 8px',
               borderRadius: '8px',
               fontSize: '12px',
               textTransform: 'uppercase'
             }}>
-              {selectedNode.risk}
+              {selectedNode.riskLevel || selectedNode.risk || 'UNKNOWN'}
             </span>
           </div>
         </div>
@@ -276,7 +760,7 @@ const NetworkAnalysis = () => {
                     border: '1px solid #475569'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px' }}>{otherNode.name}</span>
+                      <span style={{ fontSize: '14px' }}>{otherNode.label || otherNode.name || 'Unknown'}</span>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <span style={{
                           backgroundColor: getConnectionColor(conn),

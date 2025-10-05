@@ -13,7 +13,7 @@ export const useCaseData = () => {
 
 export const CaseDataProvider = ({ children }) => {
   const [caseData, setCaseData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [statistics, setStatistics] = useState({
     totalSuspects: 0,
@@ -24,6 +24,12 @@ export const CaseDataProvider = ({ children }) => {
     caseStatus: 'INACTIVE',
     completionPercentage: 0
   });
+
+  // Initialize the context
+  useEffect(() => {
+    // Set initial empty state
+    setLoading(false);
+  }, []);
 
   // Case data will be loaded when files are uploaded
   // No automatic loading of mock data
@@ -65,9 +71,13 @@ export const CaseDataProvider = ({ children }) => {
   // Function to process uploaded file data
   const processUploadedFile = async (file) => {
     try {
+      console.log('Processing uploaded file:', file);
       const text = await file.text();
+      console.log('File content length:', text.length);
       const data = JSON.parse(text);
+      console.log('Parsed data:', data);
       await loadCaseData(data);
+      console.log('Case data loaded successfully');
       return data;
     } catch (err) {
       console.error('Error processing uploaded file:', err);
