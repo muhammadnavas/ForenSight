@@ -682,7 +682,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   );
 };
 
-const DashboardInner = () => {
+const DashboardInner = ({ onNavigateToHome }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const { processUploadedFile } = useCaseData();
   
@@ -995,15 +995,33 @@ const DashboardInner = () => {
         {/* Unified Header */}
         <div style={unifiedHeaderStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '8px 16px',
-              backgroundColor: 'rgba(14, 165, 233, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(14, 165, 233, 0.2)'
-            }}>
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '8px 16px',
+                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(14, 165, 233, 0.2)',
+                cursor: onNavigateToHome ? 'pointer' : 'default',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={onNavigateToHome}
+              onMouseEnter={(e) => {
+                if (onNavigateToHome) {
+                  e.currentTarget.style.backgroundColor = 'rgba(14, 165, 233, 0.2)';
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (onNavigateToHome) {
+                  e.currentTarget.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }
+              }}
+              title={onNavigateToHome ? 'Click to return to home page' : ''}
+            >
               <img 
                 src={forensicLogo} 
                 alt="ForenSight Logo" 
@@ -1477,10 +1495,10 @@ const DashboardInner = () => {
   );
 };
 
-const Dashboard = () => {
+const Dashboard = ({ onNavigateToHome }) => {
   return (
     <CaseDataProvider>
-      <DashboardInner />
+      <DashboardInner onNavigateToHome={onNavigateToHome} />
     </CaseDataProvider>
   );
 };
