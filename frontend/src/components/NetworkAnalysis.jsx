@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useCaseData } from '../contexts/CaseDataContext';
 import { useFiles } from './Dashboard';
 
 const NetworkAnalysis = () => {
   const { uploadedFiles, processedFiles } = useFiles();
+  const { caseData, hasData, getNetworkData, statistics } = useCaseData();
   const [selectedNode, setSelectedNode] = useState(null);
   const [analysisMode, setAnalysisMode] = useState('contacts'); // 'contacts', 'locations', 'transactions'
   const [timeRange, setTimeRange] = useState('all');
@@ -22,7 +24,44 @@ const NetworkAnalysis = () => {
     }
   });
   
-  const hasProcessedData = processedFiles.length > 0;
+  // Load network data from case data when available
+  useEffect(() => {
+    if (hasData && caseData) {
+      const realNetworkData = getNetworkData();
+      
+      // Organize data by analysis mode
+      const organizedData = {
+        contacts: {
+          nodes: realNetworkData.nodes.filter(node => 
+            node.type === 'person' || node.group === 'suspect' || node.group === 'victim'
+          ),
+          connections: realNetworkData.edges.filter(edge => 
+            edge.type === 'communication' || edge.type === 'relationship'
+          )
+        },
+        locations: {
+          nodes: realNetworkData.nodes.filter(node => 
+            node.type === 'location' || node.group === 'location'
+          ),
+          connections: realNetworkData.edges.filter(edge => 
+            edge.type === 'travel' || edge.type === 'presence'
+          )
+        },
+        transactions: {
+          nodes: realNetworkData.nodes.filter(node => 
+            node.type === 'wallet' || node.type === 'account' || node.group === 'financial'
+          ),
+          connections: realNetworkData.edges.filter(edge => 
+            edge.type === 'financial' || edge.type === 'transaction'
+          )
+        }
+      };
+      
+      setNetworkData(organizedData);
+    }
+  }, [hasData, caseData, getNetworkData]);
+  
+  const hasProcessedData = processedFiles.length > 0 || hasData;
   const availableDataTypes = processedFiles.map(file => file.fileType).filter(Boolean);
 
   // TODO: Load network data from API
@@ -310,14 +349,25 @@ const NetworkAnalysis = () => {
         <div>
           <div style={{ fontSize: '64px', marginBottom: '24px' }}>🌐</div>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>
-            Network Analysis Unavailable
+            Network Analysis Ready
           </h2>
           <p style={{ color: '#64748b', fontSize: '16px', marginBottom: '24px', maxWidth: '400px' }}>
-            Upload and process UFDR files to generate network visualizations of contacts, locations, and transaction patterns.
+            {hasData ? 
+              'Case data loaded successfully. Network analysis is available with real forensic data.' :
+              'Upload and process UFDR files to generate network visualizations of contacts, locations, and transaction patterns.'
+            }
           </p>
+          {hasData && (
+            <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#334155', borderRadius: '8px' }}>
+              <div style={{ fontSize: '14px', marginBottom: '8px' }}>Case: {caseData.caseName}</div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>
+                {statistics.totalSuspects} suspects, {statistics.networkComplexity} network elements
+              </div>
+            </div>
+          )}
           <button 
             style={{
-              backgroundColor: '#0ea5e9',
+              backgroundColor: hasData ? '#059669' : '#0ea5e9',
               color: 'white',
               border: 'none',
               padding: '12px 24px',
@@ -326,9 +376,9 @@ const NetworkAnalysis = () => {
               fontSize: '14px',
               fontWeight: '500'
             }}
-            onClick={() => window.location.hash = '#upload'}
+            onClick={() => hasData ? setAnalysisMode('contacts') : (window.location.hash = '#upload')}
           >
-            📤 Upload UFDR Files
+            {hasData ? '🌐 View Network' : '📤 Upload UFDR Files'}
           </button>
         </div>
       </div>
