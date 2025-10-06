@@ -165,6 +165,9 @@ class CaseAPI {
 
   static async addFileToCase(caseId, fileData) {
     try {
+      console.log('📁 Adding file to case:', caseId);
+      console.log('📄 File data:', fileData);
+      
       const database = await connectToMongoDB();
       const cases = database.collection('cases');
       
@@ -172,17 +175,31 @@ class CaseAPI {
         ? { _id: new ObjectId(caseId) }
         : { caseId: caseId };
         
+      console.log('🔍 Query:', query);
+      
+      // Check if case exists first
+      const existingCase = await cases.findOne(query);
+      if (!existingCase) {
+        console.log('❌ Case not found with query:', query);
+        return { success: false, error: 'Case not found' };
+      }
+      
+      console.log('✅ Case found:', existingCase.name || existingCase.caseId);
+      
       const fileEntry = {
         fileId: new ObjectId(),
         ...fileData,
         uploadedAt: new Date()
       };
       
+      // Handle both 'size' and 'sizeBytes' properties
+      const fileSize = fileData.sizeBytes || fileData.size || 0;
+      
       const update = {
         $push: { filesUploaded: fileEntry },
         $inc: { 
           totalFiles: 1,
-          totalSizeBytes: fileData.sizeBytes || 0
+          totalSizeBytes: fileSize
         },
         $set: {
           updatedAt: new Date(),
@@ -190,15 +207,20 @@ class CaseAPI {
         }
       };
       
+      console.log('🔄 Updating case with file entry...');
       const result = await cases.updateOne(query, update);
       
+      console.log('📊 Update result:', result);
+      
       if (result.matchedCount === 0) {
-        return { success: false, error: 'Case not found' };
+        return { success: false, error: 'Case not found during update' };
       }
       
+      console.log('✅ File added successfully with ID:', fileEntry.fileId);
       return { success: true, fileId: fileEntry.fileId };
     } catch (error) {
-      console.error('Error adding file to case:', error);
+      console.error('❌ Error adding file to case:', error);
+      console.error('Stack trace:', error.stack);
       return { success: false, error: error.message };
     }
   }

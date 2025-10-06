@@ -143,26 +143,43 @@ router.delete('/:id', async (req, res) => {
 // Add file to case
 router.post('/:id/files', async (req, res) => {
   try {
+    console.log('📥 POST /:id/files - Adding file to case');
+    console.log('🆔 Case ID:', req.params.id);
+    console.log('📄 Request body:', req.body);
+    console.log('📋 Headers:', req.headers);
+    
     const { id } = req.params;
     const fileData = req.body;
     
+    if (!fileData || Object.keys(fileData).length === 0) {
+      console.log('❌ No file data provided');
+      return res.status(400).json({
+        success: false,
+        error: 'No file data provided'
+      });
+    }
+    
     const result = await CaseAPI.addFileToCase(id, fileData);
+    console.log('🔄 CaseAPI result:', result);
     
     if (result.success) {
+      console.log('✅ File added successfully');
       res.json({
         success: true,
         fileId: result.fileId
       });
     } else {
+      console.log('❌ Failed to add file:', result.error);
       res.status(404).json({
         success: false,
         error: result.error
       });
     }
   } catch (error) {
+    console.error('💥 Error in POST /:id/files route:', error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: 'Internal server error: ' + error.message
     });
   }
 });
@@ -170,24 +187,31 @@ router.post('/:id/files', async (req, res) => {
 // Get case files
 router.get('/:id/files', async (req, res) => {
   try {
+    console.log('📤 GET /:id/files - Getting case files');
+    console.log('🆔 Case ID:', req.params.id);
+    
     const { id } = req.params;
     const result = await CaseAPI.getCaseFiles(id);
+    console.log('🔄 CaseAPI result:', result);
     
     if (result.success) {
+      console.log('✅ Files retrieved successfully:', result.files?.length || 0, 'files');
       res.json({
         success: true,
         files: result.files
       });
     } else {
+      console.log('❌ Failed to get files:', result.error);
       res.status(404).json({
         success: false,
         error: result.error
       });
     }
   } catch (error) {
+    console.error('💥 Error in GET /:id/files route:', error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: 'Internal server error: ' + error.message
     });
   }
 });
