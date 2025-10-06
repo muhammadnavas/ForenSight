@@ -7,7 +7,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
+    // Use default esbuild minification to avoid requiring optional 'terser'
+    // (Vercel build previously failed: terser not found). Remove 'minify: "terser"'
+    // If advanced compression is later required, install terser as a prod dep and set minify: 'terser'
     rollupOptions: {
       output: {
         manualChunks: {
