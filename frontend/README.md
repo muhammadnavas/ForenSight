@@ -1,6 +1,6 @@
-# React + Vite
+# ForenSight Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for ForenSight - a digital forensics analysis platform built with React + Vite.
 
 Currently, two official plugins are available:
 
