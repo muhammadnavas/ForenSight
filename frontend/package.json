@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+  "build": "echo Building commit %npm_package_version% && node -e \"console.log('NODE_ENV:', process.env.NODE_ENV)\" && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "vite preview --port 4173",
