@@ -9,8 +9,15 @@ require('dotenv').config();
 const caseRoutes = require('./routes/cases');
 
 const app = express();
+// Render/hosting note:
+// Always bind to 0.0.0.0 so the platform can expose the port.
+// If HOST env was set to 'localhost', external port scans will fail.
 const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || '0.0.0.0';
+let HOST = process.env.HOST || '0.0.0.0';
+if (HOST === 'localhost' || HOST === '127.0.0.1') {
+  console.log('[Startup] Overriding HOST', HOST, '→ 0.0.0.0 for container accessibility');
+  HOST = '0.0.0.0';
+}
 
 // Middleware
 const allowedOrigins = [
@@ -244,7 +251,8 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, HOST, () => {
-  console.log(`🚀 ForenSight API server running on http://${HOST}:${PORT}`);
+  console.log(`🚀 ForenSight API server listening (external) on 0.0.0.0:${PORT}`);
+  console.log(`🔐 Bound interface (requested HOST env): ${HOST}`);
   console.log(`📊 Health check: http://${HOST}:${PORT}/api/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔧 API Version: ${process.env.API_VERSION || 'v1'}`);
