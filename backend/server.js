@@ -20,27 +20,67 @@ if (HOST === 'localhost' || HOST === '127.0.0.1') {
 }
 
 // Middleware
-const allowedOrigins = [
-  process.env.CORS_ORIGIN || 'http://localhost:5173',
-  'https://forensight-frontend.vercel.app', // Update this to your actual Vercel domain
-  'https://vercel.app' // Allow Vercel preview deployments
-];
+// Enhanced CORS handling: supports multiple origins via CORS_ORIGINS or fallback to CORS_ORIGIN.
+// Accept comma or whitespace separated list. Trailing slashes trimmed for comparisons.
+function buildAllowedOrigins() {
+  const raw = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || '';
+  let list = raw
+    .split(/[,\n\s]+/)
+    .map(o => o.trim())
+    .filter(Boolean)
+    .map(o => o.replace(/\/$/, '')); // trim trailing /
+
+  // Always include localhost dev defaults
+  const devDefaults = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+  devDefaults.forEach(d => { if (!list.includes(d)) list.push(d); });
+
+  // Include deployed frontend domains if not present
+  ['https://forensight-frontend.vercel.app', 'https://vercel.app'].forEach(d => {
+    if (!list.includes(d)) list.push(d);
+  });
+  return list;
+}
+
+let allowedOrigins = buildAllowedOrigins();
+console.log('[CORS] Allowed origins:', allowedOrigins);
+
+app.use((req, res, next) => {
+  // Rebuild in debug mode to pick up env changes without restart (optional)
+  if (process.env.DEBUG_MODE === 'true') {
+    allowedOrigins = buildAllowedOrigins();
+  }
+  next();
+});
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    if (process.env.ALLOW_ALL_ORIGINS === 'true') {
+      if (process.env.DEBUG_MODE === 'true') console.warn('[CORS] ALLOW_ALL_ORIGINS enabled. Allowing any origin:', origin);
+      return callback(null, true);
+    }
+    if (!origin) return callback(null, true); // curl / server to server
+    const normalized = origin.replace(/\/$/, '');
+    const allowed = allowedOrigins.includes(normalized);
+    if (allowed || process.env.NODE_ENV === 'development') {
+      if (process.env.DEBUG_MODE === 'true') console.log('[CORS] ✅ Allow', origin);
       return callback(null, true);
     } else {
+      if (process.env.DEBUG_MODE === 'true') console.warn('[CORS] ❌ Block', origin, 'Allowed:', allowedOrigins);
       return callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: process.env.CORS_CREDENTIALS === 'true' || true,
+  credentials: (process.env.CORS_CREDENTIALS || '').toLowerCase() === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
 }));
+
+// Explicit OPTIONS handler for debugging preflights
+app.options('*', (req, res, next) => {
+  if (process.env.DEBUG_MODE === 'true') {
+    console.log('[CORS][OPTIONS] Preflight for', req.headers.origin, '→', req.method, req.headers['access-control-request-method']);
+  }
+  res.sendStatus(204);
+});
 
 // Body parsing middleware with configurable limits
 const maxFileSize = process.env.MAX_FILE_SIZE || '50mb';
@@ -215,6 +255,25 @@ app.get('/api/cases/:caseId/files/:fileId/download', async (req, res) => {
 });
 
 // Health check endpoint
+// Root landing page (to avoid 'Cannot GET /' when hitting the base domain)
+app.get('/', (req, res) => {
+  res.type('html').send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />
+  <title>ForenSight API</title>
+  <style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.5;color:#222;}code{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-size:90%;}a{color:#0b62d6;text-decoration:none;}a:hover{text-decoration:underline;}h1{margin-top:0;}ul{padding-left:20px;}footer{margin-top:40px;font-size:12px;color:#666;} .badge{display:inline-block;padding:2px 8px;border-radius:12px;background:#eef;font-size:11px;margin-left:6px;}</style>
+  </head><body>
+  <h1>ForenSight API</h1>
+  <p>Backend service is running. Use the endpoints below. For a quick status JSON, hit <code>/api/health</code>.</p>
+  <ul>
+    <li><a href="/api/health">/api/health</a> <span class="badge">GET</span></li>
+    <li><code>GET /api/cases</code> – list cases</li>
+    <li><code>POST /api/cases</code> – create a case</li>
+    <li><code>POST /api/cases/:caseId/upload</code> – upload a file to a case</li>
+  </ul>
+  <p>If you're seeing this on Render, the server bound correctly to <code>0.0.0.0:${PORT}</code>.</p>
+  <footer>ForenSight &middot; ${new Date().getFullYear()}</footer>
+  </body></html>`);
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -229,6 +288,18 @@ app.get('/api/health', (req, res) => {
       realTimeUpdates: process.env.ENABLE_REAL_TIME_UPDATES === 'true',
       fileValidation: process.env.ENABLE_FILE_VALIDATION !== 'false'
     }
+  });
+});
+
+// CORS debug endpoint (no caching) to verify what the server thinks about origins
+app.get('/api/cors-debug', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    requestOriginHeader: req.headers.origin || null,
+    note: 'If your browser still blocks, ensure this origin appears in allowedOrigins and has no trailing /.',
+    allowedOrigins,
+    environment: process.env.NODE_ENV,
+    debugMode: process.env.DEBUG_MODE === 'true'
   });
 });
 
