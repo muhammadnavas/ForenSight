@@ -1,0 +1,8 @@
+Deployment Fix - Force Platform to Use Latest Commit
+
+This file is created to trigger a new deployment with the latest commit that includes:
+- Vite moved from devDependencies to dependencies
+- All build tools properly configured for production deployment
+
+Timestamp: 2025-10-06 18:36
+Target Commit: Should be newer than 6827b40
