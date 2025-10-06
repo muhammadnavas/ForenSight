@@ -51,7 +51,6 @@ const FileSelector = () => {
     selectedFiles, 
     loadCaseFiles,
     toggleFileSelection, 
-    selectAllFiles, 
     clearFileSelection 
   } = useCaseContext();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -175,12 +174,25 @@ const FileSelector = () => {
           ) : caseFiles.length === 0 ? (
             <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8' }}>
               No files in this case
+              <div style={{ fontSize: '12px', marginTop: '8px', color: '#64748b' }}>
+                Upload files to this case to enable selection
+              </div>
             </div>
           ) : (
             <div style={{ padding: '8px' }}>
-              {caseFiles.map((file, index) => (
+              {caseFiles.map((file, index) => {
+                const fileId = file.fileId || file._id || file.id;
+                const fileName = file.originalName || file.filename || file.name || 'Unknown file';
+                const fileSize = file.size || file.sizeBytes || 0;
+                
+                if (!fileId) {
+                  console.warn('🚨 File missing ID:', file);
+                  return null;
+                }
+                
+                return (
                 <div
-                  key={file._id || file.id || index}
+                  key={fileId}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -188,15 +200,15 @@ const FileSelector = () => {
                     padding: '4px 8px',
                     borderRadius: '4px',
                     cursor: 'pointer',
-                    backgroundColor: selectedFiles.includes(file._id || file.id) ? '#1e40af' : 'transparent'
+                    backgroundColor: selectedFiles.includes(fileId) ? '#1e40af' : 'transparent'
                   }}
-                  onClick={() => toggleFileSelection(file._id || file.id)}
+                  onClick={() => toggleFileSelection(fileId)}
                 >
                   <input
                     type="radio"
                     name="selectedFile"
-                    checked={selectedFiles.includes(file._id || file.id)}
-                    onChange={() => toggleFileSelection(file._id || file.id)}
+                    checked={selectedFiles.includes(fileId)}
+                    onChange={() => toggleFileSelection(fileId)}
                     style={{ cursor: 'pointer' }}
                   />
                   <span style={{ 
@@ -207,7 +219,7 @@ const FileSelector = () => {
                     whiteSpace: 'nowrap',
                     flex: 1
                   }}>
-                    {file.originalName || file.name}
+                    {fileName}
                   </span>
                   <span style={{ 
                     fontSize: '10px', 
@@ -217,11 +229,12 @@ const FileSelector = () => {
                     alignItems: 'center',
                     gap: '4px'
                   }}>
-                    {getFileTypeIcon(file.originalName || file.name)}
-                    {formatFileSize(file.size)}
+                    {getFileTypeIcon(fileName)}
+                    {formatFileSize(fileSize)}
                   </span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

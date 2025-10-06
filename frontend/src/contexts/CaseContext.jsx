@@ -370,6 +370,14 @@ export const CaseProvider = ({ children }) => {
 
   // File selection methods (single file only)
   const toggleFileSelection = (fileId) => {
+    console.log('🔄 Toggling file selection for ID:', fileId);
+    console.log('📂 Available files:', caseFiles.map(f => ({ 
+      name: f.originalName || f.filename, 
+      fileId: f.fileId, 
+      _id: f._id, 
+      id: f.id 
+    })));
+    
     setSelectedFiles(prev => {
       // If the file is already selected, deselect it
       if (prev.includes(fileId)) {
@@ -378,6 +386,7 @@ export const CaseProvider = ({ children }) => {
       } else {
         // Replace any existing selection with the new file (single selection only)
         console.log('📁 File selected:', fileId, '(replacing any previous selection)');
+        console.log('📁 Previous selection:', prev);
         return [fileId];
       }
     });
@@ -394,14 +403,14 @@ export const CaseProvider = ({ children }) => {
   };
 
   const getSelectedFileObjects = () => {
-    const selectedFileObjects = caseFiles.filter(file => selectedFiles.includes(file._id || file.id));
+    const selectedFileObjects = caseFiles.filter(file => selectedFiles.includes(file.fileId || file._id || file.id));
     console.log('📋 Getting selected file objects:', selectedFileObjects.length);
     return selectedFileObjects;
   };
 
   // Get selected files with detailed info for analysis
   const getSelectedFilesForAnalysis = () => {
-    return caseFiles.filter(file => selectedFiles.includes(file._id || file.id)).map(file => ({
+    return caseFiles.filter(file => selectedFiles.includes(file.fileId || file._id || file.id)).map(file => ({
       ...file,
       fileType: getFileType(file.originalName || file.filename),
       isDatabase: isDatabase(file.originalName || file.filename),
@@ -446,6 +455,14 @@ export const CaseProvider = ({ children }) => {
   const loadCaseFiles = async (caseId) => {
     try {
       const files = await getCaseFiles(caseId);
+      console.log('📁 Loaded case files:', files.length);
+      console.log('📂 File details:', files.map(f => ({ 
+        name: f.originalName || f.filename || f.name, 
+        fileId: f.fileId, 
+        _id: f._id, 
+        id: f.id,
+        size: f.size || f.sizeBytes 
+      })));
       setCaseFiles(files);
       // Clear file selection when case changes
       setSelectedFiles([]);

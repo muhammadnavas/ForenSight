@@ -90,6 +90,8 @@ const NetworkAnalysis = () => {
 
   // Generate mock analysis data from selected files
   const generateAnalysisFromFiles = (fileObjects) => {
+    console.log('🔧 Generating analysis from files:', fileObjects.length);
+    
     const networkData = {
       contacts: { nodes: [], connections: [] },
       locations: { nodes: [], connections: [] },
@@ -105,51 +107,116 @@ const NetworkAnalysis = () => {
     };
 
     fileObjects.forEach((file, index) => {
-      const filename = file.originalName || file.filename || '';
+      const filename = file.originalName || file.filename || file.name || 'unknown';
+      console.log('📄 Processing file:', filename);
       
-      // Generate contacts based on file
-      if (filename.toLowerCase().includes('contact') || filename.toLowerCase().includes('.json')) {
-        const contacts = Array.from({ length: 10 + index * 5 }, (_, i) => ({
-          id: `contact_${file._id || file.fileId}_${i}`,
-          name: `Contact ${i + 1} from ${filename.split('.')[0]}`,
-          phone: `+1${Math.floor(Math.random() * 9000000000) + 1000000000}`,
-          email: `contact${i + 1}@example.com`,
-          type: ['suspect', 'victim', 'witness'][Math.floor(Math.random() * 3)],
-          riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
-          lastContact: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-          connections: Math.floor(Math.random() * 20) + 1,
-          source: filename
-        }));
-        networkData.contacts.nodes.push(...contacts);
+      // Generate contacts for any file type (not just contact files)
+      const contactCount = filename.toLowerCase().includes('contact') ? 15 : 8;
+      const contacts = Array.from({ length: contactCount }, (_, i) => ({
+        id: `contact_${file.fileId || file._id || file.id}_${i}`,
+        name: `Contact ${i + 1}`,
+        label: `Contact ${i + 1}`,
+        phone: `+1${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+        email: `contact${i + 1}@example.com`,
+        type: ['suspect', 'victim', 'witness'][Math.floor(Math.random() * 3)],
+        riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+        lastContact: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+        connections: Math.floor(Math.random() * 5) + 1,
+        source: filename,
+        // Add required coordinates for SVG rendering
+        x: Math.random() * 600 + 100, // 100-700 range
+        y: Math.random() * 400 + 100  // 100-500 range
+      }));
+      
+      networkData.contacts.nodes.push(...contacts);
+      console.log('👥 Added contacts:', contacts.length);
+      
+      // Generate locations for any file type
+      const locationCount = filename.toLowerCase().includes('location') || filename.toLowerCase().includes('gps') ? 10 : 5;
+      const locations = Array.from({ length: locationCount }, (_, i) => ({
+        id: `location_${file.fileId || file._id || file.id}_${i}`,
+        name: `Location ${i + 1}`,
+        label: `Location ${i + 1}`,
+        latitude: 40.7128 + (Math.random() - 0.5) * 0.2,
+        longitude: -74.0060 + (Math.random() - 0.5) * 0.2,
+        address: `${Math.floor(Math.random() * 9999)} Street ${i + 1}`,
+        visitCount: Math.floor(Math.random() * 50) + 1,
+        riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+        source: filename,
+        // Add required coordinates for SVG rendering
+        x: Math.random() * 600 + 100,
+        y: Math.random() * 400 + 100
+      }));
+      
+      networkData.locations.nodes.push(...locations);
+      console.log('📍 Added locations:', locations.length);
+      
+      // Generate financial/transaction nodes
+      const transactionCount = 6;
+      const transactions = Array.from({ length: transactionCount }, (_, i) => ({
+        id: `transaction_${file.fileId || file._id || file.id}_${i}`,
+        name: `Account ${i + 1}`,
+        label: `Account ${i + 1}`,
+        type: ['wallet', 'account', 'exchange'][Math.floor(Math.random() * 3)],
+        amount: Math.floor(Math.random() * 100000) + 1000,
+        riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+        source: filename,
+        x: Math.random() * 600 + 100,
+        y: Math.random() * 400 + 100
+      }));
+      
+      networkData.transactions.nodes.push(...transactions);
+      console.log('💰 Added transactions:', transactions.length);
+    });
+
+    // Generate connections between nodes
+    ['contacts', 'locations', 'transactions'].forEach(mode => {
+      const nodes = networkData[mode].nodes;
+      const connections = [];
+      
+      if (nodes.length > 1) {
+        // Create connections between nodes
+        for (let i = 0; i < nodes.length - 1; i++) {
+          // Connect each node to the next one
+          connections.push({
+            id: `${mode}_conn_${i}`,
+            from: nodes[i].id,
+            to: nodes[i + 1].id,
+            type: mode === 'contacts' ? 'communication' : mode === 'locations' ? 'movement' : 'transaction',
+            strength: Math.floor(Math.random() * 10) + 1,
+            label: `${mode} connection`
+          });
+          
+          // Randomly connect some nodes to create a more interesting network
+          if (Math.random() > 0.7 && i < nodes.length - 2) {
+            connections.push({
+              id: `${mode}_rand_conn_${i}`,
+              from: nodes[i].id,
+              to: nodes[i + 2].id,
+              type: mode === 'contacts' ? 'relationship' : mode === 'locations' ? 'travel' : 'transfer',
+              strength: Math.floor(Math.random() * 8) + 1,
+              label: `${mode} link`
+            });
+          }
+        }
       }
       
-      // Generate locations
-      if (filename.toLowerCase().includes('location') || filename.toLowerCase().includes('gps')) {
-        const locations = Array.from({ length: 5 + index * 2 }, (_, i) => ({
-          id: `location_${file._id || file.fileId}_${i}`,
-          name: `Location ${i + 1} from ${filename.split('.')[0]}`,
-          latitude: 40.7128 + (Math.random() - 0.5) * 0.1,
-          longitude: -74.0060 + (Math.random() - 0.5) * 0.1,
-          address: `${Math.floor(Math.random() * 9999)} Street ${i + 1}`,
-          visitCount: Math.floor(Math.random() * 50) + 1,
-          riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
-          source: filename
-        }));
-        networkData.locations.nodes.push(...locations);
-      }
+      networkData[mode].connections = connections;
+      console.log(`🔗 Generated ${connections.length} connections for ${mode}`);
     });
 
     // Calculate analytics
-    analyticsData.totalEntities = networkData.contacts.nodes.length + networkData.locations.nodes.length;
-    analyticsData.totalConnections = networkData.contacts.nodes.reduce((sum, contact) => sum + (contact.connections || 0), 0);
+    analyticsData.totalEntities = networkData.contacts.nodes.length + networkData.locations.nodes.length + networkData.transactions.nodes.length;
+    analyticsData.totalConnections = networkData.contacts.connections.length + networkData.locations.connections.length + networkData.transactions.connections.length;
     
     // Calculate risk distribution
-    [...networkData.contacts.nodes, ...networkData.locations.nodes].forEach(item => {
+    [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].forEach(item => {
       if (item.riskLevel) {
         analyticsData.riskDistribution[item.riskLevel] = (analyticsData.riskDistribution[item.riskLevel] || 0) + 1;
       }
     });
 
+    console.log('✅ Analysis complete - Total entities:', analyticsData.totalEntities, 'Total connections:', analyticsData.totalConnections);
     return { networkData, analyticsData };
   };
   
@@ -877,11 +944,11 @@ const NetworkAnalysis = () => {
         default: 
           // Fallback to category-based icons
           switch (category) {
-            case 'suspect': return '�';
+            case 'suspect': return '👤';
             case 'victim': return '👥';
             case 'crime': return '⚠️';
             case 'infrastructure': return '🏢';
-            default: return '�📍';
+            default: return '📍';
           }
       }
     };
@@ -920,20 +987,35 @@ const NetworkAnalysis = () => {
   const renderNetworkGraph = () => {
     const data = networkData[analysisMode];
     
+    console.log('🌐 Rendering network graph for mode:', analysisMode);
+    console.log('📊 Network data:', data);
+    console.log('📋 Nodes:', data?.nodes?.length || 0);
+    console.log('🔗 Connections:', data?.connections?.length || 0);
+    
     // Safety check - ensure data exists and has required properties
-    if (!data || !data.nodes || !data.connections) {
+    if (!data || !data.nodes || data.nodes.length === 0) {
+      console.log('❌ No network data available for analysis mode:', analysisMode);
       return (
         <div style={{ 
           display: 'flex', 
+          flexDirection: 'column',
           alignItems: 'center', 
           justifyContent: 'center', 
           height: '100%', 
-          color: '#64748b' 
+          color: '#64748b',
+          padding: '20px',
+          textAlign: 'center'
         }}>
-          No network data available for {analysisMode} analysis
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+          <div style={{ fontSize: '16px', marginBottom: '8px' }}>No network data available</div>
+          <div style={{ fontSize: '14px' }}>
+            {isAnalyzing ? `Analyzing file for ${analysisMode} connections...` : `Select a file to analyze ${analysisMode} data`}
+          </div>
         </div>
       );
     }
+    
+    console.log('✅ Rendering', data.nodes.length, 'nodes and', data.connections?.length || 0, 'connections');
     
     // For locations mode, render a map-like view
     if (analysisMode === 'locations') {
@@ -1568,35 +1650,6 @@ const NetworkAnalysis = () => {
 
   return (
     <div style={containerStyle}>
-      {/* Header with selected files info */}
-      <div style={{
-        marginBottom: '16px',
-        padding: '12px 16px',
-        backgroundColor: '#334155',
-        borderRadius: '8px',
-        border: '1px solid #475569'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px' }}>
-              🌐 Network Analysis - {selectedCase.name}
-            </h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-              Analyzing selected file
-            </p>
-          </div>
-          <div style={{
-            padding: '6px 12px',
-            backgroundColor: '#059669',
-            borderRadius: '6px',
-            fontSize: '12px',
-            color: 'white',
-            fontWeight: '600'
-          }}>
-            1 file selected
-          </div>
-        </div>
-      </div>
 
       {/* Main Canvas */}
       <div style={canvasContainerStyle}>
@@ -1710,7 +1763,7 @@ const NetworkAnalysis = () => {
             <div>
               <span style={{ color: '#64748b' }}>High Risk: </span>
               <span style={{ fontWeight: '600', color: '#ef4444' }}>
-                {networkData[analysisMode].nodes.filter(n => n.risk === 'high' || n.risk === 'critical').length}
+                {networkData[analysisMode]?.nodes?.filter(n => n.riskLevel === 'high' || n.riskLevel === 'critical' || n.risk === 'high' || n.risk === 'critical').length || 0}
               </span>
             </div>
           </div>
@@ -1735,16 +1788,16 @@ const NetworkAnalysis = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#64748b' }}>Total Entities:</span>
-              <span>{networkData[analysisMode].nodes.length}</span>
+              <span>{networkData[analysisMode]?.nodes?.length || 0}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#64748b' }}>Relationships:</span>
-              <span>{networkData[analysisMode].connections.length}</span>
+              <span>{networkData[analysisMode]?.connections?.length || 0}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#64748b' }}>Risk Entities:</span>
               <span style={{ color: '#ef4444' }}>
-                {networkData[analysisMode].nodes.filter(n => n.risk === 'high' || n.risk === 'critical').length}
+                {networkData[analysisMode]?.nodes?.filter(n => n.riskLevel === 'high' || n.riskLevel === 'critical' || n.risk === 'high' || n.risk === 'critical').length || 0}
               </span>
             </div>
           </div>
