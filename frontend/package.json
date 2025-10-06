@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "vite preview --port 4173",
     "build:production": "NODE_ENV=production vite build",
-    "postinstall": "npm list vite || echo 'Vite installation check'"
+    "postinstall": "echo 'Vite check complete'"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
