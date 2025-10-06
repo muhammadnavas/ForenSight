@@ -29,6 +29,129 @@ const NetworkAnalysis = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [analysisMode, setAnalysisMode] = useState('contacts'); // 'contacts', 'locations', 'transactions'
   const [timeRange, setTimeRange] = useState('all');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Auto-start analysis when a single file is selected
+  useEffect(() => {
+    if (selectedFiles.length === 1 && selectedCase) {
+      console.log('🔄 NetworkAnalysis: Single file selected, starting automatic analysis...');
+      const selectedFileObjects = getSelectedFileObjects();
+      const selectedFile = selectedFileObjects[0];
+      console.log('📂 Selected file for analysis:', selectedFile?.originalName || selectedFile?.filename);
+      
+      // Check if the selected file is network-related
+      const filename = (selectedFile.originalName || selectedFile.filename || '').toLowerCase();
+      const isNetworkFile = filename.includes('pcap') || filename.includes('network') || 
+                          filename.includes('.cap') || filename.includes('traffic') ||
+                          filename.includes('.json') || filename.includes('contacts') ||
+                          filename.includes('calls') || filename.includes('sms');
+      
+      if (isNetworkFile) {
+        console.log('🌐 Network-related file detected, starting network analysis');
+        // Reset analysis state for new file
+        setSelectedNode(null);
+        setAnalysisMode('contacts'); // Start with contacts analysis
+      } else {
+        console.log('ℹ️ Non-network file selected, will analyze available data');
+      }
+      
+      // Trigger analysis for the single selected file
+      triggerAutomaticAnalysis([selectedFile]);
+    } else {
+      // Clear analysis when no files selected
+      setNetworkData({ contacts: [], locations: [], transactions: [] });
+      setAnalyticsData({
+        totalEntities: 0,
+        totalConnections: 0,
+        riskDistribution: {},
+        connectionTypes: {},
+        timelineData: [],
+        hotspots: []
+      });
+    }
+  }, [selectedFiles, selectedCase]);
+
+  // Function to actually trigger analysis with selected files
+  const triggerAutomaticAnalysis = (fileObjects) => {
+    console.log('🚀 Triggering automatic network analysis for files:', fileObjects.length);
+    setIsAnalyzing(true);
+    
+    // Simulate analysis with a delay to show loading
+    setTimeout(() => {
+      // Simulate analysis results based on file types
+      const analysisResults = generateAnalysisFromFiles(fileObjects);
+      setNetworkData(analysisResults.networkData);
+      setAnalyticsData(analysisResults.analyticsData);
+      setIsAnalyzing(false);
+      
+      console.log('✅ Automatic analysis completed');
+    }, 1500); // 1.5 second delay to show processing
+  };
+
+  // Generate mock analysis data from selected files
+  const generateAnalysisFromFiles = (fileObjects) => {
+    const networkData = {
+      contacts: { nodes: [], connections: [] },
+      locations: { nodes: [], connections: [] },
+      transactions: { nodes: [], connections: [] }
+    };
+    const analyticsData = {
+      totalEntities: 0,
+      totalConnections: 0,
+      riskDistribution: { low: 0, medium: 0, high: 0, critical: 0 },
+      connectionTypes: {},
+      timelineData: [],
+      hotspots: []
+    };
+
+    fileObjects.forEach((file, index) => {
+      const filename = file.originalName || file.filename || '';
+      
+      // Generate contacts based on file
+      if (filename.toLowerCase().includes('contact') || filename.toLowerCase().includes('.json')) {
+        const contacts = Array.from({ length: 10 + index * 5 }, (_, i) => ({
+          id: `contact_${file._id || file.fileId}_${i}`,
+          name: `Contact ${i + 1} from ${filename.split('.')[0]}`,
+          phone: `+1${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+          email: `contact${i + 1}@example.com`,
+          type: ['suspect', 'victim', 'witness'][Math.floor(Math.random() * 3)],
+          riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+          lastContact: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+          connections: Math.floor(Math.random() * 20) + 1,
+          source: filename
+        }));
+        networkData.contacts.nodes.push(...contacts);
+      }
+      
+      // Generate locations
+      if (filename.toLowerCase().includes('location') || filename.toLowerCase().includes('gps')) {
+        const locations = Array.from({ length: 5 + index * 2 }, (_, i) => ({
+          id: `location_${file._id || file.fileId}_${i}`,
+          name: `Location ${i + 1} from ${filename.split('.')[0]}`,
+          latitude: 40.7128 + (Math.random() - 0.5) * 0.1,
+          longitude: -74.0060 + (Math.random() - 0.5) * 0.1,
+          address: `${Math.floor(Math.random() * 9999)} Street ${i + 1}`,
+          visitCount: Math.floor(Math.random() * 50) + 1,
+          riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+          source: filename
+        }));
+        networkData.locations.nodes.push(...locations);
+      }
+    });
+
+    // Calculate analytics
+    analyticsData.totalEntities = networkData.contacts.nodes.length + networkData.locations.nodes.length;
+    analyticsData.totalConnections = networkData.contacts.nodes.reduce((sum, contact) => sum + (contact.connections || 0), 0);
+    
+    // Calculate risk distribution
+    [...networkData.contacts.nodes, ...networkData.locations.nodes].forEach(item => {
+      if (item.riskLevel) {
+        analyticsData.riskDistribution[item.riskLevel] = (analyticsData.riskDistribution[item.riskLevel] || 0) + 1;
+      }
+    });
+
+    return { networkData, analyticsData };
+  };
   
   // Search and analytics state
   const [searchTerm, setSearchTerm] = useState('');
@@ -643,9 +766,27 @@ const NetworkAnalysis = () => {
     
     return connections;
   };
+
+  // Helper function to determine file type (moved before usage)
+  const getFileType = (filename) => {
+    if (!filename) return null;
+    const ext = filename.toLowerCase().split('.').pop();
+    const types = {
+      'pcap': 'network', 'pcapng': 'network', 'cap': 'network',
+      'db': 'database', 'sqlite': 'database', 'sql': 'database',
+      'json': 'data', 'xml': 'data', 'csv': 'data',
+      'txt': 'text', 'log': 'log'
+    };
+    return types[ext] || 'file';
+  };
   
+  // Get processed files from selected files
+  const processedFiles = getSelectedFileObjects();
   const hasProcessedData = processedFiles.length > 0 || hasData;
-  const availableDataTypes = processedFiles.map(file => file.fileType).filter(Boolean);
+  const availableDataTypes = processedFiles.map(file => {
+    const filename = file.originalName || file.filename || '';
+    return getFileType(filename);
+  }).filter(Boolean);
 
   // TODO: Load network data from API
   // useEffect(() => {
@@ -1405,10 +1546,10 @@ const NetworkAnalysis = () => {
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📊</div>
             <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
-              No Files Selected
+              No File Selected
             </h3>
             <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
-              Please select files from the header dropdown to analyze network connections
+              Please select a single file from the header dropdown to analyze network connections
             </p>
             <div style={{ 
               padding: '12px 16px',
@@ -1417,7 +1558,7 @@ const NetworkAnalysis = () => {
               fontSize: '14px',
               color: 'white'
             }}>
-              💡 Tip: Click the Files button in the header to select files for analysis
+              💡 Tip: Click the Files button in the header and select one file for analysis
             </div>
           </div>
         </div>
@@ -1441,7 +1582,7 @@ const NetworkAnalysis = () => {
               🌐 Network Analysis - {selectedCase.name}
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-              Analyzing {selectedFiles.length} selected file{selectedFiles.length !== 1 ? 's' : ''}
+              Analyzing selected file
             </p>
           </div>
           <div style={{
@@ -1452,7 +1593,7 @@ const NetworkAnalysis = () => {
             color: 'white',
             fontWeight: '600'
           }}>
-            {selectedFiles.length} files selected
+            1 file selected
           </div>
         </div>
       </div>
@@ -1560,11 +1701,11 @@ const NetworkAnalysis = () => {
           <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
             <div>
               <span style={{ color: '#64748b' }}>Nodes: </span>
-              <span style={{ fontWeight: '600' }}>{networkData[analysisMode].nodes.length}</span>
+              <span style={{ fontWeight: '600' }}>{networkData[analysisMode]?.nodes?.length || 0}</span>
             </div>
             <div>
               <span style={{ color: '#64748b' }}>Connections: </span>
-              <span style={{ fontWeight: '600' }}>{networkData[analysisMode].connections.length}</span>
+              <span style={{ fontWeight: '600' }}>{networkData[analysisMode]?.connections?.length || 0}</span>
             </div>
             <div>
               <span style={{ color: '#64748b' }}>High Risk: </span>

@@ -30,6 +30,19 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
+const getFileTypeIcon = (filename) => {
+  if (!filename) return '📄';
+  const ext = filename.toLowerCase().split('.').pop();
+  const icons = {
+    'db': '🗄️', 'sqlite': '🗄️', 'sql': '🗄️',
+    'pcap': '🌐', 'pcapng': '🌐', 'cap': '🌐',
+    'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️',
+    'txt': '📝', 'log': '📋', 'json': '📊', 'xml': '📊',
+    'zip': '📦', 'rar': '📦', '7z': '📦'
+  };
+  return icons[ext] || '📄';
+};
+
 // File Selector Component
 const FileSelector = () => {
   const { 
@@ -67,10 +80,12 @@ const FileSelector = () => {
 
   return (
     <div style={{
+      position: 'relative',
       backgroundColor: '#334155',
       borderRadius: '8px',
       border: '1px solid #475569',
-      marginLeft: '16px'
+      minWidth: '200px',
+      maxWidth: '300px'
     }}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -90,7 +105,19 @@ const FileSelector = () => {
         }}
       >
         <span>{isExpanded ? '📂' : '📁'}</span>
-        <span>Files ({selectedFiles.length}/{caseFiles.length})</span>
+        <span>Files ({selectedFiles.length > 0 ? '1' : '0'}/{caseFiles.length})</span>
+        {selectedFiles.length > 0 && (
+          <span style={{ 
+            fontSize: '10px', 
+            backgroundColor: '#059669', 
+            color: 'white', 
+            padding: '2px 6px', 
+            borderRadius: '10px',
+            marginLeft: '8px'
+          }}>
+            ✓ Selected
+          </span>
+        )}
         <span style={{ marginLeft: 'auto', fontSize: '12px' }}>
           {isExpanded ? '▼' : '▶'}
         </span>
@@ -98,9 +125,17 @@ const FileSelector = () => {
       
       {isExpanded && (
         <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          backgroundColor: '#334155',
           borderTop: '1px solid #475569',
-          maxHeight: '200px',
-          overflowY: 'auto'
+          borderRadius: '0 0 8px 8px',
+          maxHeight: '300px',
+          overflowY: 'auto',
+          zIndex: 1002,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}>
           <div style={{
             padding: '8px 12px',
@@ -108,22 +143,13 @@ const FileSelector = () => {
             display: 'flex',
             gap: '8px'
           }}>
-            <button
-              onClick={selectAllFiles}
-              disabled={caseFiles.length === 0}
-              style={{
-                padding: '4px 8px',
-                fontSize: '12px',
-                backgroundColor: '#0ea5e9',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                opacity: caseFiles.length === 0 ? 0.5 : 1
-              }}
-            >
-              Select All
-            </button>
+            <div style={{
+              fontSize: '12px',
+              color: '#94a3b8',
+              fontWeight: '500'
+            }}>
+              Select one file for analysis:
+            </div>
             <button
               onClick={clearFileSelection}
               disabled={selectedFiles.length === 0}
@@ -138,7 +164,7 @@ const FileSelector = () => {
                 opacity: selectedFiles.length === 0 ? 0.5 : 1
               }}
             >
-              Clear
+              Deselect
             </button>
           </div>
           
@@ -167,7 +193,8 @@ const FileSelector = () => {
                   onClick={() => toggleFileSelection(file._id || file.id)}
                 >
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="selectedFile"
                     checked={selectedFiles.includes(file._id || file.id)}
                     onChange={() => toggleFileSelection(file._id || file.id)}
                     style={{ cursor: 'pointer' }}
@@ -185,8 +212,12 @@ const FileSelector = () => {
                   <span style={{ 
                     fontSize: '10px', 
                     color: '#94a3b8',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}>
+                    {getFileTypeIcon(file.originalName || file.name)}
                     {formatFileSize(file.size)}
                   </span>
                 </div>
@@ -216,14 +247,8 @@ const CaseSelector = () => {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '16px',
-      marginLeft: 'auto'
+      gap: '12px'
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
         <span style={{
           fontSize: '14px',
           color: '#cbd5e1',
@@ -259,11 +284,8 @@ const CaseSelector = () => {
             </option>
           ))}
         </select>
-        
-
       </div>
-    </div>
-  );
+    );
 };
 
 // Dashboard Content Component
@@ -1395,7 +1417,8 @@ const DashboardInner = ({ onNavigateToHome }) => {
               fontSize: '28px', 
               fontWeight: '700',
               color: '#ffffff',
-              cursor: onNavigateToHome ? 'pointer' : 'default'
+              cursor: onNavigateToHome ? 'pointer' : 'default',
+              flex: '0 0 auto'
             }}
             onClick={onNavigateToHome}
             title={onNavigateToHome ? 'Click to return to home page' : ''}
@@ -1404,7 +1427,14 @@ const DashboardInner = ({ onNavigateToHome }) => {
           </div>
           
           {/* Case and File Selector */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            gap: '16px',
+            flex: '1 1 auto',
+            justifyContent: 'flex-end',
+            maxWidth: '700px'
+          }}>
             <CaseSelector />
             <FileSelector />
           </div>

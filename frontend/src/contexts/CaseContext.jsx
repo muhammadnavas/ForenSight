@@ -164,6 +164,13 @@ export const CaseProvider = ({ children }) => {
   // Get case files
   const getCaseFiles = async (caseId) => {
     try {
+      console.log('🔍 Getting files for case ID:', caseId);
+      console.log('🌐 API URL:', `${API_BASE_URL}/api/cases/${caseId}/files`);
+      
+      if (!caseId) {
+        throw new Error('Case ID is required');
+      }
+      
       const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}/files`, {
         method: 'GET',
         headers: {
@@ -171,28 +178,49 @@ export const CaseProvider = ({ children }) => {
         }
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response OK:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to get case files');
+        const errorText = await response.text();
+        console.error('❌ Response error:', errorText);
+        throw new Error(`Failed to get case files (${response.status}): ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('📄 Response data:', data);
       
       if (data.success) {
-        return data.files || [];
+        console.log('✅ Files retrieved successfully:', data.files?.length || 0);
+        return data.files;
       } else {
         throw new Error(data.error || 'Failed to get case files');
       }
     } catch (error) {
-      console.error('Failed to get case files:', error);
-      return [];
+      console.error('💥 Failed to get case files:', error);
+      console.error('🔍 Case ID was:', caseId);
+      console.error('🌐 API Base URL:', API_BASE_URL);
+      throw error;
     }
   };
 
   // Add file to case
   const addFileToCase = async (caseId, fileData) => {
     try {
+      console.log('📁 Adding file to case ID:', caseId);
+      console.log('📄 File data:', fileData);
+      console.log('🌐 API URL:', `${API_BASE_URL}/api/cases/${caseId}/files`);
+      
       setLoading(true);
       setError(null);
+      
+      if (!caseId) {
+        throw new Error('Case ID is required');
+      }
+      
+      if (!fileData) {
+        throw new Error('File data is required');
+      }
       
       const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}/files`, {
         method: 'POST',
@@ -202,30 +230,34 @@ export const CaseProvider = ({ children }) => {
         body: JSON.stringify(fileData)
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response OK:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to add file to case');
+        const errorText = await response.text();
+        console.error('❌ Response error:', errorText);
+        throw new Error(`Failed to add file to case (${response.status}): ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('📄 Response data:', data);
       
       if (data.success) {
-        // Update the local case with the new file
-        setCases(prev => prev.map(c => {
-          if (c._id === caseId || c.caseId === caseId) {
-            return {
-              ...c,
-              files: [...(c.files || []), { ...fileData, _id: data.fileId }],
-              updatedAt: new Date().toISOString()
-            };
-          }
-          return c;
-        }));
+        console.log('✅ File added successfully with ID:', data.fileId);
+        // Refresh case files if this is the selected case
+        if (selectedCase && (selectedCase._id === caseId || selectedCase.caseId === caseId)) {
+          console.log('🔄 Refreshing case files...');
+          await loadCaseFiles(caseId);
+        }
         return data.fileId;
       } else {
         throw new Error(data.error || 'Failed to add file to case');
       }
     } catch (error) {
-      console.error('Failed to add file to case:', error);
+      console.error('💥 Failed to add file to case:', error);
+      console.error('🔍 Case ID was:', caseId);
+      console.error('📄 File data was:', fileData);
+      console.error('🌐 API Base URL:', API_BASE_URL);
       setError(error.message);
       throw error;
     } finally {
@@ -336,20 +368,25 @@ export const CaseProvider = ({ children }) => {
     setError(null);
   };
 
-  // File selection methods
+  // File selection methods (single file only)
   const toggleFileSelection = (fileId) => {
     setSelectedFiles(prev => {
+      // If the file is already selected, deselect it
       if (prev.includes(fileId)) {
-        return prev.filter(id => id !== fileId);
+        console.log('📁 File deselected:', fileId);
+        return [];
       } else {
-        return [...prev, fileId];
+        // Replace any existing selection with the new file (single selection only)
+        console.log('📁 File selected:', fileId, '(replacing any previous selection)');
+        return [fileId];
       }
     });
   };
 
-  const selectAllFiles = () => {
-    const allFileIds = caseFiles.map(file => file._id || file.id);
-    setSelectedFiles(allFileIds);
+  // Note: selectAllFiles removed since we only support single file selection
+  const selectSingleFile = (fileId) => {
+    setSelectedFiles([fileId]);
+    console.log('📁 Single file selected:', fileId);
   };
 
   const clearFileSelection = () => {
@@ -357,7 +394,52 @@ export const CaseProvider = ({ children }) => {
   };
 
   const getSelectedFileObjects = () => {
-    return caseFiles.filter(file => selectedFiles.includes(file._id || file.id));
+    const selectedFileObjects = caseFiles.filter(file => selectedFiles.includes(file._id || file.id));
+    console.log('📋 Getting selected file objects:', selectedFileObjects.length);
+    return selectedFileObjects;
+  };
+
+  // Get selected files with detailed info for analysis
+  const getSelectedFilesForAnalysis = () => {
+    return caseFiles.filter(file => selectedFiles.includes(file._id || file.id)).map(file => ({
+      ...file,
+      fileType: getFileType(file.originalName || file.filename),
+      isDatabase: isDatabase(file.originalName || file.filename),
+      isImage: isImage(file.originalName || file.filename),
+      isNetwork: isNetwork(file.originalName || file.filename)
+    }));
+  };
+
+  // Helper function to determine file type
+  const getFileType = (filename) => {
+    if (!filename) return 'unknown';
+    const ext = filename.toLowerCase().split('.').pop();
+    const types = {
+      'db': 'database', 'sqlite': 'database', 'sql': 'database',
+      'pcap': 'network', 'pcapng': 'network', 'cap': 'network',
+      'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image',
+      'txt': 'text', 'log': 'log', 'json': 'data', 'xml': 'data',
+      'zip': 'archive', 'rar': 'archive', '7z': 'archive'
+    };
+    return types[ext] || 'file';
+  };
+
+  const isDatabase = (filename) => {
+    if (!filename) return false;
+    const ext = filename.toLowerCase().split('.').pop();
+    return ['db', 'sqlite', 'sql'].includes(ext);
+  };
+
+  const isImage = (filename) => {
+    if (!filename) return false;
+    const ext = filename.toLowerCase().split('.').pop();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff'].includes(ext);
+  };
+
+  const isNetwork = (filename) => {
+    if (!filename) return false;
+    const ext = filename.toLowerCase().split('.').pop();
+    return ['pcap', 'pcapng', 'cap'].includes(ext);
   };
 
   // Load case files and update local state
@@ -419,9 +501,10 @@ export const CaseProvider = ({ children }) => {
     
     // File Selection
     toggleFileSelection,
-    selectAllFiles,
+    selectSingleFile,
     clearFileSelection,
     getSelectedFileObjects,
+    getSelectedFilesForAnalysis,
     
     // Helpers
     getActiveCases,
