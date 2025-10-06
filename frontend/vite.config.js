@@ -2,8 +2,18 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
+const diagnosticPlugin = {
+  name: 'diagnostic-minifier-logger',
+  configResolved(resolved) {
+    console.log('[Diagnostic] Minify mode:', resolved.build.minify);
+  },
+  generateBundle() {
+    console.log('[Diagnostic] Bundle generation reached with minify set to esbuild');
+  }
+};
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), diagnosticPlugin],
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -31,18 +41,5 @@ export default defineConfig({
   define: {
     'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || 'http://localhost:5000'),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-  },
-  // Temporary diagnostics (remove after resolving remote terser minify issue)
-  plugins: [
-    react(),
-    {
-      name: 'diagnostic-minifier-logger',
-      configResolved(resolved) {
-        console.log('[Diagnostic] Minify mode:', resolved.build.minify);
-      },
-      generateBundle() {
-        console.log('[Diagnostic] Bundle generation reached with minify set to esbuild');
-      }
-    }
-  ]
+  }
 })
