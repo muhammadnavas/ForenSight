@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCases } from '../contexts/CaseContext';
+import { useCaseContext } from '../contexts/CaseContext';
 
 const CaseManagement = () => {
   const { 
@@ -11,7 +11,7 @@ const CaseManagement = () => {
     getCompletedCases, 
     getArchivedCases,
     clearError 
-  } = useCases();
+  } = useCaseContext();
   
   const [activeTab, setActiveTab] = useState('active');
   const [showCreateModal, setShowCreateModal] = useState(false);

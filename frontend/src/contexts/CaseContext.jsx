@@ -1,22 +1,23 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const CaseContext = createContext();
 
-export const useCases = () => {
+export const useCaseContext = () => {
   const context = useContext(CaseContext);
   if (!context) {
-    throw new Error('useCases must be used within a CaseProvider');
+    throw new Error('useCaseContext must be used within a CaseProvider');
   }
   return context;
 };
 
 export const CaseProvider = ({ children }) => {
   const [cases, setCases] = useState([]);
-  const [selectedCase, setSelectedCase] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [caseFiles, setCaseFiles] = useState([]);
 
   // Load all cases
   const loadCases = async (userId = 'default') => {
@@ -24,7 +25,12 @@ export const CaseProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/cases?userId=${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/cases`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch cases');
@@ -53,7 +59,7 @@ export const CaseProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/cases`, {
+      const response = await fetch(`${API_BASE_URL}/api/cases`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -93,7 +99,7 @@ export const CaseProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/cases/${caseId}`);
+      const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}`);
       
       if (!response.ok) {
         throw new Error('Case not found');
@@ -121,7 +127,7 @@ export const CaseProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/cases/${caseId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -155,13 +161,40 @@ export const CaseProvider = ({ children }) => {
     }
   };
 
+  // Get case files
+  const getCaseFiles = async (caseId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}/files`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get case files');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return data.files || [];
+      } else {
+        throw new Error(data.error || 'Failed to get case files');
+      }
+    } catch (error) {
+      console.error('Failed to get case files:', error);
+      return [];
+    }
+  };
+
   // Add file to case
   const addFileToCase = async (caseId, fileData) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/cases/${caseId}/files`, {
+      const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}/files`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -209,7 +242,7 @@ export const CaseProvider = ({ children }) => {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch(`${API_BASE_URL}/cases/${caseId}/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}/upload`, {
         method: 'POST',
         body: formData
       });
@@ -251,7 +284,7 @@ export const CaseProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/cases/${caseId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/cases/${caseId}`, {
         method: 'DELETE'
       });
 
@@ -334,6 +367,7 @@ export const CaseProvider = ({ children }) => {
     createCase,
     getCaseById,
     updateCase,
+    getCaseFiles,
     addFileToCase,
     uploadFileToCase,
     deleteCase,

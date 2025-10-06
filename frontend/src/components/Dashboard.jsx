@@ -1,5 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
+import { useCaseContext } from '../contexts/CaseContext';
 import { CaseDataProvider, useCaseData } from '../contexts/CaseDataContext';
 import CaseManagement from './CaseManagement';
 import DatabaseSearch from './DatabaseSearch';
@@ -18,6 +19,110 @@ export const useFiles = () => {
     throw new Error('useFiles must be used within a FileProvider');
   }
   return context;
+};
+
+// Case Selector Component
+const CaseSelector = () => {
+  const { cases, loading, selectedCase, setSelectedCase, loadCases, getCaseFiles } = useCaseContext();
+  const [caseFiles, setCaseFiles] = useState([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
+
+  useEffect(() => {
+    loadCases();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCase) {
+      loadSelectedCaseFiles();
+    }
+  }, [selectedCase]);
+
+  const loadSelectedCaseFiles = async () => {
+    if (!selectedCase) return;
+    
+    try {
+      setLoadingFiles(true);
+      const files = await getCaseFiles(selectedCase._id || selectedCase.caseId);
+      setCaseFiles(files);
+    } catch (error) {
+      console.error('Failed to load case files:', error);
+      setCaseFiles([]);
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  const handleCaseSelect = (caseId) => {
+    const selected = cases.find(c => c._id === caseId || c.caseId === caseId);
+    setSelectedCase(selected);
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px',
+      marginLeft: 'auto'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px'
+      }}>
+        <span style={{
+          fontSize: '14px',
+          color: '#cbd5e1',
+          fontWeight: '500'
+        }}>
+          Active Case:
+        </span>
+        
+        <select
+          value={selectedCase?._id || selectedCase?.caseId || ''}
+          onChange={(e) => handleCaseSelect(e.target.value)}
+          disabled={loading}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#334155',
+            border: '1px solid #475569',
+            borderRadius: '8px',
+            color: '#e2e8f0',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            minWidth: '200px',
+            outline: 'none'
+          }}
+        >
+          <option value="">Select a case...</option>
+          {cases.map((caseItem) => (
+            <option 
+              key={caseItem._id || caseItem.caseId} 
+              value={caseItem._id || caseItem.caseId}
+            >
+              {caseItem.name} {caseItem.status && `(${caseItem.status})`}
+            </option>
+          ))}
+        </select>
+        
+        {selectedCase && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            backgroundColor: '#0ea5e9',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: 'white',
+            fontWeight: '600'
+          }}>
+            📁 {loadingFiles ? 'Loading...' : `${caseFiles.length} files`}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 // Dashboard Content Component
@@ -1091,7 +1196,6 @@ const DashboardInner = ({ onNavigateToHome }) => {
       title: 'ADMINISTRATION',
       items: [
         { icon: '👥', label: 'User Management', view: 'users', active: currentView === 'users' },
-        { icon: '⚙️', label: 'System Settings', view: 'settings', active: currentView === 'settings' }
       ]
     }
   ];
@@ -1143,7 +1247,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Simple Header */}
+        {/* Header with Case Selector */}
         <div style={unifiedHeaderStyle} className="dashboard-header">
           <div 
             style={{
@@ -1157,6 +1261,9 @@ const DashboardInner = ({ onNavigateToHome }) => {
           >
             ForenSight
           </div>
+          
+          {/* Case Selector */}
+          <CaseSelector />
         </div>
 
         {/* Sidebar */}
@@ -1848,15 +1955,6 @@ const DashboardInner = ({ onNavigateToHome }) => {
                 👥 User Management
               </h1>
               <p style={{ color: '#64748b' }}>User management requires administrator privileges. Contact your system administrator.</p>
-            </div>
-          )}
-
-          {currentView === 'settings' && (
-            <div style={{ padding: '24px' }}>
-              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                ⚙️ System Settings
-              </h1>
-              <p style={{ color: '#64748b' }}>System configuration requires administrator access. Please contact your system administrator.</p>
             </div>
           )}
         </div>

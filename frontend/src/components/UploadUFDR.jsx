@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { useCases } from '../contexts/CaseContext';
+import { useCaseContext } from '../contexts/CaseContext';
 import { useFiles } from './Dashboard';
 
 const UploadUFDR = ({ setCurrentView }) => {
   const { uploadedFiles, addFiles, updateFileStatus, removeFile: removeFileFromContext } = useFiles();
-  const { cases, loading: casesLoading, error: casesError, getActiveCases, addFileToCase } = useCases();
+  const { cases, loading: casesLoading, error: casesError, selectedCase, setSelectedCase, getActiveCases, addFileToCase } = useCaseContext();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedCase, setSelectedCase] = useState('');
   const [showCaseSelector, setShowCaseSelector] = useState(true);
   const [error, setError] = useState(null);
 
@@ -237,7 +236,7 @@ const UploadUFDR = ({ setCurrentView }) => {
       
       // Configure and send request
       xhr.timeout = 300000; // 5 minute timeout
-      xhr.open('POST', `http://localhost:5000/api/cases/${selectedCase}/upload`);
+      xhr.open('POST', `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/cases/${selectedCase._id || selectedCase.caseId}/upload`);
       xhr.send(formData);
       
     } catch (error) {
@@ -386,7 +385,7 @@ const UploadUFDR = ({ setCurrentView }) => {
         )}
       </div>
 
-      {/* Case Selection */}
+      {/* Selected Case Info */}
       <div style={{
         backgroundColor: '#334155',
         borderRadius: '12px',
@@ -394,122 +393,49 @@ const UploadUFDR = ({ setCurrentView }) => {
         marginBottom: '32px',
         border: '1px solid #475569'
       }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
-          📁 Select Case
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          📋 Upload Target
         </h3>
-        <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '16px' }}>
-          All uploaded files must be associated with an active case. Select a case to continue.
-        </p>
         
-        {casesLoading ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '20px', 
-            color: '#64748b',
+        {selectedCase ? (
+          <div style={{
+            backgroundColor: '#059669',
+            color: 'white',
+            padding: '16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '20px' }}>✅</span>
+            <div>
+              <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                Files will be uploaded to: {selectedCase.name}
+              </div>
+              <div style={{ opacity: 0.9, fontSize: '12px' }}>
+                Case ID: {selectedCase.caseId || selectedCase._id} • Lead: {selectedCase.investigator || 'Not specified'}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            padding: '16px',
+            backgroundColor: '#f59e0b',
+            color: 'white',
+            borderRadius: '8px',
+            fontSize: '14px',
+            textAlign: 'center',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px'
           }}>
-            <div style={{
-              width: '20px',
-              height: '20px',
-              border: '2px solid #0ea5e9',
-              borderTop: '2px solid transparent',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }} />
-            Loading cases...
-          </div>
-        ) : activeCases.length > 0 ? (
-          <div>
-            <select
-              value={selectedCase}
-              onChange={(e) => {
-                setSelectedCase(e.target.value);
-                setShowCaseSelector(false);
-                setError(null);
-              }}
-              style={{
-                width: '100%',
-                backgroundColor: '#1e293b',
-                border: '1px solid #475569',
-                borderRadius: '8px',
-                padding: '12px',
-                color: 'white',
-                fontSize: '14px',
-                marginBottom: '16px'
-              }}
-            >
-              <option value="">Select a case...</option>
-              {activeCases.map((caseItem) => (
-                <option key={caseItem._id || caseItem.caseId} value={caseItem._id || caseItem.caseId}>
-                  {caseItem.caseId} - {caseItem.name} (Lead: {caseItem.investigator})
-                </option>
-              ))}
-            </select>
-            
-            {selectedCase && (
-              <div style={{
-                backgroundColor: '#059669',
-                color: 'white',
-                padding: '12px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                ✓ Case selected: {activeCases.find(c => (c._id || c.caseId) === selectedCase)?.name}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: '#64748b'
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '16px' }}>📁</div>
-            <p style={{ marginBottom: '16px' }}>No active cases found</p>
-            <p style={{ fontSize: '14px', marginBottom: '20px' }}>
-              You need to create an active case before uploading files.
-            </p>
-            <button
-              onClick={() => {
-                if (setCurrentView) {
-                  setCurrentView('cases');
-                } else {
-                  console.error('setCurrentView function not provided to UploadUFDR component');
-                }
-              }}
-              style={{
-                backgroundColor: '#0ea5e9',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#0284c7';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#0ea5e9';
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              Create New Case
-            </button>
+            <span>⚠️</span>
+            <span>Please select a case from the header dropdown to enable file upload</span>
           </div>
         )}
-      </div>
-
-      {/* Upload Area */}
+      </div>      {/* Upload Area */}
       <div
         style={{
           ...uploadAreaStyle,

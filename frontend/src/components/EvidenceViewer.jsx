@@ -1,21 +1,47 @@
-import { useState } from 'react';
-import { useFiles } from './Dashboard';
+import { useEffect, useState } from 'react';
+import { useCaseContext } from '../contexts/CaseContext';
 
 const EvidenceViewer = () => {
-  const { uploadedFiles, processedFiles } = useFiles();
+  const { selectedCase, getCaseFiles } = useCaseContext();
+  const [caseFiles, setCaseFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFile, setSelectedFile] = useState(null);
+
+  // Load files when selected case changes
+  useEffect(() => {
+    if (selectedCase) {
+      loadCaseFiles();
+    } else {
+      setCaseFiles([]);
+    }
+  }, [selectedCase]);
+
+  const loadCaseFiles = async () => {
+    if (!selectedCase) return;
+    
+    try {
+      setLoading(true);
+      const files = await getCaseFiles(selectedCase._id || selectedCase.caseId);
+      setCaseFiles(files);
+    } catch (error) {
+      console.error('Failed to load case files:', error);
+      setCaseFiles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   
-  // Convert uploaded files to evidence format
-  const evidenceFiles = uploadedFiles.map(file => ({
-    id: file.id,
-    name: file.name,
-    type: file.fileType || 'unknown',
+  // Convert case files to evidence format
+  const evidenceFiles = caseFiles.map(file => ({
+    id: file._id || file.id,
+    name: file.originalName || file.name,
+    type: file.mimetype || file.fileType || 'unknown',
     size: formatFileSize(file.size),
-    uploaded: new Date(file.uploadedAt || Date.now()).toLocaleString(),
+    uploaded: new Date(file.uploadedAt || file.createdAt || Date.now()).toLocaleString(),
     processed: file.status === 'processed',
-    category: getCategoryFromType(file.fileType || 'unknown'),
-    icon: getFileIcon(file.name),
+    category: getCategoryFromType(file.mimetype || file.fileType || 'unknown'),
+    icon: getFileIcon(file.originalName || file.name),
     preview: generatePreview(file),
     metadata: generateMetadata(file)
   }));
@@ -336,15 +362,51 @@ const EvidenceViewer = () => {
     </div>
   );
 
+  // Show empty state if no case is selected
+  if (!selectedCase) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: 'calc(100vh - 200px)'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 40px',
+            backgroundColor: '#334155',
+            borderRadius: '20px',
+            border: '1px solid #475569',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📁</div>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+              No Case Selected
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+              Please select a case from the header to view its evidence files
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={containerStyle}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          👁️ Evidence Viewer
+          👁️ Evidence Viewer {selectedCase && `- ${selectedCase.name}`}
         </h1>
         <p style={{ color: '#64748b', fontSize: '16px' }}>
-          Comprehensive evidence file management and analysis for your forensic investigations
+          {selectedCase ? 
+            `Viewing evidence files for case: ${selectedCase.name}` :
+            'Comprehensive evidence file management and analysis for your forensic investigations'
+          }
         </p>
       </div>
 
