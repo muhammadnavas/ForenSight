@@ -1488,45 +1488,7 @@ const NetworkAnalysis = () => {
           </div>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <button style={{
-            backgroundColor: '#1e40af',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            🔍 Deep Analysis
-          </button>
-          <button style={{
-            backgroundColor: '#059669',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            📊 Generate Report
-          </button>
-          <button style={{
-            backgroundColor: '#8b5cf6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            🌐 Expand Network
-          </button>
-        </div>
+
       </div>
     );
   };
@@ -1554,21 +1516,7 @@ const NetworkAnalysis = () => {
               </div>
             </div>
           )}
-          <button 
-            style={{
-              backgroundColor: hasData ? '#059669' : '#0ea5e9',
-              color: 'white',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
-            onClick={() => hasData ? setAnalysisMode('contacts') : (window.location.hash = '#upload')}
-          >
-            {hasData ? '🌐 View Network' : '📤 Upload UFDR Files'}
-          </button>
+
         </div>
       </div>
     );
