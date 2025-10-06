@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useCaseContext } from '../contexts/CaseContext';
 import { useCaseData } from '../contexts/CaseDataContext';
 
 const DatabaseSearch = () => {
+  const { selectedCase, selectedFiles, getSelectedFileObjects } = useCaseContext();
   const { caseData, hasData, statistics } = useCaseData();
   
   // Search state
@@ -380,6 +382,80 @@ const DatabaseSearch = () => {
         <p style={{ textAlign: 'center', maxWidth: '300px' }}>
           Upload UFDR files to start searching through case data, evidence, and forensic information.
         </p>
+      </div>
+    );
+  }
+
+  // Show file selection prompt if no case or files selected
+  if (!selectedCase) {
+    return (
+      <div style={{
+        display: 'flex',
+        height: 'calc(100vh - 120px)',
+        backgroundColor: '#0f172a',
+        color: 'white',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px 40px',
+          backgroundColor: '#334155',
+          borderRadius: '20px',
+          border: '1px solid #475569',
+          maxWidth: '500px',
+          width: '100%',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🗂️</div>
+          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            No Case Selected
+          </h3>
+          <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+            Please select a case from the header to start database search
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedFiles.length === 0) {
+    return (
+      <div style={{
+        display: 'flex',
+        height: 'calc(100vh - 120px)',
+        backgroundColor: '#0f172a',
+        color: 'white',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px 40px',
+          backgroundColor: '#334155',
+          borderRadius: '20px',
+          border: '1px solid #475569',
+          maxWidth: '500px',
+          width: '100%',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🔍</div>
+          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            No Files Selected
+          </h3>
+          <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
+            Please select files from the header dropdown to search their database contents
+          </p>
+          <div style={{ 
+            padding: '12px 16px',
+            backgroundColor: '#1e40af',
+            borderRadius: '8px',
+            fontSize: '14px',
+            color: 'white'
+          }}>
+            💡 Tip: Click the Files button in the header to select files for search
+          </div>
+        </div>
       </div>
     );
   }

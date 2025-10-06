@@ -336,6 +336,46 @@ export const CaseProvider = ({ children }) => {
     setError(null);
   };
 
+  // File selection methods
+  const toggleFileSelection = (fileId) => {
+    setSelectedFiles(prev => {
+      if (prev.includes(fileId)) {
+        return prev.filter(id => id !== fileId);
+      } else {
+        return [...prev, fileId];
+      }
+    });
+  };
+
+  const selectAllFiles = () => {
+    const allFileIds = caseFiles.map(file => file._id || file.id);
+    setSelectedFiles(allFileIds);
+  };
+
+  const clearFileSelection = () => {
+    setSelectedFiles([]);
+  };
+
+  const getSelectedFileObjects = () => {
+    return caseFiles.filter(file => selectedFiles.includes(file._id || file.id));
+  };
+
+  // Load case files and update local state
+  const loadCaseFiles = async (caseId) => {
+    try {
+      const files = await getCaseFiles(caseId);
+      setCaseFiles(files);
+      // Clear file selection when case changes
+      setSelectedFiles([]);
+      return files;
+    } catch (error) {
+      console.error('Failed to load case files:', error);
+      setCaseFiles([]);
+      setSelectedFiles([]);
+      return [];
+    }
+  };
+
   // Load cases on mount with retry logic
   useEffect(() => {
     const loadCasesWithRetry = async () => {
@@ -359,6 +399,8 @@ export const CaseProvider = ({ children }) => {
     // State
     cases,
     selectedCase,
+    selectedFiles,
+    caseFiles,
     loading,
     error,
     
@@ -368,11 +410,18 @@ export const CaseProvider = ({ children }) => {
     getCaseById,
     updateCase,
     getCaseFiles,
+    loadCaseFiles,
     addFileToCase,
     uploadFileToCase,
     deleteCase,
     setSelectedCase,
     clearError,
+    
+    // File Selection
+    toggleFileSelection,
+    selectAllFiles,
+    clearFileSelection,
+    getSelectedFileObjects,
     
     // Helpers
     getActiveCases,

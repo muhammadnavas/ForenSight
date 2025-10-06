@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { useFiles } from './Dashboard';
+import { useCaseContext } from '../contexts/CaseContext';
 
 const QueryInterface = () => {
-  const { uploadedFiles, processedFiles } = useFiles();
+  const { selectedCase, selectedFiles, getSelectedFileObjects } = useCaseContext();
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
   
-  const availableFiles = processedFiles.length;
-  const totalDataSize = uploadedFiles.reduce((sum, file) => sum + file.size, 0);
+  const selectedFileObjects = getSelectedFileObjects();
+  const availableFiles = selectedFiles.length;
+  const totalDataSize = selectedFileObjects.reduce((sum, file) => sum + (file.size || 0), 0);
 
   const containerStyle = {
     padding: '24px',
@@ -208,21 +209,95 @@ const QueryInterface = () => {
     );
   };
 
+  // Show file selection prompt if no case or files selected
+  if (!selectedCase) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: 'calc(100vh - 200px)'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 40px',
+            backgroundColor: '#334155',
+            borderRadius: '20px',
+            border: '1px solid #475569',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🗂️</div>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+              No Case Selected
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+              Please select a case from the header to start querying
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedFiles.length === 0) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: 'calc(100vh - 200px)'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 40px',
+            backgroundColor: '#334155',
+            borderRadius: '20px',
+            border: '1px solid #475569',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🔍</div>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+              No Files Selected
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
+              Please select files from the header dropdown to enable natural language queries
+            </p>
+            <div style={{ 
+              padding: '12px 16px',
+              backgroundColor: '#1e40af',
+              borderRadius: '8px',
+              fontSize: '14px',
+              color: 'white'
+            }}>
+              � Tip: Click the Files button in the header to select files for querying
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>🔍 Query Interface</h1>
+        <h1 style={titleStyle}>�🔍 Query Interface - {selectedCase.name}</h1>
         <p style={subtitleStyle}>
-          Use natural language to search and analyze evidence data
+          Use natural language to search and analyze evidence data from selected files
         </p>
         <div style={statusStyle}>
           <div style={statusItemStyle}>
             <span>📁</span>
-            <span>{uploadedFiles.length} Files Uploaded</span>
+            <span>{selectedFiles.length} Files Selected</span>
           </div>
           <div style={statusItemStyle}>
             <span>⚡</span>
-            <span>{processedFiles.length} Files Processed</span>
+            <span>{availableFiles} Files Available</span>
           </div>
           <div style={statusItemStyle}>
             <span>💾</span>
@@ -230,10 +305,10 @@ const QueryInterface = () => {
           </div>
           <div style={{
             ...statusItemStyle,
-            backgroundColor: processedFiles.length > 0 ? '#059669' : '#dc2626'
+            backgroundColor: availableFiles > 0 ? '#059669' : '#dc2626'
           }}>
-            <span>{processedFiles.length > 0 ? '✅' : '❌'}</span>
-            <span>{processedFiles.length > 0 ? 'Ready for Search' : 'No Data Available'}</span>
+            <span>{availableFiles > 0 ? '✅' : '❌'}</span>
+            <span>{availableFiles > 0 ? 'Ready for Search' : 'No Data Available'}</span>
           </div>
         </div>
       </div>

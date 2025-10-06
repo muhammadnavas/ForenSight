@@ -1,8 +1,8 @@
 import L from 'leaflet';
 import { useEffect, useState } from 'react';
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet';
+import { useCaseContext } from '../contexts/CaseContext';
 import { useCaseData } from '../contexts/CaseDataContext';
-import { useFiles } from './Dashboard';
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -24,7 +24,7 @@ const createCustomIcon = (color, symbol) => {
 };
 
 const NetworkAnalysis = () => {
-  const { uploadedFiles, processedFiles } = useFiles();
+  const { selectedCase, selectedFiles, getSelectedFileObjects } = useCaseContext();
   const { caseData, hasData, getNetworkData, getGeographicData, statistics } = useCaseData();
   const [selectedNode, setSelectedNode] = useState(null);
   const [analysisMode, setAnalysisMode] = useState('contacts'); // 'contacts', 'locations', 'transactions'
@@ -1351,8 +1351,112 @@ const NetworkAnalysis = () => {
     );
   }
 
+  // Show file selection prompt if no files are selected
+  if (!selectedCase) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: 'calc(100vh - 200px)'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 40px',
+            backgroundColor: '#334155',
+            borderRadius: '20px',
+            border: '1px solid #475569',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🗂️</div>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+              No Case Selected
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+              Please select a case from the header to start network analysis
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedFiles.length === 0) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: 'calc(100vh - 200px)'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 40px',
+            backgroundColor: '#334155',
+            borderRadius: '20px',
+            border: '1px solid #475569',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📊</div>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+              No Files Selected
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
+              Please select files from the header dropdown to analyze network connections
+            </p>
+            <div style={{ 
+              padding: '12px 16px',
+              backgroundColor: '#1e40af',
+              borderRadius: '8px',
+              fontSize: '14px',
+              color: 'white'
+            }}>
+              💡 Tip: Click the Files button in the header to select files for analysis
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={containerStyle}>
+      {/* Header with selected files info */}
+      <div style={{
+        marginBottom: '16px',
+        padding: '12px 16px',
+        backgroundColor: '#334155',
+        borderRadius: '8px',
+        border: '1px solid #475569'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px' }}>
+              🌐 Network Analysis - {selectedCase.name}
+            </h2>
+            <p style={{ color: '#94a3b8', fontSize: '14px' }}>
+              Analyzing {selectedFiles.length} selected file{selectedFiles.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+          <div style={{
+            padding: '6px 12px',
+            backgroundColor: '#059669',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: 'white',
+            fontWeight: '600'
+          }}>
+            {selectedFiles.length} files selected
+          </div>
+        </div>
+      </div>
+
       {/* Main Canvas */}
       <div style={canvasContainerStyle}>
         {/* Toolbar */}

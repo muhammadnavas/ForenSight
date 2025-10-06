@@ -21,36 +21,191 @@ export const useFiles = () => {
   return context;
 };
 
+// Helper function for file size formatting
+const formatFileSize = (bytes) => {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+// File Selector Component
+const FileSelector = () => {
+  const { 
+    selectedCase, 
+    caseFiles, 
+    selectedFiles, 
+    loadCaseFiles,
+    toggleFileSelection, 
+    selectAllFiles, 
+    clearFileSelection 
+  } = useCaseContext();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedCase) {
+      loadFiles();
+    }
+  }, [selectedCase]);
+
+  const loadFiles = async () => {
+    if (!selectedCase) return;
+    
+    try {
+      setLoading(true);
+      await loadCaseFiles(selectedCase._id || selectedCase.caseId);
+    } catch (error) {
+      console.error('Failed to load case files:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!selectedCase) return null;
+
+  return (
+    <div style={{
+      backgroundColor: '#334155',
+      borderRadius: '8px',
+      border: '1px solid #475569',
+      marginLeft: '16px'
+    }}>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 12px',
+          backgroundColor: 'transparent',
+          border: 'none',
+          color: '#e2e8f0',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          width: '100%',
+          borderRadius: '8px'
+        }}
+      >
+        <span>{isExpanded ? '📂' : '📁'}</span>
+        <span>Files ({selectedFiles.length}/{caseFiles.length})</span>
+        <span style={{ marginLeft: 'auto', fontSize: '12px' }}>
+          {isExpanded ? '▼' : '▶'}
+        </span>
+      </button>
+      
+      {isExpanded && (
+        <div style={{
+          borderTop: '1px solid #475569',
+          maxHeight: '200px',
+          overflowY: 'auto'
+        }}>
+          <div style={{
+            padding: '8px 12px',
+            borderBottom: '1px solid #475569',
+            display: 'flex',
+            gap: '8px'
+          }}>
+            <button
+              onClick={selectAllFiles}
+              disabled={caseFiles.length === 0}
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                backgroundColor: '#0ea5e9',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                opacity: caseFiles.length === 0 ? 0.5 : 1
+              }}
+            >
+              Select All
+            </button>
+            <button
+              onClick={clearFileSelection}
+              disabled={selectedFiles.length === 0}
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                backgroundColor: '#64748b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                opacity: selectedFiles.length === 0 ? 0.5 : 1
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          
+          {loading ? (
+            <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8' }}>
+              Loading files...
+            </div>
+          ) : caseFiles.length === 0 ? (
+            <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8' }}>
+              No files in this case
+            </div>
+          ) : (
+            <div style={{ padding: '8px' }}>
+              {caseFiles.map((file, index) => (
+                <div
+                  key={file._id || file.id || index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    backgroundColor: selectedFiles.includes(file._id || file.id) ? '#1e40af' : 'transparent'
+                  }}
+                  onClick={() => toggleFileSelection(file._id || file.id)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedFiles.includes(file._id || file.id)}
+                    onChange={() => toggleFileSelection(file._id || file.id)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: '#e2e8f0',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flex: 1
+                  }}>
+                    {file.originalName || file.name}
+                  </span>
+                  <span style={{ 
+                    fontSize: '10px', 
+                    color: '#94a3b8',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {formatFileSize(file.size)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Case Selector Component
 const CaseSelector = () => {
-  const { cases, loading, selectedCase, setSelectedCase, loadCases, getCaseFiles } = useCaseContext();
-  const [caseFiles, setCaseFiles] = useState([]);
-  const [loadingFiles, setLoadingFiles] = useState(false);
+  const { cases, loading, selectedCase, setSelectedCase, loadCases } = useCaseContext();
 
   useEffect(() => {
     loadCases();
   }, []);
-
-  useEffect(() => {
-    if (selectedCase) {
-      loadSelectedCaseFiles();
-    }
-  }, [selectedCase]);
-
-  const loadSelectedCaseFiles = async () => {
-    if (!selectedCase) return;
-    
-    try {
-      setLoadingFiles(true);
-      const files = await getCaseFiles(selectedCase._id || selectedCase.caseId);
-      setCaseFiles(files);
-    } catch (error) {
-      console.error('Failed to load case files:', error);
-      setCaseFiles([]);
-    } finally {
-      setLoadingFiles(false);
-    }
-  };
 
   const handleCaseSelect = (caseId) => {
     const selected = cases.find(c => c._id === caseId || c.caseId === caseId);
@@ -105,21 +260,7 @@ const CaseSelector = () => {
           ))}
         </select>
         
-        {selectedCase && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '6px 12px',
-            backgroundColor: '#0ea5e9',
-            borderRadius: '6px',
-            fontSize: '12px',
-            color: 'white',
-            fontWeight: '600'
-          }}>
-            📁 {loadingFiles ? 'Loading...' : `${caseFiles.length} files`}
-          </div>
-        )}
+
       </div>
     </div>
   );
@@ -1262,8 +1403,11 @@ const DashboardInner = ({ onNavigateToHome }) => {
             ForenSight
           </div>
           
-          {/* Case Selector */}
-          <CaseSelector />
+          {/* Case and File Selector */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <CaseSelector />
+            <FileSelector />
+          </div>
         </div>
 
         {/* Sidebar */}
