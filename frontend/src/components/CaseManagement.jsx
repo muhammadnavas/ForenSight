@@ -149,7 +149,7 @@ const CaseManagement = () => {
         display: 'flex',
         gap: '8px',
         marginBottom: '32px',
-        borderBottom: '1px solid #334155'
+        borderBottom: '1px solid #e2e8f0'
       }}>
         {[
           { key: 'active', label: 'Active Cases', count: organizedCases.active.length },
@@ -160,7 +160,7 @@ const CaseManagement = () => {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             style={{
-              backgroundColor: activeTab === tab.key ? '#1e40af' : 'transparent',
+              backgroundColor: activeTab === tab.key ? '#0ea5e9' : 'transparent',
               color: activeTab === tab.key ? 'white' : '#64748b',
               border: 'none',
               padding: '12px 20px',
@@ -176,8 +176,8 @@ const CaseManagement = () => {
           >
             {tab.label}
             <span style={{
-              backgroundColor: activeTab === tab.key ? 'rgba(255,255,255,0.2)' : '#475569',
-              color: activeTab === tab.key ? 'white' : '#94a3b8',
+              backgroundColor: activeTab === tab.key ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
+              color: activeTab === tab.key ? 'white' : '#64748b',
               padding: '2px 8px',
               borderRadius: '12px',
               fontSize: '11px',

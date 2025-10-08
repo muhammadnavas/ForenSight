@@ -63,7 +63,7 @@ const QueryInterface = () => {
   const inputStyle = {
     width: '100%',
     backgroundColor: '#ffffff',
-    border: '2px solid #475569',
+    border: '2px solid #cbd5e1',
     borderRadius: '8px',
     padding: '16px 20px',
     color: '#1e293b',
@@ -73,8 +73,8 @@ const QueryInterface = () => {
   };
 
   const buttonStyle = {
-    backgroundColor: '#1e40af',
-    color: '#1e293b',
+    backgroundColor: '#0ea5e9',
+    color: 'white',
     border: 'none',
     borderRadius: '8px',
     padding: '12px 24px',
@@ -94,9 +94,9 @@ const QueryInterface = () => {
   };
 
   const suggestionButtonStyle = {
-    backgroundColor: '#475569',
+    backgroundColor: '#f1f5f9',
     color: '#1e293b',
-    border: 'none',
+    border: '1px solid #cbd5e1',
     borderRadius: '20px',
     padding: '8px 16px',
     fontSize: '14px',
@@ -113,7 +113,7 @@ const QueryInterface = () => {
 
   const resultItemStyle = {
     padding: '20px',
-    borderBottom: '1px solid #475569'
+    borderBottom: '1px solid #e2e8f0'
   };
 
   const handleSearch = async () => {
@@ -350,8 +350,8 @@ const QueryInterface = () => {
               key={index}
               style={suggestionButtonStyle}
               onClick={() => setQuery(`Show me all ${suggestion}`)}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#64748b'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#475569'}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#f1f5f9'}
             >
               {suggestion}
             </button>
@@ -378,8 +378,8 @@ const QueryInterface = () => {
                 transition: 'background-color 0.2s ease'
               }}
               onClick={() => setQuery(historyItem)}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#475569'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#334155'}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
             >
               📝 {historyItem}
             </button>

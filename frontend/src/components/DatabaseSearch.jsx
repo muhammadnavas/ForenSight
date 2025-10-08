@@ -836,10 +836,10 @@ const DatabaseSearch = () => {
         alignItems: 'center',
         justifyContent: 'center',
         height: '400px',
-        backgroundColor: '#0f172a',
+        backgroundColor: '#f8fafc',
         color: '#64748b',
         borderRadius: '8px',
-        border: '2px dashed #475569',
+        border: '2px dashed #cbd5e1',
         margin: '20px'
       }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
@@ -857,7 +857,7 @@ const DatabaseSearch = () => {
       <div style={{
         display: 'flex',
         height: 'calc(100vh - 120px)',
-        backgroundColor: '#0f172a',
+        backgroundColor: '#ffffff',
         color: '#1e293b',
         alignItems: 'center',
         justifyContent: 'center'
@@ -929,7 +929,7 @@ const DatabaseSearch = () => {
     <div style={{
       display: 'flex',
       height: 'calc(100vh - 120px)',
-      backgroundColor: '#0f172a',
+      backgroundColor: '#ffffff',
       color: '#1e293b',
       fontFamily: 'Inter, system-ui, sans-serif',
       overflow: 'hidden',
@@ -942,7 +942,7 @@ const DatabaseSearch = () => {
         minWidth: '400px',
         maxWidth: '400px',
         backgroundColor: '#ffffff',
-        borderRight: '1px solid #475569',
+        borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'

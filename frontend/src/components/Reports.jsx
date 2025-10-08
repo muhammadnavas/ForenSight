@@ -112,8 +112,8 @@ const Reports = () => {
             <div
               key={template.id}
               style={{
-                backgroundColor: selectedTemplate?.id === template.id ? '#1e40af' : '#334155',
-                border: selectedTemplate?.id === template.id ? '2px solid #3b82f6' : '1px solid #475569',
+                backgroundColor: selectedTemplate?.id === template.id ? '#e0f2fe' : '#f8fafc',
+                border: selectedTemplate?.id === template.id ? '2px solid #0ea5e9' : '1px solid #e2e8f0',
                 borderRadius: '12px',
                 padding: '24px',
                 cursor: 'pointer',
