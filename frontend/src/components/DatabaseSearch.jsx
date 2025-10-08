@@ -949,7 +949,7 @@ const DatabaseSearch = () => {
         overflow: 'hidden'
       }}>
         {/* Search Header */}
-        <div style={{ padding: '20px', borderBottom: '1px solid #475569' }}>
+        <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 20px 0' }}>
             🔍 Database Search
           </h2>
