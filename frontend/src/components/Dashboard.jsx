@@ -6,7 +6,6 @@ import AIInvestigation from './AIInvestigation';
 import CaseManagement from './CaseManagement';
 import DatabaseSearch from './DatabaseSearch';
 import EvidenceViewer from './EvidenceViewer';
-import GeminiTest from './GeminiTest';
 import NetworkAnalysis from './NetworkAnalysis';
 import QueryInterface from './QueryInterface';
 import Reports from './Reports';
@@ -2449,7 +2448,6 @@ const DashboardInner = ({ onNavigateToHome }) => {
       items: [
         { icon: '👁️', label: 'Evidence Viewer', view: 'evidence', active: currentView === 'evidence' },
         { icon: '🤖', label: 'AI Investigation', view: 'ai', active: currentView === 'ai' },
-        { icon: '🧪', label: 'Gemini Test', view: 'gemini-test', active: currentView === 'gemini-test' },
         { icon: '🌐', label: 'Network Analysis', view: 'network', active: currentView === 'network' },
         { icon: '🔍', label: 'Database Search', view: 'search', active: currentView === 'search' },
         { icon: '🎬', label: 'Media Analysis', view: 'media-analysis', active: currentView === 'media-analysis' }
@@ -2588,15 +2586,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
             />
           )}
           
-          {currentView === 'gemini-test' && (
-            selectedCase ? <GeminiTest /> :
-            <NoCaseSelectedState 
-              featureName="AI Analysis" 
-              description="Select a case to leverage AI-powered analysis tools for evidence processing and pattern detection."
-              setCurrentView={setCurrentView}
-              cases={cases}
-            />
-          )}
+
           
           {currentView === 'network' && (
             selectedCase ? <NetworkAnalysis /> :

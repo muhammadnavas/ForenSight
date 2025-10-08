@@ -2,18 +2,29 @@ import { useEffect, useState } from 'react';
 import { useCaseContext } from '../contexts/CaseContext';
 
 const EvidenceViewer = () => {
-  const { selectedCase, getCaseFiles } = useCaseContext();
-  const [caseFiles, setCaseFiles] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { selectedCase, caseFiles, getCaseFiles, loading: contextLoading } = useCaseContext();
+  const [localLoading, setLocalLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [error, setError] = useState('');
+
+  // Add CSS for loading animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
 
   // Load files when selected case changes
   useEffect(() => {
     if (selectedCase) {
       loadCaseFiles();
-    } else {
-      setCaseFiles([]);
     }
   }, [selectedCase]);
 
@@ -21,29 +32,30 @@ const EvidenceViewer = () => {
     if (!selectedCase) return;
     
     try {
-      setLoading(true);
-      const files = await getCaseFiles(selectedCase._id || selectedCase.caseId);
-      setCaseFiles(files);
+      setLocalLoading(true);
+      setError('');
+      await getCaseFiles(selectedCase._id || selectedCase.caseId);
     } catch (error) {
       console.error('Failed to load case files:', error);
-      setCaseFiles([]);
+      setError('Failed to load case files. Please try again.');
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
   
   // Convert case files to evidence format
-  const evidenceFiles = caseFiles.map(file => ({
-    id: file._id || file.id,
-    name: file.originalName || file.name,
-    type: file.mimetype || file.fileType || 'unknown',
-    size: formatFileSize(file.size),
+  const evidenceFiles = (caseFiles || []).map(file => ({
+    id: file._id || file.id || file.filename,
+    name: file.originalName || file.filename || file.name || 'Unknown File',
+    type: file.mimetype || file.contentType || file.fileType || 'unknown',
+    size: formatFileSize(file.size || 0),
     uploaded: new Date(file.uploadedAt || file.createdAt || Date.now()).toLocaleString(),
-    processed: file.status === 'processed',
-    category: getCategoryFromType(file.mimetype || file.fileType || 'unknown'),
-    icon: getFileIcon(file.originalName || file.name),
+    processed: file.status === 'processed' || file.status === 'completed',
+    category: getCategoryFromType(file.mimetype || file.contentType || file.fileType || 'unknown'),
+    icon: getFileIcon(file.originalName || file.filename || file.name || 'unknown'),
     preview: generatePreview(file),
-    metadata: generateMetadata(file)
+    metadata: generateMetadata(file),
+    rawFile: file // Keep reference to original file data
   }));
   
   function formatFileSize(bytes) {
@@ -55,162 +67,188 @@ const EvidenceViewer = () => {
   }
   
   function getCategoryFromType(fileType) {
-    switch (fileType) {
-      case 'database': return 'communications';
-      case 'data': return 'documents';
-      case 'archive': return 'files';
-      case 'text': return 'documents';
-      case 'image': return 'media';
-      default: return 'files';
+    if (!fileType) return 'files';
+    
+    const type = fileType.toLowerCase();
+    
+    // Database and communication files
+    if (type.includes('database') || type.includes('sqlite') || type.includes('db')) {
+      return 'communications';
     }
+    
+    // Document types
+    if (type.includes('text') || type.includes('json') || type.includes('xml') || 
+        type.includes('csv') || type.includes('pdf') || type.includes('document')) {
+      return 'documents';
+    }
+    
+    // Media files
+    if (type.includes('image') || type.includes('video') || type.includes('audio') ||
+        type.includes('png') || type.includes('jpg') || type.includes('jpeg') || 
+        type.includes('gif') || type.includes('mp4') || type.includes('mp3')) {
+      return 'media';
+    }
+    
+    // Location data
+    if (type.includes('kml') || type.includes('gps') || type.includes('location')) {
+      return 'location';
+    }
+    
+    // Archive files
+    if (type.includes('archive') || type.includes('zip') || type.includes('rar') || 
+        type.includes('7z') || type.includes('tar')) {
+      return 'files';
+    }
+    
+    return 'files';
   }
   
   function getFileIcon(fileName) {
-    const extension = fileName.split('.').pop().toLowerCase();
+    if (!fileName) return '📁';
+    
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    
     switch (extension) {
-      case 'db': case 'sqlite': return '💬';
-      case 'json': case 'xml': return '📋';
-      case 'zip': case 'rar': case '7z': return '📦';
-      case 'txt': case 'log': return '📄';
-      case 'img': case 'dd': return '💽';
-      case 'png': case 'jpg': case 'jpeg': return '🖼️';
-      default: return '📁';
+      // Database files
+      case 'db': 
+      case 'sqlite': 
+      case 'sqlite3': 
+        return '💬';
+      
+      // Data files
+      case 'json': 
+      case 'xml': 
+      case 'csv': 
+        return '📋';
+      
+      // Archive files
+      case 'zip': 
+      case 'rar': 
+      case '7z': 
+      case 'tar': 
+      case 'gz': 
+        return '📦';
+      
+      // Text files
+      case 'txt': 
+      case 'log': 
+      case 'md': 
+        return '📄';
+      
+      // Document files
+      case 'pdf': 
+        return '📜';
+      case 'doc':
+      case 'docx':
+        return '�';
+      
+      // Image files
+      case 'png': 
+      case 'jpg': 
+      case 'jpeg': 
+      case 'gif': 
+      case 'bmp': 
+      case 'webp': 
+        return '🖼️';
+      
+      // Video files
+      case 'mp4': 
+      case 'avi': 
+      case 'mov': 
+      case 'wmv': 
+        return '🎥';
+      
+      // Audio files
+      case 'mp3': 
+      case 'wav': 
+      case 'flac': 
+        return '🎵';
+      
+      // Disk image files
+      case 'img': 
+      case 'dd': 
+      case 'iso': 
+        return '💽';
+      
+      // Location files
+      case 'kml': 
+      case 'gpx': 
+        return '📍';
+      
+      // Executable files
+      case 'exe': 
+      case 'msi': 
+        return '⚙️';
+      
+      default: 
+        return '📁';
     }
   }
   
   function generatePreview(file) {
+    const fileName = file.originalName || file.filename || 'Unknown file';
+    const fileType = file.mimetype || file.contentType || file.fileType || 'unknown';
+    
+    // Generate preview based on file type and status
     if (file.status === 'processed') {
-      return `File successfully processed and ready for analysis. AI indexing complete.`;
-    } else if (file.status === 'completed') {
-      return `File uploaded successfully. Ready for processing and AI analysis.`;
+      if (fileType.includes('database') || fileType.includes('sqlite')) {
+        return `Database file processed and indexed. Ready for communication analysis and timeline reconstruction.`;
+      } else if (fileType.includes('json') || fileType.includes('xml')) {
+        return `Structured data file processed. Contains metadata and information ready for forensic analysis.`;
+      } else if (fileType.includes('image')) {
+        return `Image file processed. Metadata extracted and ready for analysis including EXIF data and content recognition.`;
+      } else if (fileType.includes('archive')) {
+        return `Archive file processed. Contents extracted and individual files analyzed for evidence.`;
+      } else {
+        return `File successfully processed and indexed. Ready for comprehensive forensic analysis.`;
+      }
+    } else if (file.status === 'completed' || file.status === 'uploaded') {
+      return `File uploaded successfully. Queued for processing and AI-powered forensic analysis.`;
+    } else if (file.status === 'processing') {
+      return `Currently processing file contents. AI analysis and indexing in progress...`;
+    } else if (file.status === 'error' || file.status === 'failed') {
+      return `File processing failed. Please check file integrity and try uploading again.`;
     } else {
-      return `Upload in progress... File will be available for analysis once complete.`;
+      return `File upload in progress. Will be processed automatically once upload completes.`;
     }
   }
   
   function generateMetadata(file) {
-    return {
-      'File Size': formatFileSize(file.size),
-      'Upload Date': new Date(file.uploadedAt || Date.now()).toLocaleDateString(),
-      'Status': file.status || 'uploading',
-      'Type': file.fileType || 'unknown',
-      'Processed': file.status === 'processed' ? 'Yes' : 'No'
+    const metadata = {
+      'File Size': formatFileSize(file.size || 0),
+      'Upload Date': new Date(file.uploadedAt || file.createdAt || Date.now()).toLocaleDateString(),
+      'Status': (file.status || 'unknown').charAt(0).toUpperCase() + (file.status || 'unknown').slice(1),
+      'Type': file.mimetype || file.contentType || file.fileType || 'unknown',
+      'Processed': (file.status === 'processed' || file.status === 'completed') ? 'Yes' : 'No'
     };
+
+    // Add additional metadata based on file type
+    if (file.originalName || file.filename) {
+      metadata['Original Name'] = file.originalName || file.filename;
+    }
+
+    if (file.path) {
+      metadata['File Path'] = file.path;
+    }
+
+    if (file.encoding) {
+      metadata['Encoding'] = file.encoding;
+    }
+
+    // Add case-specific metadata
+    if (file.caseId) {
+      metadata['Case ID'] = file.caseId;
+    }
+
+    return metadata;
   }
 
-  // TODO: Load evidence files from API
-  // useEffect(() => {
-  //   const loadEvidenceFiles = async () => {
-  //     try {
-  //       const response = await fetch('/api/evidence');
-  //       const files = await response.json();
-  //       setEvidenceFiles(files);
-  //     } catch (error) {
-  //       console.error('Failed to load evidence files:', error);
-  //     }
-  //   };
-  //   loadEvidenceFiles();
-  // }, []);
-
-  // Remove this mock data array - replaced with empty state above
-  const mockEvidenceFiles = [
-    {
-      id: 1,
-      name: 'WhatsApp_Backup_2024.db',
-      type: 'database',
-      size: '2.3 MB',
-      uploaded: '2024-03-15 09:30:00',
-      processed: true,
-      category: 'communications',
-      icon: '💬',
-      preview: 'Contains 1,247 messages, 89 contacts, 156 media files',
-      metadata: { messages: 1247, contacts: 89, media: 156 }
-    },
-    {
-      id: 2,
-      name: 'Call_Logs_Extract.json',
-      type: 'json',
-      size: '45 KB',
-      uploaded: '2024-03-15 09:32:00',
-      processed: true,
-      category: 'communications',
-      icon: '📞',
-      preview: '234 call records including duration, timestamps, and contact info',
-      metadata: { calls: 234, duration: '15h 42m', international: 12 }
-    },
-    {
-      id: 3,
-      name: 'Crypto_Wallet_Screenshot.png',
-      type: 'image',
-      size: '245 KB',
-      uploaded: '2024-03-15 10:15:00',
-      processed: true,
-      category: 'media',
-      icon: '🖼️',
-      preview: 'Screenshot showing Bitcoin wallet with balance of 2.3 BTC',
-      metadata: { resolution: '1920x1080', format: 'PNG', location: 'Gallery' }
-    },
-    {
-      id: 4,
-      name: 'SMS_Messages_2024.xml',
-      type: 'xml',
-      size: '1.8 MB',
-      uploaded: '2024-03-15 10:20:00',
-      processed: true,
-      category: 'communications',
-      icon: '📱',
-      preview: '3,456 SMS messages with timestamps and contact details',
-      metadata: { messages: 3456, contacts: 67, threads: 45 }
-    },
-    {
-      id: 5,
-      name: 'Browser_History.csv',
-      type: 'csv',
-      size: '892 KB',
-      uploaded: '2024-03-15 11:00:00',
-      processed: false,
-      category: 'files',
-      icon: '🌐',
-      preview: 'Web browsing history with 12,000+ entries',
-      metadata: { entries: 12000, domains: 450, timespan: '6 months' }
-    },
-    {
-      id: 6,
-      name: 'Financial_Records.pdf',
-      type: 'pdf',
-      size: '3.2 MB',
-      uploaded: '2024-03-15 11:30:00',
-      processed: true,
-      category: 'documents',
-      icon: '📄',
-      preview: 'Bank statements and transaction records',
-      metadata: { pages: 45, transactions: 178, accounts: 3 }
-    },
-    {
-      id: 7,
-      name: 'GPS_Coordinates.kml',
-      type: 'kml',
-      size: '156 KB',
-      uploaded: '2024-03-15 12:00:00',
-      processed: true,
-      category: 'location',
-      icon: '📍',
-      preview: 'Location data with 234 GPS coordinates and timestamps',
-      metadata: { coordinates: 234, timespan: '30 days', accuracy: 'High' }
-    },
-    {
-      id: 8,
-      name: 'Encrypted_Archive.zip',
-      type: 'archive',
-      size: '15.7 MB',
-      uploaded: '2024-03-15 12:30:00',
-      processed: false,
-      category: 'files',
-      icon: '🔐',
-      preview: 'Password-protected archive containing unknown files',
-      metadata: { files: 'Unknown', encryption: 'AES-256', status: 'Encrypted' }
+  // Helper function to refresh case files
+  const refreshFiles = async () => {
+    if (selectedCase) {
+      await loadCaseFiles();
     }
-  ]; // This mock data is no longer used
+  };
 
   const categories = [
     { id: 'all', name: 'All Files', count: evidenceFiles.length },
@@ -387,7 +425,46 @@ const EvidenceViewer = () => {
               No Case Selected
             </h3>
             <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5' }}>
-              Please select a case from the header to view its evidence files
+              Please select a case from the Case Management section to view its evidence files
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state
+  const isLoading = localLoading || contextLoading;
+  if (isLoading && (!caseFiles || caseFiles.length === 0)) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: 'calc(100vh - 200px)'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 40px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '20px',
+            border: '1px solid #e2e8f0',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ 
+              fontSize: '48px', 
+              marginBottom: '24px', 
+              animation: 'spin 2s linear infinite',
+              display: 'inline-block'
+            }}>⏳</div>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
+              Loading Evidence Files
+            </h3>
+            <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5' }}>
+              Retrieving files for case: {selectedCase.name || selectedCase.title}
             </p>
           </div>
         </div>
@@ -413,25 +490,86 @@ const EvidenceViewer = () => {
       {/* Controls Bar */}
       <div style={{
         display: 'flex',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '24px'
       }}>
-        <button style={{
-          backgroundColor: '#0ea5e9',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '12px 20px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '14px',
-          fontWeight: '600'
-        }}>
-          📤 Upload New Evidence
-        </button>
+        <div>
+          {error && (
+            <div style={{
+              backgroundColor: '#fee2e2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              color: '#dc2626',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              ⚠️ {error}
+              <button 
+                onClick={() => setError('')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#dc2626',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '0 4px'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+        
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={refreshFiles}
+            disabled={isLoading}
+            style={{
+              backgroundColor: isLoading ? '#94a3b8' : '#059669',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 20px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              opacity: isLoading ? 0.6 : 1
+            }}
+          >
+            {isLoading ? '⏳' : '🔄'} Refresh Files
+          </button>
+          
+          <button 
+            onClick={() => {
+              // Navigate to upload component
+              const event = new CustomEvent('navigate', { detail: { component: 'UploadUFDR' } });
+              window.dispatchEvent(event);
+            }}
+            style={{
+              backgroundColor: '#0ea5e9',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}
+          >
+            📤 Upload New Evidence
+          </button>
+        </div>
       </div>
 
       {/* Categories Filter */}
@@ -564,7 +702,7 @@ const EvidenceViewer = () => {
               <button 
                 style={{
                   backgroundColor: '#0ea5e9',
-                  color: '#1e293b',
+                  color: 'white',
                   border: 'none',
                   padding: '14px 28px',
                   borderRadius: '10px',
@@ -577,7 +715,11 @@ const EvidenceViewer = () => {
                   transition: 'all 0.2s ease',
                   boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.3)'
                 }}
-                onClick={() => window.location.hash = '#upload'}
+                onClick={() => {
+                  // Navigate to upload component
+                  const event = new CustomEvent('navigate', { detail: { component: 'UploadUFDR' } });
+                  window.dispatchEvent(event);
+                }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = '#0284c7';
                   e.target.style.transform = 'translateY(-2px)';
@@ -704,31 +846,94 @@ const EvidenceViewer = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button style={{
-                backgroundColor: '#0ea5e9',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '12px 20px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => {
+                  // TODO: Implement AI analysis functionality
+                  console.log('Analyze file:', selectedFile.name);
+                  setSelectedFile(null);
+                }}
+                disabled={!selectedFile.processed}
+                style={{
+                  backgroundColor: selectedFile.processed ? '#0ea5e9' : '#94a3b8',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  cursor: selectedFile.processed ? 'pointer' : 'not-allowed',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  opacity: selectedFile.processed ? 1 : 0.6
+                }}
+              >
                 🔍 Analyze File
               </button>
-              <button style={{
-                backgroundColor: '#059669',
-                color: '#1e293b',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '12px 20px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}>
+              
+              <button 
+                onClick={() => {
+                  // TODO: Implement report generation
+                  console.log('Generate report for:', selectedFile.name);
+                  setSelectedFile(null);
+                }}
+                disabled={!selectedFile.processed}
+                style={{
+                  backgroundColor: selectedFile.processed ? '#059669' : '#94a3b8',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  cursor: selectedFile.processed ? 'pointer' : 'not-allowed',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  opacity: selectedFile.processed ? 1 : 0.6
+                }}
+              >
                 📊 Generate Report
               </button>
+              
+              <button 
+                onClick={() => {
+                  // TODO: Implement file download
+                  console.log('Download file:', selectedFile.name);
+                }}
+                style={{
+                  backgroundColor: '#8b5cf6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}
+              >
+                💾 Download
+              </button>
+              
+              {selectedFile.rawFile && (
+                <button 
+                  onClick={() => {
+                    // TODO: Implement file deletion with confirmation
+                    if (window.confirm(`Are you sure you want to delete ${selectedFile.name}? This action cannot be undone.`)) {
+                      console.log('Delete file:', selectedFile.name);
+                      setSelectedFile(null);
+                      refreshFiles();
+                    }
+                  }}
+                  style={{
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '12px 20px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  🗑️ Delete
+                </button>
+              )}
             </div>
           </div>
         </div>
