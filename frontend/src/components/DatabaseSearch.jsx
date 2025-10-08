@@ -738,7 +738,7 @@ const DatabaseSearch = () => {
       }}
       onMouseLeave={(e) => {
         if (selectedItem?.id !== item.id) {
-          e.target.style.backgroundColor = '#1e293b';
+          e.target.style.backgroundColor = '#f8fafc';
         }
       }}
     >

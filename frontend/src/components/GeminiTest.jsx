@@ -5,11 +5,11 @@ const GeminiTest = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const GEMINI_API_KEY = 'AIzaSyDAxoj0ow42uoDxgv8VBj2lRgss3FT1EcU';
+  const GEMINI_API_KEY = 'AIzaSyB0PG_S3DUIPYppTS790sfkxb-pZAyOaqg';
   
   // Models available for Google AI Studio keys (no billing)
   const AVAILABLE_MODELS = [
-    'gemini-1.5-flash-latest', // ✅ Works with AI Studio keys
+    'gemini-2.5-flash', // ✅ Works with AI Studio keys
     'gemini-1.5-flash',        // May work
     'gemini-1.5-pro-latest',   // May require billing
     'gemini-1.5-pro',          // May require billing

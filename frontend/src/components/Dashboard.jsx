@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useCaseContext } from '../contexts/CaseContext';
 import { CaseDataProvider, useCaseData } from '../contexts/CaseDataContext';
+import AIInvestigation from './AIInvestigation';
 import CaseManagement from './CaseManagement';
 import DatabaseSearch from './DatabaseSearch';
 import EvidenceViewer from './EvidenceViewer';
@@ -44,25 +45,40 @@ const getFileTypeIcon = (filename) => {
   return icons[ext] || '📄';
 };
 
+// Shared Curved Arrow Component
+const CurvedArrowSVG = ({ className }) => (
+  <img
+    src="/curved-arrow.png"
+    alt="Curved Arrow"
+    width="50"
+    height="50"
+    className={className}
+    style={{
+      filter: 'hue-rotate(200deg) brightness(1.4) saturate(1.3) contrast(1.2)',
+      transition: 'all 0.3s ease',
+      dropShadow: '0 2px 8px rgba(14, 165, 233, 0.4)'
+    }}
+  />
+);
+
+// Helper function to parse case data
+const parseCaseData = (selectedCase) => {
+  if (!selectedCase) return null;
+  
+  let parsedCaseData = selectedCase;
+  if (typeof selectedCase.caseData === 'string') {
+    try {
+      parsedCaseData = { ...selectedCase, ...JSON.parse(selectedCase.caseData) };
+    } catch (e) {
+      console.log('Case data is not JSON, using as is');
+    }
+  }
+  return parsedCaseData;
+};
+
 // No Case Selected Component
 const NoCaseSelectedState = ({ featureName, description, requiresCase = true, requiresFiles = false, setCurrentView, cases }) => {
   const noCasesAvailable = !cases || cases.length === 0;
-  
-  // Curved Arrow PNG Component pointing up-right
-  const CurvedArrowSVG = ({ className }) => (
-    <img
-      src="/curved-arrow.png"
-      alt="Curved Arrow"
-      width="50"
-      height="50"
-      className={className}
-      style={{
-        filter: 'hue-rotate(200deg) brightness(1.4) saturate(1.3) contrast(1.2)',
-        transition: 'all 0.3s ease',
-        dropShadow: '0 2px 8px rgba(14, 165, 233, 0.4)'
-      }}
-    />
-  );
 
   const containerStyle = {
     padding: '24px',
@@ -419,6 +435,15 @@ const CaseSelector = () => {
     loadCases();
   }, []);
 
+  // Auto-refresh cases every 30 seconds to stay synced
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadCases();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [loadCases]);
+
   const handleCaseSelect = (caseId) => {
     const selected = cases.find(c => c._id === caseId || c.caseId === caseId);
     setSelectedCase(selected);
@@ -473,15 +498,7 @@ const CaseSelector = () => {
 const CaseDetailsSection = ({ selectedCase, caseFiles }) => {
   if (!selectedCase) return null;
 
-  // Parse case data if it's stored as JSON string
-  let parsedCaseData = selectedCase;
-  if (typeof selectedCase.caseData === 'string') {
-    try {
-      parsedCaseData = { ...selectedCase, ...JSON.parse(selectedCase.caseData) };
-    } catch (e) {
-      console.log('Case data is not JSON, using as is');
-    }
-  }
+  const parsedCaseData = parseCaseData(selectedCase);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -732,153 +749,15 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
   const { selectedCase, caseFiles, cases } = useCaseContext();
 
-  // Curved Arrow PNG Component for case selection
-  const CurvedArrowSVG = ({ className }) => (
-    <img
-      src="/curved-arrow.png"
-      alt="Curved Arrow"
-      width="50"
-      height="50"
-      className={className}
-      style={{
-        filter: 'hue-rotate(200deg) brightness(1.4) saturate(1.3) contrast(1.2)',
-        transition: 'all 0.3s ease',
-        dropShadow: '0 2px 8px rgba(14, 165, 233, 0.4)'
-      }}
-    />
-  );
-
   // Check if no cases are available or no case selected
   if (!selectedCase) {
-    const noCasesAvailable = !cases || cases.length === 0;
-    
     return (
-      <div style={{ 
-        padding: '24px', 
-        width: '100%', 
-        height: 'calc(100vh - 140px)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        boxSizing: 'border-box'
-      }}>
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '60px 40px',
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          border: '1px solid #e2e8f0',
-          maxWidth: '500px',
-          width: '100%',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
-          position: 'relative'
-        }}>
-          <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>
-            {noCasesAvailable ? '📝' : '📝'}
-          </div>
-          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
-            {noCasesAvailable ? 'No Cases Available' : 'No Case Selected'}
-          </h3>
-          <p style={{ fontSize: '16px', color: '#64748b', marginBottom: '32px', lineHeight: '1.6' }}>
-            {noCasesAvailable 
-              ? 'Create your first case to start your forensic investigation'
-              : 'Please select a case from the header to start querying'
-            }
-          </p>
-          
-          {noCasesAvailable ? (
-            // Show create case button when no cases exist
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button 
-                style={{
-                  backgroundColor: '#059669',
-                  color: 'white',
-                  border: 'none',
-                  padding: '14px 28px',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 6px -1px rgba(5, 150, 105, 0.3)'
-                }}
-                onClick={() => setCurrentView('cases')}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#047857';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#059669';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                ➕ Create New Case
-              </button>
-            </div>
-          ) : (
-            // Show pointer to case selector when cases exist but none selected
-            <div>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
-                <button 
-                  style={{
-                    backgroundColor: '#0ea5e9',
-                    color: 'white',
-                    border: 'none',
-                    padding: '14px 28px',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.3)'
-                  }}
-                  onClick={() => {
-                    // Scroll to top to show case selector
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#0284c7';
-                    e.target.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = '#0ea5e9';
-                    e.target.style.transform = 'translateY(0)';
-                  }}
-                >
-                  Select Case Above
-                </button>
-              </div>
-
-              <div style={{
-              position: 'fixed',
-              top: '120px',
-              right: '200px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              zIndex: 1000,
-              transform: 'rotate(16deg)'
-            }}>
-              {/* Curved Animated Arrow */}
-              <div style={{
-                color: '#0ea5e9',
-                animation: 'curvedArrowBounce 2s infinite',
-                marginBottom: '8px',
-                transform: 'scale(1.2)'
-              }}>
-                <CurvedArrowSVG className="curved-arrow-icon" />
-              </div>              
-            </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <NoCaseSelectedState 
+        featureName="Dashboard" 
+        description="Select a case to view comprehensive forensic details, analytics, and investigation tools"
+        setCurrentView={setCurrentView} 
+        cases={cases} 
+      />
     );
   }
 
@@ -2004,185 +1883,93 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
           </div>
         )}
 
-        {/* Simple Case Statistics */}
+        {/* Quick Actions */}
         {selectedCase && (
-          <div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
-              marginBottom: '24px'
-            }}>
-            <div style={{
-              backgroundColor: '#ffffff',
-              padding: '20px',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '32px', color: '#dc2626', fontWeight: 'bold', marginBottom: '8px' }}>
-                {(() => {
-                  // Parse case data if it's a string
-                  let parsedCase = selectedCase;
-                  if (typeof selectedCase.caseData === 'string') {
-                    try {
-                      parsedCase = JSON.parse(selectedCase.caseData);
-                    } catch (e) {
-                      parsedCase = selectedCase;
-                    }
-                  }
-                  return parsedCase.suspects?.length || 0;
-                })()}
-              </div>
-              <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '500' }}>Suspects</div>
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '24px',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            marginBottom: '32px'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#0ea5e9' }}>●</span>
+              Quick Actions
+            </h3>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <button 
+                style={{
+                  backgroundColor: '#0ea5e9',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => setCurrentView('upload')}
+              >
+                📤 Upload UFDR Data
+              </button>
+              <button 
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => setCurrentView('evidence')}
+              >
+                👁️ View Evidence
+              </button>
+              <button 
+                style={{
+                  backgroundColor: '#0d9488',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => setCurrentView('query')}
+              >
+                🔍 Start Investigation
+              </button>
+              <button 
+                style={{
+                  backgroundColor: '#7c3aed',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => setCurrentView('network')}
+              >
+                🌐 Network Analysis
+              </button>
             </div>
-            
-            <div style={{
-              backgroundColor: '#ffffff',
-              padding: '20px',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '32px', color: '#f59e0b', fontWeight: 'bold', marginBottom: '8px' }}>
-                {(() => {
-                  let parsedCase = selectedCase;
-                  if (typeof selectedCase.caseData === 'string') {
-                    try {
-                      parsedCase = JSON.parse(selectedCase.caseData);
-                    } catch (e) {
-                      parsedCase = selectedCase;
-                    }
-                  }
-                  return parsedCase.victims?.length || 0;
-                })()}
-              </div>
-              <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '500' }}>Victims</div>
-            </div>
-            
-            <div style={{
-              backgroundColor: '#ffffff',
-              padding: '20px',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '32px', color: '#0ea5e9', fontWeight: 'bold', marginBottom: '8px' }}>
-                {(() => {
-                  let parsedCase = selectedCase;
-                  if (typeof selectedCase.caseData === 'string') {
-                    try {
-                      parsedCase = JSON.parse(selectedCase.caseData);
-                    } catch (e) {
-                      parsedCase = selectedCase;
-                    }
-                  }
-                  return parsedCase.evidence?.length || 0;
-                })()}
-              </div>
-              <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '500' }}>Evidence</div>
-            </div>
-            
-            <div style={{
-              backgroundColor: '#ffffff',
-              padding: '20px',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '32px', color: '#059669', fontWeight: 'bold', marginBottom: '8px' }}>
-                {caseFiles?.length || 0}
-              </div>
-              <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '500' }}>Files</div>
-            </div>
-          </div>
-        
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '24px',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          marginBottom: '32px'
-        }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: '#0ea5e9' }}>●</span>
-            Quick Actions
-          </h3>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button 
-              style={{
-                backgroundColor: '#0ea5e9',
-                color: 'white',
-                border: 'none',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => setCurrentView('upload')}
-            >
-              📤 Upload UFDR Data
-            </button>
-            <button 
-              style={{
-                backgroundColor: '#059669',
-                color: 'white',
-                border: 'none',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => setCurrentView('evidence')}
-            >
-              👁️ View Evidence
-            </button>
-            <button 
-              style={{
-                backgroundColor: '#0d9488',
-                color: 'white',
-                border: 'none',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => setCurrentView('query')}
-            >
-              🔍 Start Investigation
-            </button>
-            <button 
-              style={{
-                backgroundColor: '#7c3aed',
-                color: 'white',
-                border: 'none',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={() => setCurrentView('network')}
-            >
-              🌐 Network Analysis
-            </button>
-          </div>
-        </div>
           </div>
         )}
 
@@ -3179,316 +2966,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
             )
           )}
 
-          {currentView === 'ai' && (
-            <div style={{ 
-              padding: '24px', 
-              height: 'calc(100vh - 70px)', 
-              display: 'flex', 
-              flexDirection: 'column',
-              boxSizing: 'border-box'
-            }}>
-              {/* Clean Header */}
-              <div style={{ 
-                marginBottom: '24px',
-                paddingBottom: '16px',
-                borderBottom: '1px solid #e2e8f0'
-              }}>
-                <h1 style={{ 
-                  fontSize: '24px', 
-                  fontWeight: '700', 
-                  marginBottom: '6px',
-                  color: '#1e293b',
-                  letterSpacing: '-0.025em'
-                }}>
-                  AI Case Assistant
-                </h1>
-                <p style={{ 
-                  color: '#64748b', 
-                  fontSize: '15px',
-                  margin: 0,
-                  lineHeight: '1.4'
-                }}>
-                  Professional AI assistant for forensic investigation support
-                </p>
-              </div>
-
-              {/* Professional Chat Container */}
-              <div style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: '#ffffff',
-                borderRadius: '16px',
-                border: '1px solid #e2e8f0',
-                overflow: 'hidden',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-              }}>
-                {/* Professional Chat Header */}
-                <div style={{
-                  padding: '20px 24px',
-                  backgroundColor: '#f8fafc',
-                  borderBottom: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    backgroundColor: '#0ea5e9',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '18px'
-                  }}>
-                    🤖
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ 
-                      fontSize: '16px', 
-                      fontWeight: '600', 
-                      color: '#1e293b',
-                      marginBottom: '2px'
-                    }}>
-                      Insightic AI
-                    </div>
-                    <div style={{ 
-                      fontSize: '13px', 
-                      color: '#64748b',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}>
-                      <div style={{
-                        width: '8px',
-                        height: '8px',
-                        backgroundColor: '#10b981',
-                        borderRadius: '50%'
-                      }}></div>
-                      Online and ready to assist
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clean Chat Messages Area */}
-                <div style={{
-                  flex: 1,
-                  padding: '24px',
-                  overflowY: 'auto',
-                  backgroundColor: '#ffffff'
-                }} className="standard-scrollbar">
-                  {/* Welcome Message */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '12px',
-                    marginBottom: '20px'
-                  }}>
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      backgroundColor: '#0ea5e9',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '16px',
-                      flexShrink: 0,
-                      marginTop: '2px'
-                    }}>
-                      🤖
-                    </div>
-                    <div style={{
-                      backgroundColor: '#f1f5f9',
-                      padding: '16px 20px',
-                      borderRadius: '16px',
-                      borderTopLeftRadius: '6px',
-                      maxWidth: '85%',
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <div style={{ 
-                        fontSize: '15px',
-                        color: '#1e293b', 
-                        lineHeight: '1.6',
-                        marginBottom: '12px',
-                        fontWeight: '500'
-                      }}>
-                        Welcome! I'm your AI forensic assistant specialized in digital investigations.
-                      </div>
-                      <div style={{ 
-                        fontSize: '14px',
-                        color: '#475569',
-                        lineHeight: '1.5'
-                      }}>
-                        I can assist you with evidence analysis, investigation strategies, forensic procedures, and technical guidance throughout your case.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Professional Suggested Questions */}
-                  <div style={{ 
-                    backgroundColor: '#f8fafc',
-                    padding: '20px',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0'
-                  }}>
-                    <div style={{ 
-                      fontSize: '14px', 
-                      color: '#374151', 
-                      fontWeight: '600',
-                      marginBottom: '12px'
-                    }}>
-                      Common Investigation Questions
-                    </div>
-                    <div style={{ 
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                      gap: '8px'
-                    }}>
-                      {[
-                        "What evidence should I prioritize?",
-                        "How should I analyze encrypted files?",
-                        "What patterns indicate suspicious activity?",
-                        "Help me build a case timeline",
-                        "Which forensic tools are most effective?"
-                      ].map((question, index) => (
-                        <button
-                          key={index}
-                          style={{
-                            backgroundColor: '#ffffff',
-                            color: '#374151',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            padding: '10px 14px',
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            textAlign: 'left',
-                            fontWeight: '500'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#0ea5e9';
-                            e.target.style.color = '#ffffff';
-                            e.target.style.borderColor = '#0ea5e9';
-                            e.target.style.transform = 'translateY(-1px)';
-                            e.target.style.boxShadow = '0 4px 6px -1px rgba(14, 165, 233, 0.3)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#ffffff';
-                            e.target.style.color = '#374151';
-                            e.target.style.borderColor = '#d1d5db';
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = 'none';
-                          }}
-                          onClick={() => {
-                            console.log('Send question:', question);
-                          }}
-                        >
-                          {question}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Professional Chat Input */}
-                <div style={{
-                  padding: '20px 24px',
-                  backgroundColor: '#f8fafc',
-                  borderTop: '1px solid #e2e8f0'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '12px', 
-                    alignItems: 'flex-end'
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <textarea
-                        placeholder="Type your forensic question or case inquiry..."
-                        style={{
-                          width: '100%',
-                          minHeight: '44px',
-                          maxHeight: '120px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '12px',
-                          padding: '12px 16px',
-                          color: '#1e293b',
-                          fontSize: '14px',
-                          resize: 'none',
-                          outline: 'none',
-                          fontFamily: 'inherit',
-                          boxSizing: 'border-box',
-                          lineHeight: '1.5',
-                          transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#0ea5e9';
-                          e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#d1d5db';
-                          e.target.style.boxShadow = 'none';
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            console.log('Send message:', e.target.value);
-                            e.target.value = '';
-                          }
-                        }}
-                      />
-                    </div>
-                    <button
-                      style={{
-                        backgroundColor: '#0ea5e9',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '12px',
-                        padding: '12px 20px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        transition: 'all 0.2s ease',
-                        minWidth: '100px',
-                        justifyContent: 'center',
-                        boxShadow: '0 2px 4px -1px rgba(14, 165, 233, 0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#0284c7';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 6px -1px rgba(14, 165, 233, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#0ea5e9';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 2px 4px -1px rgba(14, 165, 233, 0.3)';
-                      }}
-                      onClick={() => {
-                        console.log('Send button clicked');
-                      }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                      </svg>
-                      Send
-                    </button>
-                  </div>
-                  <div style={{ 
-                    fontSize: '12px', 
-                    color: '#64748b', 
-                    marginTop: '8px',
-                    textAlign: 'center'
-                  }}>
-                    Press Enter to send • Shift+Enter for new line
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {currentView === 'ai' && <AIInvestigation />}
 
           {currentView === 'search' && (
             selectedCase ? <DatabaseSearch /> :

@@ -1292,12 +1292,12 @@ const NetworkAnalysis = () => {
           position: 'absolute',
           top: '20px',
           right: '20px',
-          backgroundColor: 'rgba(51, 65, 85, 0.95)',
+          backgroundColor: 'rgba(248, 250, 252, 0.95)',
           padding: '16px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
           minWidth: '200px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           zIndex: 1000
         }}>
           <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#1e293b' }}>Location Types</h4>
