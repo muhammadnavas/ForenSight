@@ -53,12 +53,13 @@ const NoCaseSelectedState = ({ featureName, description, requiresCase = true, re
     <img
       src="/curved-arrow.png"
       alt="Curved Arrow"
-      width="48"
-      height="48"
+      width="50"
+      height="50"
       className={className}
       style={{
-        filter: 'hue-rotate(200deg) brightness(1.2)',
-        transition: 'all 0.3s ease'
+        filter: 'hue-rotate(200deg) brightness(1.4) saturate(1.3) contrast(1.2)',
+        transition: 'all 0.3s ease',
+        dropShadow: '0 2px 8px rgba(14, 165, 233, 0.4)'
       }}
     />
   );
@@ -181,51 +182,27 @@ const NoCaseSelectedState = ({ featureName, description, requiresCase = true, re
 
             {/* Curved Arrow Pointing to Case Selector */}
             <div style={{
-              position: 'absolute',
-              top: '-80px',
-              right: '20px',
+              position: 'fixed',
+              top: '120px',
+              right: '200px',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'flex-end',
-              zIndex: 10
+              alignItems: 'center',
+              zIndex: 1000,
+              transform: 'rotate(16deg)'
             }}>
               {/* Curved Animated Arrow */}
               <div style={{
                 color: '#0ea5e9',
-                animation: 'curvedArrowBounce 2s infinite, arrowGlow 2s infinite',
-                marginBottom: '8px'
+                animation: 'curvedArrowBounce 2s infinite',
+                marginBottom: '8px',
+                transform: 'scale(1.2)'
               }}>
                 <CurvedArrowSVG className="curved-arrow-icon" />
               </div>
               
               {/* Label */}
-              <div style={{
-                backgroundColor: '#0ea5e9',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: '600',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 2px 4px rgba(14, 165, 233, 0.3)',
-                position: 'relative',
-                animation: 'pulse 2s infinite'
-              }}>
-                Select Case Here
-                
-                {/* Arrow pointer from label to circle */}
-                <div style={{
-                  position: 'absolute',
-                  top: '-6px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '0',
-                  height: '0',
-                  borderLeft: '6px solid transparent',
-                  borderRight: '6px solid transparent',
-                  borderBottom: '6px solid #0ea5e9'
-                }} />
-              </div>
+              
             </div>
           </div>
         )}
@@ -2489,13 +2466,13 @@ const DashboardInner = ({ onNavigateToHome }) => {
     /* Curved arrow bounce animation */
     @keyframes curvedArrowBounce {
       0%, 20%, 50%, 80%, 100% {
-        transform: rotate(-15deg) translateY(0px);
+        transform: scale(1.2) translateY(0px);
       }
       40% {
-        transform: rotate(-15deg) translateY(-8px);
+        transform: scale(1.3) translateY(-6px);
       }
       60% {
-        transform: rotate(-15deg) translateY(-4px);
+        transform: scale(1.2) translateY(-3px);
       }
     }
     
