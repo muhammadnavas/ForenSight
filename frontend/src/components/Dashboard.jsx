@@ -732,6 +732,22 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
   const { selectedCase, caseFiles, cases } = useCaseContext();
 
+  // Curved Arrow PNG Component for case selection
+  const CurvedArrowSVG = ({ className }) => (
+    <img
+      src="/curved-arrow.png"
+      alt="Curved Arrow"
+      width="50"
+      height="50"
+      className={className}
+      style={{
+        filter: 'hue-rotate(200deg) brightness(1.4) saturate(1.3) contrast(1.2)',
+        transition: 'all 0.3s ease',
+        dropShadow: '0 2px 8px rgba(14, 165, 233, 0.4)'
+      }}
+    />
+  );
+
   // Check if no cases are available or no case selected
   if (!selectedCase) {
     const noCasesAvailable = !cases || cases.length === 0;
@@ -835,34 +851,30 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                     e.target.style.transform = 'translateY(0)';
                   }}
                 >
-                  � Select Case Above
+                  Select Case Above
                 </button>
               </div>
-              
-              {/* Arrow pointing upward to case selector */}
+
               <div style={{
-                position: 'absolute',
-                top: '-40px',
-                right: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+              position: 'fixed',
+              top: '120px',
+              right: '200px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              zIndex: 1000,
+              transform: 'rotate(16deg)'
+            }}>
+              {/* Curved Animated Arrow */}
+              <div style={{
                 color: '#0ea5e9',
-                animation: 'pulse 2s infinite'
+                animation: 'curvedArrowBounce 2s infinite',
+                marginBottom: '8px',
+                transform: 'scale(1.2)'
               }}>
-                <div style={{ fontSize: '24px', marginBottom: '4px' }}>↗️</div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  fontWeight: '600',
-                  backgroundColor: '#0ea5e9',
-                  color: 'white',
-                  padding: '4px 8px',
-                  borderRadius: '12px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  Select Case Here
-                </div>
-              </div>
+                <CurvedArrowSVG className="curved-arrow-icon" />
+              </div>              
+            </div>
             </div>
           )}
         </div>
@@ -871,7 +883,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   }
 
   return (
-    <div style={{ padding: '24px', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box' }} className="standard-scrollbar">
+    <div style={{ padding: '24px', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box', position: 'relative' }} className="standard-scrollbar">
       <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'left' }}>
@@ -1013,7 +1025,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                       e.currentTarget.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.2)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#475569';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
                       e.currentTarget.style.transform = 'translateY(0)';
                       e.currentTarget.style.boxShadow = 'none';
                     }}>
@@ -1097,10 +1109,14 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                             gap: '4px'
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#475569';
+                            e.target.style.backgroundColor = '#f1f5f9';
+                            e.target.style.borderColor = '#0ea5e9';
+                            e.target.style.color = '#0ea5e9';
                           }}
                           onMouseLeave={(e) => {
                             e.target.style.backgroundColor = 'transparent';
+                            e.target.style.borderColor = '#e2e8f0';
+                            e.target.style.color = '#1e293b';
                           }}>
                             👁️ View
                           </button>
@@ -1117,10 +1133,14 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                             gap: '4px'
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#475569';
+                            e.target.style.backgroundColor = '#f1f5f9';
+                            e.target.style.borderColor = '#0ea5e9';
+                            e.target.style.color = '#0ea5e9';
                           }}
                           onMouseLeave={(e) => {
                             e.target.style.backgroundColor = 'transparent';
+                            e.target.style.borderColor = '#e2e8f0';
+                            e.target.style.color = '#1e293b';
                           }}>
                             🔍 Analyze
                           </button>
@@ -1132,11 +1152,11 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                         <div style={{
                           marginTop: '12px',
                           padding: '12px',
-                          backgroundColor: '#0f172a',
+                          backgroundColor: '#f1f5f9',
                           borderRadius: '6px',
-                          border: '1px solid #334155'
+                          border: '1px solid #cbd5e1'
                         }}>
-                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>
                             DATABASE FILE
                           </div>
                           <div style={{ fontSize: '11px', color: '#64748b' }}>
@@ -1149,11 +1169,11 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                         <div style={{
                           marginTop: '12px',
                           padding: '12px',
-                          backgroundColor: '#0f172a',
+                          backgroundColor: '#f1f5f9',
                           borderRadius: '6px',
-                          border: '1px solid #334155'
+                          border: '1px solid #cbd5e1'
                         }}>
-                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>
                             NETWORK CAPTURE
                           </div>
                           <div style={{ fontSize: '11px', color: '#64748b' }}>
@@ -1166,11 +1186,11 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                         <div style={{
                           marginTop: '12px',
                           padding: '12px',
-                          backgroundColor: '#0f172a',
+                          backgroundColor: '#f1f5f9',
                           borderRadius: '6px',
-                          border: '1px solid #334155'
+                          border: '1px solid #cbd5e1'
                         }}>
-                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>
                             STRUCTURED DATA
                           </div>
                           <div style={{ fontSize: '11px', color: '#64748b' }}>
@@ -1722,7 +1742,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                           justifyContent: 'center',
                           fontSize: '18px',
                           flexShrink: 0,
-                          border: '4px solid #334155',
+                          border: '4px solid #e2e8f0',
                           zIndex: 1
                         }}>
                           {eventIcon}
@@ -3171,13 +3191,13 @@ const DashboardInner = ({ onNavigateToHome }) => {
               <div style={{ 
                 marginBottom: '24px',
                 paddingBottom: '16px',
-                borderBottom: '1px solid #334155'
+                borderBottom: '1px solid #e2e8f0'
               }}>
                 <h1 style={{ 
                   fontSize: '24px', 
                   fontWeight: '700', 
                   marginBottom: '6px',
-                  color: '#f1f5f9',
+                  color: '#1e293b',
                   letterSpacing: '-0.025em'
                 }}>
                   AI Case Assistant
