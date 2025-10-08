@@ -913,10 +913,11 @@ const DatabaseSearch = () => {
           </p>
           <div style={{ 
             padding: '12px 16px',
-            backgroundColor: '#1e40af',
+            backgroundColor: '#e0f2fe',
             borderRadius: '8px',
             fontSize: '14px',
-            color: '#1e293b'
+            color: '#1e293b',
+            border: '1px solid #0ea5e9'
           }}>
             💡 Tip: Click the Files button in the header and select one file for search
           </div>
@@ -1071,8 +1072,8 @@ const DatabaseSearch = () => {
                 }))}
                 style={{
                   padding: '6px 8px',
-                  backgroundColor: '#475569',
-                  border: 'none',
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '4px',
                   color: '#1e293b',
                   fontSize: '11px',
@@ -1095,7 +1096,7 @@ const DatabaseSearch = () => {
             style={{
               width: '100%',
               padding: '8px',
-              backgroundColor: showAdvancedSearch ? '#1e40af' : 'transparent',
+              backgroundColor: showAdvancedSearch ? '#e0f2fe' : 'transparent',
               border: '1px solid #e2e8f0',
               borderRadius: '6px',
               color: '#1e293b',
@@ -1139,7 +1140,7 @@ const DatabaseSearch = () => {
                       style={{
                         width: '100%',
                         padding: '8px',
-                        backgroundColor: '#475569',
+                        backgroundColor: '#f8fafc',
                         border: 'none',
                         borderRadius: '4px',
                         color: '#1e293b',
@@ -1178,7 +1179,7 @@ const DatabaseSearch = () => {
                 {searchQuery ? 'No results found for your search' : 'Enter a search term to begin'}
               </p>
               {/* Debug info */}
-              <div style={{ fontSize: '10px', color: '#475569', marginTop: '8px' }}>
+              <div style={{ fontSize: '10px', color: '#64748b', marginTop: '8px' }}>
                 Debug: selectedFiles={selectedFiles.length}, hasData={hasData ? 'true' : 'false'}
               </div>
             </div>
@@ -1194,11 +1195,11 @@ const DatabaseSearch = () => {
       {/* Details Panel */}
       <div style={{
         flex: 1,
-        backgroundColor: '#0f172a',
+        backgroundColor: '#ffffff',
         overflow: 'auto',
         minWidth: 0
       }}>
-        <div style={{ padding: '20px', borderBottom: '1px solid #475569' }}>
+        <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
             📋 Item Details
           </h3>
