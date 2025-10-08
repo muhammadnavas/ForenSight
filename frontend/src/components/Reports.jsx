@@ -15,10 +15,10 @@ const Reports = () => {
 
   const containerStyle = {
     padding: '24px',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     width: '100%',
-    color: 'white'
+    color: '#1e293b'
   };
 
   const headerStyle = {
@@ -154,7 +154,7 @@ const Reports = () => {
                 {template.description}
               </p>
               <div>
-                <h4 style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#94a3b8' }}>
+                <h4 style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#64748b' }}>
                   INCLUDED SECTIONS:
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -162,8 +162,8 @@ const Reports = () => {
                     <span
                       key={index}
                       style={{
-                        backgroundColor: '#1e293b',
-                        color: '#94a3b8',
+                        backgroundColor: '#ffffff',
+                        color: '#64748b',
                         padding: '2px 8px',
                         borderRadius: '12px',
                         fontSize: '11px'
@@ -182,11 +182,11 @@ const Reports = () => {
       {/* Report Configuration */}
       {selectedTemplate && (
         <div style={{
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
             ⚙️ Report Configuration
@@ -208,11 +208,11 @@ const Reports = () => {
                 placeholder="Enter report title..."
                 style={{
                   width: '100%',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #475569',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '6px',
                   padding: '12px',
-                  color: 'white',
+                  color: '#1e293b',
                   fontSize: '14px'
                 }}
               />
@@ -228,11 +228,11 @@ const Reports = () => {
                 onChange={(e) => setReportData({...reportData, caseId: e.target.value})}
                 style={{
                   width: '100%',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #475569',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '6px',
                   padding: '12px',
-                  color: 'white',
+                  color: '#1e293b',
                   fontSize: '14px'
                 }}
               />
@@ -248,11 +248,11 @@ const Reports = () => {
                 onChange={(e) => setReportData({...reportData, investigator: e.target.value})}
                 style={{
                   width: '100%',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #475569',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
                   borderRadius: '6px',
                   padding: '12px',
-                  color: 'white',
+                  color: '#1e293b',
                   fontSize: '14px'
                 }}
               />
@@ -272,11 +272,11 @@ const Reports = () => {
                   })}
                   style={{
                     flex: 1,
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '6px',
                     padding: '12px',
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: '14px'
                   }}
                 />
@@ -289,11 +289,11 @@ const Reports = () => {
                   })}
                   style={{
                     flex: 1,
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '6px',
                     padding: '12px',
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: '14px'
                   }}
                 />
@@ -345,7 +345,7 @@ const Reports = () => {
             disabled={isGenerating || !reportData.title}
             style={{
               backgroundColor: isGenerating ? '#64748b' : '#059669',
-              color: 'white',
+              color: '#1e293b',
               border: 'none',
               padding: '16px 32px',
               borderRadius: '8px',
@@ -366,11 +366,11 @@ const Reports = () => {
 
       {/* Recent Reports */}
       <div style={{
-        backgroundColor: '#334155',
+        backgroundColor: '#f8fafc',
         borderRadius: '12px',
         padding: '24px',
         marginTop: '32px',
-        border: '1px solid #475569'
+        border: '1px solid #e2e8f0'
       }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
           📚 Recent Reports
@@ -383,7 +383,7 @@ const Reports = () => {
             { name: 'Technical Forensic Analysis', date: '2024-10-01', type: 'Technical', status: 'Ready' }
           ].map((report, index) => (
             <div key={index} style={{
-              backgroundColor: '#1e293b',
+              backgroundColor: '#ffffff',
               borderRadius: '8px',
               padding: '16px',
               display: 'flex',
@@ -404,7 +404,7 @@ const Reports = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{
                   backgroundColor: '#059669',
-                  color: 'white',
+                  color: '#1e293b',
                   padding: '4px 8px',
                   borderRadius: '12px',
                   fontSize: '11px',
@@ -414,7 +414,7 @@ const Reports = () => {
                 </span>
                 <button style={{
                   backgroundColor: '#0ea5e9',
-                  color: 'white',
+                  color: '#1e293b',
                   border: 'none',
                   padding: '6px 12px',
                   borderRadius: '6px',

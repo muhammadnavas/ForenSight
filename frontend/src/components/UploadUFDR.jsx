@@ -13,10 +13,10 @@ const UploadUFDR = ({ setCurrentView }) => {
 
   const containerStyle = {
     padding: '24px',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     width: '100%',
-    color: 'white',
+    color: '#1e293b',
     overflowX: 'hidden',
     boxSizing: 'border-box'
   };
@@ -41,8 +41,8 @@ const UploadUFDR = ({ setCurrentView }) => {
   };
 
   const uploadAreaStyle = {
-    backgroundColor: isDragging ? '#1e40af' : '#334155',
-    border: `2px dashed ${isDragging ? '#3b82f6' : '#475569'}`,
+    backgroundColor: isDragging ? '#e0f2fe' : '#f8fafc',
+    border: `2px dashed ${isDragging ? '#0ea5e9' : '#cbd5e1'}`,
     borderRadius: '12px',
     padding: '64px 32px',
     textAlign: 'center',
@@ -61,7 +61,7 @@ const UploadUFDR = ({ setCurrentView }) => {
     fontSize: '18px',
     fontWeight: '600',
     marginBottom: '8px',
-    color: isDragging ? 'white' : '#e2e8f0'
+    color: isDragging ? '#0284c7' : '#1e293b'
   };
 
   const uploadSubtextStyle = {
@@ -72,7 +72,7 @@ const UploadUFDR = ({ setCurrentView }) => {
 
   const browseButtonStyle = {
     backgroundColor: '#0ea5e9',
-    color: 'white',
+    color: '#ffffff',
     border: 'none',
     padding: '12px 24px',
     borderRadius: '8px',
@@ -361,7 +361,7 @@ const UploadUFDR = ({ setCurrentView }) => {
         {(error || casesError) && (
           <div style={{
             backgroundColor: '#dc2626',
-            color: 'white',
+            color: '#1e293b',
             padding: '12px',
             borderRadius: '8px',
             marginBottom: '16px',
@@ -372,7 +372,7 @@ const UploadUFDR = ({ setCurrentView }) => {
               onClick={() => setError(null)}
               style={{
                 backgroundColor: 'transparent',
-                color: 'white',
+                color: '#1e293b',
                 border: 'none',
                 float: 'right',
                 cursor: 'pointer',
@@ -387,11 +387,11 @@ const UploadUFDR = ({ setCurrentView }) => {
 
       {/* Selected Case Info */}
       <div style={{
-        backgroundColor: '#334155',
+        backgroundColor: '#f8fafc',
         borderRadius: '12px',
         padding: '24px',
         marginBottom: '32px',
-        border: '1px solid #475569'
+        border: '1px solid #e2e8f0'
       }}>
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           📋 Upload Target
@@ -400,7 +400,7 @@ const UploadUFDR = ({ setCurrentView }) => {
         {selectedCase ? (
           <div style={{
             backgroundColor: '#059669',
-            color: 'white',
+            color: '#1e293b',
             padding: '16px',
             borderRadius: '8px',
             fontSize: '14px',
@@ -422,7 +422,7 @@ const UploadUFDR = ({ setCurrentView }) => {
           <div style={{
             padding: '16px',
             backgroundColor: '#f59e0b',
-            color: 'white',
+            color: '#1e293b',
             borderRadius: '8px',
             fontSize: '14px',
             textAlign: 'center',
@@ -496,11 +496,11 @@ const UploadUFDR = ({ setCurrentView }) => {
 
       {/* Supported Formats */}
       <div style={{
-        backgroundColor: '#334155',
+        backgroundColor: '#f8fafc',
         borderRadius: '12px',
         padding: '20px',
         marginBottom: '32px',
-        border: '1px solid #475569'
+        border: '1px solid #e2e8f0'
       }}>
         <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
           📋 Supported File Formats
@@ -523,7 +523,7 @@ const UploadUFDR = ({ setCurrentView }) => {
               alignItems: 'center',
               gap: '12px',
               padding: '12px',
-              backgroundColor: '#1e293b',
+              backgroundColor: '#ffffff',
               borderRadius: '8px'
             }}>
               <span style={{ fontSize: '20px' }}>{format.icon}</span>
@@ -539,11 +539,11 @@ const UploadUFDR = ({ setCurrentView }) => {
       {/* Upload Statistics */}
       {uploadedFiles.length > 0 && (
         <div style={{
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '12px',
           padding: '20px',
           marginBottom: '24px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
             📊 Upload Statistics
@@ -590,11 +590,11 @@ const UploadUFDR = ({ setCurrentView }) => {
       {/* Uploaded Files List */}
       {uploadedFiles.length > 0 && (
         <div style={{
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <div style={{
             display: 'flex',
@@ -609,7 +609,7 @@ const UploadUFDR = ({ setCurrentView }) => {
               <button
                 style={{
                   backgroundColor: isProcessing ? '#64748b' : '#059669',
-                  color: 'white',
+                  color: '#1e293b',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '6px',
@@ -632,7 +632,7 @@ const UploadUFDR = ({ setCurrentView }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {uploadedFiles.map((file) => (
               <div key={file.id} style={{
-                backgroundColor: '#1e293b',
+                backgroundColor: '#ffffff',
                 borderRadius: '8px',
                 padding: '16px',
                 display: 'flex',
@@ -649,7 +649,7 @@ const UploadUFDR = ({ setCurrentView }) => {
                           file.status === 'completed' ? '#059669' :
                           file.status === 'processed' ? '#7c3aed' :
                           file.status === 'failed' ? '#dc2626' : '#0ea5e9',
-                        color: 'white',
+                        color: '#1e293b',
                         padding: '2px 8px',
                         borderRadius: '12px',
                         fontSize: '11px',
@@ -667,7 +667,7 @@ const UploadUFDR = ({ setCurrentView }) => {
                           }}
                           style={{
                             backgroundColor: '#059669',
-                            color: 'white',
+                            color: '#1e293b',
                             border: 'none',
                             padding: '4px 8px',
                             borderRadius: '4px',

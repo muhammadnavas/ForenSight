@@ -14,10 +14,10 @@ const QueryInterface = () => {
 
   const containerStyle = {
     padding: '24px',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     width: '100%',
-    color: 'white'
+    color: '#1e293b'
   };
 
   const headerStyle = {
@@ -47,26 +47,26 @@ const QueryInterface = () => {
     alignItems: 'center',
     gap: '8px',
     padding: '8px 16px',
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     borderRadius: '8px',
     fontSize: '14px'
   };
 
   const searchContainerStyle = {
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     borderRadius: '12px',
     padding: '24px',
     marginBottom: '32px',
-    border: '1px solid #475569'
+    border: '1px solid #e2e8f0'
   };
 
   const inputStyle = {
     width: '100%',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     border: '2px solid #475569',
     borderRadius: '8px',
     padding: '16px 20px',
-    color: 'white',
+    color: '#1e293b',
     fontSize: '16px',
     outline: 'none',
     marginBottom: '16px'
@@ -74,7 +74,7 @@ const QueryInterface = () => {
 
   const buttonStyle = {
     backgroundColor: '#1e40af',
-    color: 'white',
+    color: '#1e293b',
     border: 'none',
     borderRadius: '8px',
     padding: '12px 24px',
@@ -95,7 +95,7 @@ const QueryInterface = () => {
 
   const suggestionButtonStyle = {
     backgroundColor: '#475569',
-    color: 'white',
+    color: '#1e293b',
     border: 'none',
     borderRadius: '20px',
     padding: '8px 16px',
@@ -105,9 +105,9 @@ const QueryInterface = () => {
   };
 
   const resultsStyle = {
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     borderRadius: '12px',
-    border: '1px solid #475569',
+    border: '1px solid #e2e8f0',
     overflow: 'hidden'
   };
 
@@ -167,7 +167,7 @@ const QueryInterface = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{
               backgroundColor: typeColors[result.type] || '#6b7280',
-              color: 'white',
+              color: '#1e293b',
               padding: '4px 8px',
               borderRadius: '12px',
               fontSize: '12px',
@@ -182,7 +182,7 @@ const QueryInterface = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{
               backgroundColor: result.relevance > 90 ? '#ef4444' : result.relevance > 70 ? '#f59e0b' : '#6b7280',
-              color: 'white',
+              color: '#1e293b',
               padding: '2px 6px',
               borderRadius: '8px',
               fontSize: '11px',
@@ -222,18 +222,18 @@ const QueryInterface = () => {
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 40px',
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '20px',
-            border: '1px solid #475569',
+            border: '1px solid #e2e8f0',
             maxWidth: '500px',
             width: '100%',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🗂️</div>
-            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
               No Case Selected
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+            <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5' }}>
               Please select a case from the header to start querying
             </p>
           </div>
@@ -254,18 +254,18 @@ const QueryInterface = () => {
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 40px',
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '20px',
-            border: '1px solid #475569',
+            border: '1px solid #e2e8f0',
             maxWidth: '500px',
             width: '100%',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🔍</div>
-            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
               No Files Selected
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
+            <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
               Please select files from the header dropdown to enable natural language queries
             </p>
             <div style={{ 
@@ -273,7 +273,7 @@ const QueryInterface = () => {
               backgroundColor: '#1e40af',
               borderRadius: '8px',
               fontSize: '14px',
-              color: 'white'
+              color: '#1e293b'
             }}>
               � Tip: Click the Files button in the header to select files for querying
             </div>
@@ -367,9 +367,9 @@ const QueryInterface = () => {
             <button
               key={index}
               style={{
-                backgroundColor: '#334155',
-                color: 'white',
-                border: '1px solid #475569',
+                backgroundColor: '#f8fafc',
+                color: '#1e293b',
+                border: '1px solid #e2e8f0',
                 borderRadius: '8px',
                 padding: '12px 16px',
                 textAlign: 'left',
@@ -402,11 +402,11 @@ const QueryInterface = () => {
       {/* No Results */}
       {!isSearching && searchResults.length === 0 && query && (
         <div style={{
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '12px',
           padding: '40px',
           textAlign: 'center',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
           <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>No results found</h3>
@@ -419,11 +419,11 @@ const QueryInterface = () => {
       {/* Loading State */}
       {isSearching && (
         <div style={{
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '12px',
           padding: '40px',
           textAlign: 'center',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
           <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Analyzing Evidence...</h3>

@@ -223,18 +223,18 @@ const EvidenceViewer = () => {
 
   const containerStyle = {
     padding: '24px',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
-    color: 'white',
+    color: '#1e293b',
     width: '100%',
     boxSizing: 'border-box'
   };
 
   const sidebarStyle = {
     width: '280px',
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     borderRadius: '12px',
-    border: '1px solid #475569',
+    border: '1px solid #e2e8f0',
     padding: '24px',
     marginBottom: '24px'
   };
@@ -256,20 +256,20 @@ const EvidenceViewer = () => {
   });
 
   const fileCardStyle = {
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     borderRadius: '12px',
     padding: '20px',
-    border: '1px solid #475569',
+    border: '1px solid #e2e8f0',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     height: 'fit-content'
   };
 
   const fileListItemStyle = {
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     borderRadius: '8px',
     padding: '16px',
-    border: '1px solid #475569',
+    border: '1px solid #e2e8f0',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     marginBottom: '8px',
@@ -309,7 +309,7 @@ const EvidenceViewer = () => {
         </div>
         <div style={{
           backgroundColor: file.processed ? '#059669' : '#f59e0b',
-          color: 'white',
+          color: '#1e293b',
           padding: '4px 8px',
           borderRadius: '12px',
           fontSize: '10px',
@@ -351,7 +351,7 @@ const EvidenceViewer = () => {
       </div>
       <div style={{
         backgroundColor: file.processed ? '#059669' : '#f59e0b',
-        color: 'white',
+        color: '#1e293b',
         padding: '4px 8px',
         borderRadius: '12px',
         fontSize: '10px',
@@ -375,18 +375,18 @@ const EvidenceViewer = () => {
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 40px',
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '20px',
-            border: '1px solid #475569',
+            border: '1px solid #e2e8f0',
             maxWidth: '500px',
             width: '100%',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📁</div>
-            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
               No Case Selected
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+            <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5' }}>
               Please select a case from the header to view its evidence files
             </p>
           </div>
@@ -419,7 +419,7 @@ const EvidenceViewer = () => {
       }}>
         <button style={{
           backgroundColor: '#1e40af',
-          color: 'white',
+          color: '#1e293b',
           border: 'none',
           borderRadius: '8px',
           padding: '12px 20px',
@@ -436,13 +436,13 @@ const EvidenceViewer = () => {
 
       {/* Categories Filter */}
       <div style={{
-        backgroundColor: '#334155',
+        backgroundColor: '#f8fafc',
         borderRadius: '12px',
-        border: '1px solid #475569',
+        border: '1px solid #e2e8f0',
         padding: '24px',
         marginBottom: '24px'
       }}>
-        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#e2e8f0' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#1e293b' }}>
           Filter by Category
         </h3>
         <div style={{ 
@@ -462,7 +462,7 @@ const EvidenceViewer = () => {
                 cursor: 'pointer',
                 backgroundColor: selectedCategory === category.id ? '#1e40af' : '#1e293b',
                 border: selectedCategory === category.id ? '2px solid #3b82f6' : '1px solid #475569',
-                color: 'white',
+                color: '#1e293b',
                 transition: 'all 0.2s ease'
               }}
               onClick={() => setSelectedCategory(category.id)}
@@ -480,7 +480,7 @@ const EvidenceViewer = () => {
               <span style={{ fontSize: '14px', fontWeight: '500' }}>{category.name}</span>
               <span style={{
                 backgroundColor: selectedCategory === category.id ? 'rgba(255,255,255,0.2)' : '#64748b',
-                color: 'white',
+                color: '#1e293b',
                 padding: '4px 8px',
                 borderRadius: '12px',
                 fontSize: '12px',
@@ -495,13 +495,13 @@ const EvidenceViewer = () => {
 
       {/* Statistics */}
       <div style={{
-        backgroundColor: '#334155',
+        backgroundColor: '#f8fafc',
         borderRadius: '12px',
-        border: '1px solid #475569',
+        border: '1px solid #e2e8f0',
         padding: '24px',
         marginBottom: '24px'
       }}>
-        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#e2e8f0' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#1e293b' }}>
           📊 File Statistics
         </h3>
         <div style={{
@@ -509,19 +509,19 @@ const EvidenceViewer = () => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
           gap: '16px'
         }}>
-          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0ea5e9', marginBottom: '4px' }}>
               {evidenceFiles.length}
             </div>
             <div style={{ fontSize: '12px', color: '#64748b' }}>Total Files</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669', marginBottom: '4px' }}>
               {evidenceFiles.filter(f => f.processed).length}
             </div>
             <div style={{ fontSize: '12px', color: '#64748b' }}>Processed</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px' }}>
               {evidenceFiles.filter(f => !f.processed).length}
             </div>
@@ -547,15 +547,15 @@ const EvidenceViewer = () => {
           <div style={{
             textAlign: 'center',
             padding: '60px 20px',
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '16px',
-            border: '1px solid #475569'
+            border: '1px solid #e2e8f0'
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📂</div>
-            <h3 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: '#e2e8f0' }}>
+            <h3 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: '#1e293b' }}>
               No Evidence Files Found
             </h3>
-            <p style={{ fontSize: '16px', color: '#94a3b8', marginBottom: '32px', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '16px', color: '#64748b', marginBottom: '32px', lineHeight: '1.6' }}>
               {selectedCategory === 'all' 
                 ? 'Upload UFDR files to begin your forensic investigation.' 
                 : `No files found in the ${categories.find(c => c.id === selectedCategory)?.name} category.`}
@@ -564,7 +564,7 @@ const EvidenceViewer = () => {
               <button 
                 style={{
                   backgroundColor: '#0ea5e9',
-                  color: 'white',
+                  color: '#1e293b',
                   border: 'none',
                   padding: '14px 28px',
                   borderRadius: '10px',
@@ -593,7 +593,7 @@ const EvidenceViewer = () => {
                 <button 
                   style={{
                     backgroundColor: '#6b7280',
-                    color: 'white',
+                    color: '#1e293b',
                     border: 'none',
                     padding: '14px 28px',
                     borderRadius: '10px',
@@ -642,7 +642,7 @@ const EvidenceViewer = () => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: '#1e293b',
+            backgroundColor: '#ffffff',
             borderRadius: '12px',
             padding: '32px',
             maxWidth: '600px',
@@ -676,7 +676,7 @@ const EvidenceViewer = () => {
                   <span>{selectedFile.type.toUpperCase()}</span>
                   <span style={{
                     backgroundColor: selectedFile.processed ? '#059669' : '#f59e0b',
-                    color: 'white',
+                    color: '#1e293b',
                     padding: '2px 8px',
                     borderRadius: '8px',
                     fontSize: '12px'
@@ -696,9 +696,9 @@ const EvidenceViewer = () => {
               <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Metadata</h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {Object.entries(selectedFile.metadata).map(([key, value]) => (
-                  <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', backgroundColor: '#334155', borderRadius: '6px' }}>
+                  <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px' }}>
                     <span style={{ color: '#64748b', fontSize: '14px' }}>{key}:</span>
-                    <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>{value}</span>
+                    <span style={{ color: '#1e293b', fontSize: '14px', fontWeight: '600' }}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -707,7 +707,7 @@ const EvidenceViewer = () => {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button style={{
                 backgroundColor: '#1e40af',
-                color: 'white',
+                color: '#1e293b',
                 border: 'none',
                 borderRadius: '8px',
                 padding: '12px 20px',
@@ -719,7 +719,7 @@ const EvidenceViewer = () => {
               </button>
               <button style={{
                 backgroundColor: '#059669',
-                color: 'white',
+                color: '#1e293b',
                 border: 'none',
                 borderRadius: '8px',
                 padding: '12px 20px',

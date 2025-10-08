@@ -1,6 +1,6 @@
-# ForenSight Frontend
+# Insightic Frontend
 
-This is the frontend application for ForenSight - a digital forensics analysis platform built with React + Vite.
+This is the frontend application for Insightic - a digital forensics analysis platform built with React + Vite.
 
 Currently, two official plugins are available:
 

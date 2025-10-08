@@ -24,10 +24,10 @@ const CaseManagement = () => {
 
   const containerStyle = {
     padding: '24px',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     width: '100%',
-    color: 'white'
+    color: '#1e293b'
   };
 
   const headerStyle = {
@@ -99,7 +99,7 @@ const CaseManagement = () => {
             {error && (
               <div style={{
                 backgroundColor: '#dc2626',
-                color: 'white',
+                color: '#1e293b',
                 padding: '12px',
                 borderRadius: '8px',
                 marginBottom: '16px',
@@ -110,7 +110,7 @@ const CaseManagement = () => {
                   onClick={clearError}
                   style={{
                     backgroundColor: 'transparent',
-                    color: 'white',
+                    color: '#1e293b',
                     border: 'none',
                     float: 'right',
                     cursor: 'pointer',
@@ -127,7 +127,7 @@ const CaseManagement = () => {
             disabled={loading}
             style={{
               backgroundColor: loading ? '#64748b' : '#0ea5e9',
-              color: 'white',
+              color: '#1e293b',
               border: 'none',
               padding: '12px 20px',
               borderRadius: '8px',
@@ -224,10 +224,10 @@ const CaseManagement = () => {
             <div
               key={caseItem._id || caseItem.caseId}
               style={{
-                backgroundColor: '#334155',
+                backgroundColor: '#f8fafc',
                 borderRadius: '16px',
                 padding: '24px',
-                border: '1px solid #475569',
+                border: '1px solid #e2e8f0',
                 transition: 'all 0.2s ease',
                 cursor: 'pointer'
               }}
@@ -259,7 +259,7 @@ const CaseManagement = () => {
                     </h3>
                     <span style={{
                       backgroundColor: getPriorityColor(caseItem.priority),
-                      color: 'white',
+                      color: '#1e293b',
                       padding: '2px 8px',
                       borderRadius: '12px',
                       fontSize: '10px',
@@ -273,7 +273,7 @@ const CaseManagement = () => {
                     fontSize: '16px', 
                     fontWeight: '500', 
                     margin: '0 0 4px 0',
-                    color: '#e2e8f0' 
+                    color: '#1e293b' 
                   }}>
                     {caseItem.name}
                   </p>
@@ -287,7 +287,7 @@ const CaseManagement = () => {
                 </div>
                 <span style={{
                   backgroundColor: getStatusColor(caseItem.status),
-                  color: 'white',
+                  color: '#1e293b',
                   padding: '4px 8px',
                   borderRadius: '6px',
                   fontSize: '11px',
@@ -306,7 +306,7 @@ const CaseManagement = () => {
                 marginBottom: '20px'
               }}>
                 <div style={{
-                  backgroundColor: '#1e293b',
+                  backgroundColor: '#ffffff',
                   padding: '12px',
                   borderRadius: '8px'
                 }}>
@@ -318,7 +318,7 @@ const CaseManagement = () => {
                   </div>
                 </div>
                 <div style={{
-                  backgroundColor: '#1e293b',
+                  backgroundColor: '#ffffff',
                   padding: '12px',
                   borderRadius: '8px'
                 }}>
@@ -337,7 +337,7 @@ const CaseManagement = () => {
                   <div style={{
                     width: '100%',
                     height: '6px',
-                    backgroundColor: '#1e293b',
+                    backgroundColor: '#ffffff',
                     borderRadius: '3px',
                     overflow: 'hidden'
                   }}>
@@ -382,7 +382,7 @@ const CaseManagement = () => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '16px',
             padding: '32px',
             width: '500px',
@@ -404,11 +404,11 @@ const CaseManagement = () => {
                   placeholder="Enter case name..."
                   style={{
                     width: '100%',
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     padding: '12px',
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: '14px'
                   }}
                 />
@@ -425,11 +425,11 @@ const CaseManagement = () => {
                   placeholder="Enter investigator name..."
                   style={{
                     width: '100%',
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     padding: '12px',
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: '14px'
                   }}
                 />
@@ -444,11 +444,11 @@ const CaseManagement = () => {
                   onChange={(e) => setNewCase({...newCase, priority: e.target.value})}
                   style={{
                     width: '100%',
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     padding: '12px',
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: '14px'
                   }}
                 >
@@ -469,11 +469,11 @@ const CaseManagement = () => {
                   rows={3}
                   style={{
                     width: '100%',
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     padding: '12px',
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: '14px',
                     resize: 'vertical'
                   }}
@@ -492,7 +492,7 @@ const CaseManagement = () => {
                 style={{
                   backgroundColor: 'transparent',
                   color: '#64748b',
-                  border: '1px solid #475569',
+                  border: '1px solid #e2e8f0',
                   padding: '10px 20px',
                   borderRadius: '8px',
                   fontSize: '14px',
@@ -506,7 +506,7 @@ const CaseManagement = () => {
                 disabled={!newCase.name || !newCase.investigator}
                 style={{
                   backgroundColor: !newCase.name || !newCase.investigator ? '#64748b' : '#059669',
-                  color: 'white',
+                  color: '#1e293b',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '8px',

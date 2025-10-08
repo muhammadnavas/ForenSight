@@ -42,8 +42,8 @@ const HomePage = ({ onNavigateToDashboard }) => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #374151 100%)',
-      color: 'white',
+      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)',
+      color: '#1e293b',
       overflow: 'hidden'
     }}>
       {/* Background Effects */}
@@ -54,8 +54,8 @@ const HomePage = ({ onNavigateToDashboard }) => {
         right: 0,
         bottom: 0,
         background: `
-          radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
           radial-gradient(circle at 40% 60%, rgba(16, 185, 129, 0.05) 0%, transparent 50%)
         `,
         pointerEvents: 'none'
@@ -96,18 +96,18 @@ const HomePage = ({ onNavigateToDashboard }) => {
           <h1 style={{
             fontSize: 'clamp(3rem, 8vw, 6rem)',
             fontWeight: '900',
-            color: '#ffffff',
+            color: '#1e293b',
             margin: '0 0 32px 0',
             lineHeight: 1,
-            textShadow: '0 0 40px rgba(255, 255, 255, 0.1)'
+            textShadow: '0 4px 8px rgba(30, 41, 59, 0.1)'
           }}>
-            ForenSight
+            Insightic
           </h1>
 
           {/* Subtitle */}
           <p style={{
             fontSize: 'clamp(1.25rem, 4vw, 2rem)',
-            color: '#94a3b8',
+            color: '#475569',
             fontWeight: '600',
             marginBottom: '24px',
             animation: isVisible ? 'slideInUp 1s ease-out 0.2s both' : 'none'
@@ -118,7 +118,7 @@ const HomePage = ({ onNavigateToDashboard }) => {
           {/* Description */}
           <p style={{
             fontSize: '1.2rem',
-            color: '#cbd5e1',
+            color: '#64748b',
             maxWidth: '800px',
             margin: '0 auto 48px',
             lineHeight: '1.8',
@@ -185,7 +185,7 @@ const HomePage = ({ onNavigateToDashboard }) => {
             fontSize: '2.5rem',
             fontWeight: '800',
             marginBottom: '16px',
-            background: 'linear-gradient(45deg, #ffffff, #94a3b8)',
+            background: 'linear-gradient(45deg, #1e293b, #475569)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
@@ -215,10 +215,10 @@ const HomePage = ({ onNavigateToDashboard }) => {
                 key={index}
                 style={{
                   background: hoveredFeature === index 
-                    ? `linear-gradient(135deg, ${feature.color}20, ${feature.color}10)` 
-                    : 'rgba(30, 41, 59, 0.6)',
+                    ? `linear-gradient(135deg, ${feature.color}15, ${feature.color}08)` 
+                    : 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(10px)',
-                  border: `1px solid ${hoveredFeature === index ? feature.color + '40' : 'rgba(255, 255, 255, 0.1)'}`,
+                  border: `1px solid ${hoveredFeature === index ? feature.color + '30' : 'rgba(203, 213, 225, 0.3)'}`,
                   borderRadius: '20px',
                   padding: '40px 24px',
                   textAlign: 'center',
@@ -226,8 +226,8 @@ const HomePage = ({ onNavigateToDashboard }) => {
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   transform: hoveredFeature === index ? 'translateY(-8px) scale(1.02)' : 'translateY(0) scale(1)',
                   boxShadow: hoveredFeature === index 
-                    ? `0 25px 50px -12px ${feature.color}40` 
-                    : '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
+                    ? `0 25px 50px -12px ${feature.color}30` 
+                    : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
                   animation: `slideInUp 0.6s ease-out ${index * 0.1 + 1.2}s both`
                 }}
                 onMouseEnter={() => setHoveredFeature(index)}
@@ -248,14 +248,14 @@ const HomePage = ({ onNavigateToDashboard }) => {
                   fontSize: '1.3rem',
                   fontWeight: '700',
                   marginBottom: '16px',
-                  color: hoveredFeature === index ? 'white' : '#e2e8f0'
+                  color: hoveredFeature === index ? '#1e293b' : '#334155'
                 }}>
                   {feature.title}
                 </h3>
 
                 {/* Feature Description */}
                 <p style={{
-                  color: hoveredFeature === index ? '#f1f5f9' : '#94a3b8',
+                  color: hoveredFeature === index ? '#475569' : '#64748b',
                   lineHeight: '1.6',
                   fontSize: '0.95rem'
                 }}>
@@ -268,11 +268,12 @@ const HomePage = ({ onNavigateToDashboard }) => {
 
         {/* Final CTA Section */}
         <div style={{
-          background: 'rgba(30, 41, 59, 0.4)',
+          background: 'rgba(255, 255, 255, 0.9)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(203, 213, 225, 0.3)',
           borderRadius: '24px',
           padding: '60px 40px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
           animation: isVisible ? 'slideInUp 1s ease-out 1.6s both' : 'none'
         }}>
           <h2 style={{
@@ -289,12 +290,12 @@ const HomePage = ({ onNavigateToDashboard }) => {
           
           <p style={{
             fontSize: '1.2rem',
-            color: '#cbd5e1',
+            color: '#475569',
             marginBottom: '40px',
             maxWidth: '600px',
             margin: '0 auto 40px'
           }}>
-            Join forensic professionals worldwide who trust ForenSight for faster, 
+            Join forensic professionals worldwide who trust Insightic for faster, 
             more accurate digital investigations.
           </p>
           

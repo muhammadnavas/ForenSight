@@ -1,7 +1,7 @@
 {
-  "name": "forensight-backend",
+  "name": "insightic-backend",
   "version": "1.0.0",
-  "description": "Backend API for ForenSight forensic analysis platform",
+  "description": "Backend API for Insightic forensic analysis platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,7 +15,7 @@
     "api",
     "mongodb"
   ],
-  "author": "ForenSight Team",
+  "author": "Insightic Team",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",

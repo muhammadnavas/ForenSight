@@ -16,7 +16,7 @@ function App() {
 
   return (
     <CaseProvider>
-      <div style={{ minHeight: '100vh', backgroundColor: currentView === 'dashboard' ? '#1e293b' : 'white' }}>
+      <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
         {currentView === 'home' ? (
           <HomePage onNavigateToDashboard={navigateToDashboard} />
         ) : (

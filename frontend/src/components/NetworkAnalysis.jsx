@@ -873,8 +873,8 @@ const NetworkAnalysis = () => {
     display: 'flex',
     height: '100vh',
     width: '100%',
-    backgroundColor: '#1e293b',
-    color: 'white'
+    backgroundColor: '#ffffff',
+    color: '#1e293b'
   };
   
   const emptyStateStyle = {
@@ -898,7 +898,7 @@ const NetworkAnalysis = () => {
 
   const sidebarStyle = {
     width: '320px',
-    backgroundColor: '#334155',
+    backgroundColor: '#f8fafc',
     padding: '24px',
     borderLeft: '1px solid #475569',
     overflowY: 'auto'
@@ -1295,32 +1295,32 @@ const NetworkAnalysis = () => {
           backgroundColor: 'rgba(51, 65, 85, 0.95)',
           padding: '16px',
           borderRadius: '8px',
-          border: '1px solid #475569',
+          border: '1px solid #e2e8f0',
           minWidth: '200px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           zIndex: 1000
         }}>
-          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'white' }}>Location Types</h4>
+          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#1e293b' }}>Location Types</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
               <span style={{ fontSize: '16px' }}>👤</span>
               <span>Suspect Locations</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
               <span style={{ fontSize: '16px' }}>👥</span>
               <span>Victim Locations</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
               <span style={{ fontSize: '16px' }}>⚠️</span>
               <span>Crime Scenes</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
               <span style={{ fontSize: '16px' }}>🏢</span>
               <span>Infrastructure</span>
             </div>
           </div>
           <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #475569' }}>
-            <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+            <div style={{ fontSize: '11px', color: '#64748b' }}>
               <div>🔴 High Risk</div>
               <div>🟡 Medium Risk</div>
               <div>🟢 Low Risk</div>
@@ -1377,7 +1377,7 @@ const NetworkAnalysis = () => {
                   <span style={{
                     backgroundColor: selectedNode.confidence === 'HIGH' ? '#10b981' : 
                                   selectedNode.confidence === 'MEDIUM' ? '#f59e0b' : '#6b7280',
-                    color: 'white',
+                    color: '#1e293b',
                     padding: '2px 8px',
                     borderRadius: '8px',
                     fontSize: '12px'
@@ -1408,7 +1408,7 @@ const NetworkAnalysis = () => {
                   <span style={{ color: '#64748b' }}>Status:</span>
                   <span style={{
                     backgroundColor: selectedNode.status === 'SECURED' ? '#10b981' : '#f59e0b',
-                    color: 'white',
+                    color: '#1e293b',
                     padding: '2px 8px',
                     borderRadius: '8px',
                     fontSize: '12px'
@@ -1434,7 +1434,7 @@ const NetworkAnalysis = () => {
               backgroundColor: selectedNode.riskLevel === 'CRITICAL' ? '#ef4444' : 
                             selectedNode.riskLevel === 'HIGH' ? '#f59e0b' :
                             selectedNode.riskLevel === 'MEDIUM' ? '#10b981' : '#6b7280',
-              color: 'white',
+              color: '#1e293b',
               padding: '2px 8px',
               borderRadius: '8px',
               fontSize: '12px',
@@ -1459,17 +1459,17 @@ const NetworkAnalysis = () => {
                 
                 return (
                   <div key={index} style={{
-                    backgroundColor: '#1e293b',
+                    backgroundColor: '#ffffff',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #475569'
+                    border: '1px solid #e2e8f0'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '14px' }}>{otherNode.label || otherNode.name || 'Unknown'}</span>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <span style={{
                           backgroundColor: getConnectionColor(conn),
-                          color: 'white',
+                          color: '#1e293b',
                           padding: '2px 6px',
                           borderRadius: '8px',
                           fontSize: '10px',
@@ -1509,7 +1509,7 @@ const NetworkAnalysis = () => {
             }
           </p>
           {hasData && (
-            <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#334155', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
               <div style={{ fontSize: '14px', marginBottom: '8px' }}>Case: {caseData.caseName}</div>
               <div style={{ fontSize: '12px', color: '#64748b' }}>
                 {statistics.totalSuspects} suspects, {statistics.networkComplexity} network elements
@@ -1535,18 +1535,18 @@ const NetworkAnalysis = () => {
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 40px',
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '20px',
-            border: '1px solid #475569',
+            border: '1px solid #e2e8f0',
             maxWidth: '500px',
             width: '100%',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🗂️</div>
-            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
               No Case Selected
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+            <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5' }}>
               Please select a case from the header to start network analysis
             </p>
           </div>
@@ -1567,18 +1567,18 @@ const NetworkAnalysis = () => {
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 40px',
-            backgroundColor: '#334155',
+            backgroundColor: '#f8fafc',
             borderRadius: '20px',
-            border: '1px solid #475569',
+            border: '1px solid #e2e8f0',
             maxWidth: '500px',
             width: '100%',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
           }}>
             <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>📊</div>
-            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
               No File Selected
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
+            <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
               Please select a single file from the header dropdown to analyze network connections
             </p>
             <div style={{ 
@@ -1586,7 +1586,7 @@ const NetworkAnalysis = () => {
               backgroundColor: '#1e40af',
               borderRadius: '8px',
               fontSize: '14px',
-              color: 'white'
+              color: '#1e293b'
             }}>
               💡 Tip: Click the Files button in the header and select one file for analysis
             </div>
@@ -1603,7 +1603,7 @@ const NetworkAnalysis = () => {
       <div style={canvasContainerStyle}>
         {/* Toolbar */}
         <div style={toolbarStyle}>
-          <div style={{ display: 'flex', backgroundColor: '#334155', borderRadius: '8px', padding: '4px' }}>
+          <div style={{ display: 'flex', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '4px' }}>
             {[
               { id: 'contacts', label: '👥 Contacts', icon: '👥' },
               { id: 'locations', label: '📍 Locations', icon: '📍' },
@@ -1613,7 +1613,7 @@ const NetworkAnalysis = () => {
                 key={mode.id}
                 style={{
                   backgroundColor: analysisMode === mode.id ? '#1e40af' : 'transparent',
-                  color: 'white',
+                  color: '#1e293b',
                   border: 'none',
                   borderRadius: '4px',
                   padding: '8px 16px',
@@ -1630,7 +1630,7 @@ const NetworkAnalysis = () => {
             ))}
           </div>
 
-          <div style={{ display: 'flex', backgroundColor: '#334155', borderRadius: '8px', padding: '4px' }}>
+          <div style={{ display: 'flex', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '4px' }}>
             {[
               { id: 'all', label: 'All Time' },
               { id: '7d', label: '7 Days' },
@@ -1640,7 +1640,7 @@ const NetworkAnalysis = () => {
                 key={range.id}
                 style={{
                   backgroundColor: timeRange === range.id ? '#059669' : 'transparent',
-                  color: 'white',
+                  color: '#1e293b',
                   border: 'none',
                   borderRadius: '4px',
                   padding: '8px 12px',
@@ -1660,10 +1660,10 @@ const NetworkAnalysis = () => {
           position: 'absolute',
           top: '20px',
           right: '20px',
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           padding: '16px',
           borderRadius: '8px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Legend</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
@@ -1694,10 +1694,10 @@ const NetworkAnalysis = () => {
           position: 'absolute',
           bottom: '20px',
           left: '20px',
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           padding: '16px',
           borderRadius: '8px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
             <div>
@@ -1726,11 +1726,11 @@ const NetworkAnalysis = () => {
 
         {/* Analysis Summary */}
         <div style={{
-          backgroundColor: '#1e293b',
+          backgroundColor: '#ffffff',
           padding: '16px',
           borderRadius: '8px',
           marginBottom: '24px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Summary</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
@@ -1753,10 +1753,10 @@ const NetworkAnalysis = () => {
 
         {/* Node Details */}
         <div style={{
-          backgroundColor: '#1e293b',
+          backgroundColor: '#ffffff',
           padding: '16px',
           borderRadius: '8px',
-          border: '1px solid #475569'
+          border: '1px solid #e2e8f0'
         }}>
           <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
             {selectedNode ? 'Node Details' : 'Select Node'}

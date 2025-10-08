@@ -723,7 +723,7 @@ const DatabaseSearch = () => {
       key={`${item.type}-${item.id || index}`}
       style={{
         backgroundColor: selectedItem?.id === item.id ? '#1e40af' : '#1e293b',
-        border: '1px solid #475569',
+        border: '1px solid #e2e8f0',
         borderRadius: '8px',
         padding: '16px',
         marginBottom: '12px',
@@ -745,7 +745,7 @@ const DatabaseSearch = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
         <span style={{ fontSize: '20px' }}>{item.icon}</span>
         <div style={{ flex: 1 }}>
-          <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: 'white' }}>
+          <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#1e293b' }}>
             {item.name || item.label || item.id || 'Unknown'}
           </h4>
           <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0 0' }}>
@@ -762,7 +762,7 @@ const DatabaseSearch = () => {
       </div>
       
       {item.description && (
-        <p style={{ fontSize: '14px', color: '#94a3b8', margin: '8px 0 0 0', lineHeight: '1.4' }}>
+        <p style={{ fontSize: '14px', color: '#64748b', margin: '8px 0 0 0', lineHeight: '1.4' }}>
           {item.description.length > 100 ? `${item.description.substring(0, 100)}...` : item.description}
         </p>
       )}
@@ -792,7 +792,7 @@ const DatabaseSearch = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
           <span style={{ fontSize: '24px' }}>{selectedItem.icon}</span>
           <div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0, color: 'white' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0, color: '#1e293b' }}>
               {selectedItem.name || selectedItem.label || selectedItem.id}
             </h3>
             <p style={{ fontSize: '14px', color: '#64748b', margin: '4px 0 0 0' }}>
@@ -816,7 +816,7 @@ const DatabaseSearch = () => {
                 }}>
                   {key.replace(/([A-Z])/g, ' $1').trim()}:
                 </span>
-                <span style={{ fontSize: '14px', color: 'white', wordBreak: 'break-word' }}>
+                <span style={{ fontSize: '14px', color: '#1e293b', wordBreak: 'break-word' }}>
                   {typeof value === 'object' ? JSON.stringify(value, null, 2) : value.toString()}
                 </span>
               </div>
@@ -858,25 +858,25 @@ const DatabaseSearch = () => {
         display: 'flex',
         height: 'calc(100vh - 120px)',
         backgroundColor: '#0f172a',
-        color: 'white',
+        color: '#1e293b',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
         <div style={{ 
           textAlign: 'center', 
           padding: '60px 40px',
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '20px',
-          border: '1px solid #475569',
+          border: '1px solid #e2e8f0',
           maxWidth: '500px',
           width: '100%',
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
         }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🗂️</div>
-          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
             No Case Selected
           </h3>
-          <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5' }}>
+          <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5' }}>
             Please select a case from the header to start database search
           </p>
         </div>
@@ -890,25 +890,25 @@ const DatabaseSearch = () => {
         display: 'flex',
         height: 'calc(100vh - 120px)',
         backgroundColor: '#0f172a',
-        color: 'white',
+        color: '#1e293b',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
         <div style={{ 
           textAlign: 'center', 
           padding: '60px 40px',
-          backgroundColor: '#334155',
+          backgroundColor: '#f8fafc',
           borderRadius: '20px',
-          border: '1px solid #475569',
+          border: '1px solid #e2e8f0',
           maxWidth: '500px',
           width: '100%',
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
         }}>
           <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.8 }}>🔍</div>
-          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#e2e8f0', fontWeight: '700' }}>
+          <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#1e293b', fontWeight: '700' }}>
             No File Selected
           </h3>
-          <p style={{ color: '#94a3b8', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
+          <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
             Please select a single file from the header dropdown to search its database contents
           </p>
           <div style={{ 
@@ -916,7 +916,7 @@ const DatabaseSearch = () => {
             backgroundColor: '#1e40af',
             borderRadius: '8px',
             fontSize: '14px',
-            color: 'white'
+            color: '#1e293b'
           }}>
             💡 Tip: Click the Files button in the header and select one file for search
           </div>
@@ -930,7 +930,7 @@ const DatabaseSearch = () => {
       display: 'flex',
       height: 'calc(100vh - 120px)',
       backgroundColor: '#0f172a',
-      color: 'white',
+      color: '#1e293b',
       fontFamily: 'Inter, system-ui, sans-serif',
       overflow: 'hidden',
       width: '100%',
@@ -941,7 +941,7 @@ const DatabaseSearch = () => {
         width: '400px',
         minWidth: '400px',
         maxWidth: '400px',
-        backgroundColor: '#1e293b',
+        backgroundColor: '#ffffff',
         borderRight: '1px solid #475569',
         display: 'flex',
         flexDirection: 'column',
@@ -955,12 +955,12 @@ const DatabaseSearch = () => {
           
           {/* Debug Info */}
           <div style={{ 
-            backgroundColor: '#1e293b', 
+            backgroundColor: '#ffffff', 
             padding: '8px', 
             borderRadius: '4px', 
             marginBottom: '16px',
             fontSize: '12px',
-            color: '#94a3b8'
+            color: '#64748b'
           }}>
             <div>Selected Files: {selectedFiles.length}</div>
             <div>Case Files: {caseFiles?.length || 0}</div>
@@ -980,7 +980,7 @@ const DatabaseSearch = () => {
                 marginTop: '8px',
                 padding: '4px 8px',
                 backgroundColor: '#059669',
-                color: 'white',
+                color: '#1e293b',
                 border: 'none',
                 borderRadius: '4px',
                 fontSize: '10px',
@@ -1001,10 +1001,10 @@ const DatabaseSearch = () => {
               style={{
                 width: '100%',
                 padding: '12px 40px 12px 16px',
-                backgroundColor: '#334155',
-                border: '1px solid #475569',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
                 borderRadius: '8px',
-                color: 'white',
+                color: '#1e293b',
                 fontSize: '14px',
                 outline: 'none',
                 boxSizing: 'border-box'
@@ -1028,10 +1028,10 @@ const DatabaseSearch = () => {
             style={{
               width: '100%',
               padding: '8px 12px',
-              backgroundColor: '#334155',
-              border: '1px solid #475569',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
               borderRadius: '6px',
-              color: 'white',
+              color: '#1e293b',
               fontSize: '12px',
               marginBottom: '16px',
               boxSizing: 'border-box'
@@ -1074,7 +1074,7 @@ const DatabaseSearch = () => {
                   backgroundColor: '#475569',
                   border: 'none',
                   borderRadius: '4px',
-                  color: 'white',
+                  color: '#1e293b',
                   fontSize: '11px',
                   flex: 1,
                   minWidth: '80px'
@@ -1096,9 +1096,9 @@ const DatabaseSearch = () => {
               width: '100%',
               padding: '8px',
               backgroundColor: showAdvancedSearch ? '#1e40af' : 'transparent',
-              border: '1px solid #475569',
+              border: '1px solid #e2e8f0',
               borderRadius: '6px',
-              color: 'white',
+              color: '#1e293b',
               fontSize: '12px',
               cursor: 'pointer',
               boxSizing: 'border-box'
@@ -1112,9 +1112,9 @@ const DatabaseSearch = () => {
             <div style={{
               marginTop: '16px',
               padding: '16px',
-              backgroundColor: '#334155',
+              backgroundColor: '#f8fafc',
               borderRadius: '8px',
-              border: '1px solid #475569'
+              border: '1px solid #e2e8f0'
             }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
@@ -1125,7 +1125,7 @@ const DatabaseSearch = () => {
                   { key: 'deviceId', label: 'Device ID', placeholder: 'ABC123...' }
                 ].map(field => (
                   <div key={field.key}>
-                    <label style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px', display: 'block' }}>
+                    <label style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px', display: 'block' }}>
                       {field.label}
                     </label>
                     <input
@@ -1142,7 +1142,7 @@ const DatabaseSearch = () => {
                         backgroundColor: '#475569',
                         border: 'none',
                         borderRadius: '4px',
-                        color: 'white',
+                        color: '#1e293b',
                         fontSize: '12px',
                         boxSizing: 'border-box'
                       }}

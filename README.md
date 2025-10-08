@@ -1,6 +1,6 @@
-# ForenSight - Digital Forensics Case Management Platform
+# Insightic - Digital Forensics Case Management Platform
 
-ForenSight is a comprehensive digital forensics platform with MongoDB-based case management, real-time map visualization, and AI-powered analysis capabilities.
+Insightic is a comprehensive digital forensics platform with MongoDB-based case management, real-time map visualization, and AI-powered analysis capabilities.
 
 ## 🚀 Features
 
@@ -90,7 +90,7 @@ mongodb+srv://navasns0409:rx4Fvt8un1dCovaz@cluster0.lz452k4.mongodb.net/
 ## 📁 Project Structure
 
 ```
-ForenSight/
+Insightic/
 ├── backend/
 │   ├── server.js              # Express server
 │   ├── package.json           # Backend dependencies
@@ -179,8 +179,8 @@ MAX_FILE_SIZE=104857600
 
 ## 📞 Support
 
-For technical support or questions about ForenSight, please refer to the project documentation or contact the development team.
+For technical support or questions about Insightic, please refer to the project documentation or contact the development team.
 
 ---
 
-**ForenSight** - Professional Digital Forensics Platform
+**Insightic** - Professional Digital Forensics Platform
