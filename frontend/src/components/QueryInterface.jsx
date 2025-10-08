@@ -275,7 +275,7 @@ const QueryInterface = () => {
               fontSize: '14px',
               color: '#1e293b'
             }}>
-              � Tip: Click the Files button in the header to select files for querying
+              Tip: Click the Files button in the header to select files for querying
             </div>
           </div>
         </div>
@@ -286,7 +286,7 @@ const QueryInterface = () => {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>�🔍 Query Interface - {selectedCase.name}</h1>
+        <h1 style={titleStyle}>🔍 Query Interface - {selectedCase.name}</h1>
         <p style={subtitleStyle}>
           Use natural language to search and analyze evidence data from selected files
         </p>

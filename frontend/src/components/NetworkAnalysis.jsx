@@ -889,10 +889,10 @@ const NetworkAnalysis = () => {
   const canvasContainerStyle = {
     flex: 1,
     position: 'relative',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#f8fafc',
     margin: '24px',
     borderRadius: '12px',
-    border: '1px solid #334155',
+    border: '1px solid #e2e8f0',
     overflow: 'hidden'
   };
 
@@ -900,7 +900,7 @@ const NetworkAnalysis = () => {
     width: '320px',
     backgroundColor: '#f8fafc',
     padding: '24px',
-    borderLeft: '1px solid #475569',
+    borderLeft: '1px solid #e2e8f0',
     overflowY: 'auto'
   };
 
@@ -1319,7 +1319,7 @@ const NetworkAnalysis = () => {
               <span>Infrastructure</span>
             </div>
           </div>
-          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #475569' }}>
+          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
             <div style={{ fontSize: '11px', color: '#64748b' }}>
               <div>🔴 High Risk</div>
               <div>🟡 Medium Risk</div>
@@ -1583,10 +1583,11 @@ const NetworkAnalysis = () => {
             </p>
             <div style={{ 
               padding: '12px 16px',
-              backgroundColor: '#1e40af',
+              backgroundColor: '#e0f2fe',
               borderRadius: '8px',
               fontSize: '14px',
-              color: '#1e293b'
+              color: '#1e293b',
+              border: '1px solid #0ea5e9'
             }}>
               💡 Tip: Click the Files button in the header and select one file for analysis
             </div>
@@ -1612,7 +1613,7 @@ const NetworkAnalysis = () => {
               <button
                 key={mode.id}
                 style={{
-                  backgroundColor: analysisMode === mode.id ? '#1e40af' : 'transparent',
+                  backgroundColor: analysisMode === mode.id ? '#0ea5e9' : 'transparent',
                   color: '#1e293b',
                   border: 'none',
                   borderRadius: '4px',

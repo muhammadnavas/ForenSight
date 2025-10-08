@@ -251,7 +251,7 @@ const EvidenceViewer = () => {
     borderRadius: '8px',
     cursor: 'pointer',
     marginBottom: '8px',
-    backgroundColor: isActive ? '#1e40af' : 'transparent',
+    backgroundColor: isActive ? '#0ea5e9' : 'transparent',
     transition: 'background-color 0.2s ease'
   });
 
@@ -332,8 +332,8 @@ const EvidenceViewer = () => {
       key={file.id}
       style={fileListItemStyle}
       onClick={() => setSelectedFile(file)}
-      onMouseEnter={(e) => e.target.style.backgroundColor = '#475569'}
-      onMouseLeave={(e) => e.target.style.backgroundColor = '#334155'}
+      onMouseEnter={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+      onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
     >
       <span style={{ fontSize: '24px' }}>{file.icon}</span>
       <div style={{ flex: 1 }}>
@@ -418,8 +418,8 @@ const EvidenceViewer = () => {
         marginBottom: '24px'
       }}>
         <button style={{
-          backgroundColor: '#1e40af',
-          color: '#1e293b',
+          backgroundColor: '#0ea5e9',
+          color: 'white',
           border: 'none',
           borderRadius: '8px',
           padding: '12px 20px',
@@ -460,20 +460,20 @@ const EvidenceViewer = () => {
                 padding: '12px 16px',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                backgroundColor: selectedCategory === category.id ? '#1e40af' : '#1e293b',
-                border: selectedCategory === category.id ? '2px solid #3b82f6' : '1px solid #475569',
-                color: '#1e293b',
+                backgroundColor: selectedCategory === category.id ? '#0ea5e9' : '#f8fafc',
+                border: selectedCategory === category.id ? '2px solid #0ea5e9' : '1px solid #e2e8f0',
+                color: selectedCategory === category.id ? 'white' : '#1e293b',
                 transition: 'all 0.2s ease'
               }}
               onClick={() => setSelectedCategory(category.id)}
               onMouseEnter={(e) => {
                 if (selectedCategory !== category.id) {
-                  e.target.style.backgroundColor = '#475569';
+                  e.target.style.backgroundColor = '#e2e8f0';
                 }
               }}
               onMouseLeave={(e) => {
                 if (selectedCategory !== category.id) {
-                  e.target.style.backgroundColor = '#1e293b';
+                  e.target.style.backgroundColor = '#f8fafc';
                 }
               }}
             >
@@ -647,7 +647,7 @@ const EvidenceViewer = () => {
             padding: '32px',
             maxWidth: '600px',
             width: '90%',
-            border: '1px solid #334155'
+            border: '1px solid #e2e8f0'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>File Details</h2>
@@ -706,8 +706,8 @@ const EvidenceViewer = () => {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button style={{
-                backgroundColor: '#1e40af',
-                color: '#1e293b',
+                backgroundColor: '#0ea5e9',
+                color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 padding: '12px 20px',

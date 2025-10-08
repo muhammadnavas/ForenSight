@@ -441,7 +441,7 @@ const UploadUFDR = ({ setCurrentView }) => {
           ...uploadAreaStyle,
           opacity: selectedCase ? 1 : 0.5,
           cursor: selectedCase ? 'pointer' : 'not-allowed',
-          backgroundColor: selectedCase ? (isDragging ? '#1e40af' : '#334155') : '#1e293b'
+          backgroundColor: selectedCase ? (isDragging ? '#e0f2fe' : '#f8fafc') : '#f1f5f9'
         }}
         onDragOver={selectedCase ? handleDragOver : undefined}
         onDragEnter={selectedCase ? handleDragEnter : undefined}

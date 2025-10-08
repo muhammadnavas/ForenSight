@@ -722,7 +722,7 @@ const DatabaseSearch = () => {
     <div
       key={`${item.type}-${item.id || index}`}
       style={{
-        backgroundColor: selectedItem?.id === item.id ? '#1e40af' : '#1e293b',
+        backgroundColor: selectedItem?.id === item.id ? '#e0f2fe' : '#f8fafc',
         border: '1px solid #e2e8f0',
         borderRadius: '8px',
         padding: '16px',
@@ -733,7 +733,7 @@ const DatabaseSearch = () => {
       onClick={() => setSelectedItem(item)}
       onMouseEnter={(e) => {
         if (selectedItem?.id !== item.id) {
-          e.target.style.backgroundColor = '#334155';
+          e.target.style.backgroundColor = '#f8fafc';
         }
       }}
       onMouseLeave={(e) => {
@@ -889,7 +889,7 @@ const DatabaseSearch = () => {
       <div style={{
         display: 'flex',
         height: 'calc(100vh - 120px)',
-        backgroundColor: '#0f172a',
+        backgroundColor: '#ffffff',
         color: '#1e293b',
         alignItems: 'center',
         justifyContent: 'center'

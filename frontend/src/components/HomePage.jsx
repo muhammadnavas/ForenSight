@@ -248,7 +248,7 @@ const HomePage = ({ onNavigateToDashboard }) => {
                   fontSize: '1.3rem',
                   fontWeight: '700',
                   marginBottom: '16px',
-                  color: hoveredFeature === index ? '#1e293b' : '#334155'
+                  color: hoveredFeature === index ? '#1e293b' : '#64748b'
                 }}>
                   {feature.title}
                 </h3>
