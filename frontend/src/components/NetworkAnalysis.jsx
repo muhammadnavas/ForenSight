@@ -403,13 +403,35 @@ const NetworkAnalysis = () => {
     }
     
     function getConnectionLabel(mode, node1, node2) {
-      const labels = {
-        contacts: ['Called', 'Texted', 'Met', 'Related', 'Business'],
-        locations: ['Traveled', 'Visited', 'Located', 'Moved', 'Present'],
-        transactions: ['Paid', 'Transferred', 'Received', 'Deposited', 'Withdrew']
+      // Generate more meaningful labels based on context
+      const riskBasedLabels = {
+        contacts: {
+          high: ['Suspicious Call', 'Encrypted Chat', 'Secret Meeting', 'Criminal Contact'],
+          medium: ['Frequent Contact', 'Business Call', 'Regular Meeting', 'Known Associate'],
+          low: ['Social Contact', 'Family Call', 'Friend', 'Casual Meeting']
+        },
+        locations: {
+          high: ['Crime Scene Visit', 'Surveillance Location', 'Hidden Meeting', 'Suspicious Movement'],
+          medium: ['Frequent Visit', 'Business Location', 'Regular Travel', 'Known Area'],
+          low: ['Casual Visit', 'Social Location', 'Travel Route', 'Public Area']
+        },
+        transactions: {
+          high: ['Suspicious Transfer', 'Large Payment', 'Hidden Transaction', 'Money Laundering'],
+          medium: ['Business Payment', 'Regular Transfer', 'Known Transaction', 'Financial Link'],
+          low: ['Small Payment', 'Personal Transfer', 'Regular Transaction', 'Normal Payment']
+        }
       };
       
-      const modeLabels = labels[mode] || ['Connected'];
+      // Determine risk level for labeling
+      const node1Risk = node1.riskLevel || 'low';
+      const node2Risk = node2.riskLevel || 'low';
+      const maxRisk = (node1Risk === 'critical' || node2Risk === 'critical') ? 'high' :
+                     (node1Risk === 'high' || node2Risk === 'high') ? 'high' :
+                     (node1Risk === 'medium' || node2Risk === 'medium') ? 'medium' : 'low';
+      
+      const modeLabels = riskBasedLabels[mode] && riskBasedLabels[mode][maxRisk] || 
+                        ['Connected', 'Linked', 'Associated', 'Related'];
+      
       return modeLabels[Math.floor(Math.random() * modeLabels.length)];
     }
 
@@ -1220,10 +1242,19 @@ const NetworkAnalysis = () => {
   };
 
   const getNodeStrokeColor = (node) => {
-    if (node.riskLevel === 'critical') return '#991b1b';
-    if (node.riskLevel === 'high') return '#dc2626';
-    if (node.category === 'suspect') return '#7f1d1d';
-    return 'rgba(0,0,0,0.2)';
+    // Enhanced stroke colors for better visibility
+    if (node.riskLevel === 'critical') return '#7f1d1d'; // Dark red
+    if (node.riskLevel === 'high') return '#b91c1c'; // Red
+    if (node.riskLevel === 'medium') return '#047857'; // Dark green
+    if (node.riskLevel === 'low') return '#475569'; // Dark gray
+    
+    // Category-based stroke colors
+    if (node.category === 'suspect') return '#7f1d1d'; // Dark red
+    if (node.category === 'victim') return '#047857'; // Dark green
+    if (node.category === 'witness') return '#0c4a6e'; // Dark blue
+    if (node.category === 'financial') return '#b45309'; // Dark orange
+    
+    return '#374151'; // Default dark gray
   };
 
   const getConnectionColor = (connection) => {
@@ -1363,6 +1394,35 @@ const NetworkAnalysis = () => {
     // Safety check - ensure data exists and has required properties
     if (!data || !data.nodes || data.nodes.length === 0) {
       console.log('❌ No network data available for analysis mode:', analysisMode);
+      
+      const emptyStateConfig = {
+        contacts: {
+          icon: '👥',
+          title: 'No Contact Data Available',
+          description: 'No contacts, phone calls, or communication records found in the selected files.',
+          suggestion: 'Try selecting files that contain contact information, call logs, or messaging data.'
+        },
+        locations: {
+          icon: '📍',
+          title: 'No Location Data Available', 
+          description: 'No GPS coordinates, location records, or geographic data found in the selected files.',
+          suggestion: 'Try selecting files that contain GPS logs, location history, or geographic metadata.'
+        },
+        transactions: {
+          icon: '💰',
+          title: 'No Financial Data Available',
+          description: 'No financial transactions, bank records, or payment data found in the selected files.',
+          suggestion: 'Try selecting files that contain financial records, transaction logs, or payment history.'
+        }
+      };
+      
+      const config = emptyStateConfig[analysisMode] || {
+        icon: '🔍',
+        title: 'No Data Available',
+        description: 'No network data found in the selected files.',
+        suggestion: 'Select different files to analyze network connections.'
+      };
+      
       return (
         <div style={{ 
           display: 'flex', 
@@ -1371,13 +1431,28 @@ const NetworkAnalysis = () => {
           justifyContent: 'center', 
           height: '100%', 
           color: '#64748b',
-          padding: '20px',
-          textAlign: 'center'
+          padding: '40px',
+          textAlign: 'center',
+          maxWidth: '500px',
+          margin: '0 auto'
         }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-          <div style={{ fontSize: '16px', marginBottom: '8px' }}>No network data available</div>
-          <div style={{ fontSize: '14px' }}>
-            Select files to analyze {analysisMode} data
+          <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.7 }}>{config.icon}</div>
+          <div style={{ fontSize: '20px', marginBottom: '12px', fontWeight: '600', color: '#1e293b' }}>
+            {config.title}
+          </div>
+          <div style={{ fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
+            {config.description}
+          </div>
+          <div style={{ 
+            fontSize: '13px', 
+            padding: '12px 16px',
+            backgroundColor: '#f1f5f9',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            color: '#475569',
+            maxWidth: '400px'
+          }}>
+            💡 {config.suggestion}
           </div>
         </div>
       );
@@ -1410,18 +1485,26 @@ const NetworkAnalysis = () => {
                 x2={toNode.x}
                 y2={toNode.y}
                 stroke={getConnectionColor(connection)}
-                strokeWidth={Math.max(1, connection.strength / 10)}
-                strokeOpacity={0.6}
+                strokeWidth={Math.max(2, Math.min(connection.strength / 2, 6))}
+                strokeOpacity={0.7}
+                style={{
+                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                }}
               />
               {/* Connection label */}
               <text
                 x={(fromNode.x + toNode.x) / 2}
                 y={(fromNode.y + toNode.y) / 2 - 5}
-                fill="#64748b"
+                fill="#1e293b"
                 fontSize="10"
+                fontWeight="500"
                 textAnchor="middle"
+                style={{ 
+                  textShadow: '0 1px 3px rgba(255,255,255,0.9)',
+                  pointerEvents: 'none'
+                }}
               >
-                {connection.strength}
+                {connection.label || connection.type || `${connection.strength} contacts`}
               </text>
             </g>
           );
@@ -1443,20 +1526,31 @@ const NetworkAnalysis = () => {
                 fill={getNodeColor(node)}
                 stroke={selectedNode?.id === node.id ? '#ffffff' : getNodeStrokeColor(node)}
                 strokeWidth={selectedNode?.id === node.id ? "4" : "2"}
-                style={{ cursor: 'pointer', filter: selectedNode?.id === node.id ? 'drop-shadow(0 0 8px rgba(0,0,0,0.3))' : 'none' }}
+                style={{ 
+                  cursor: 'pointer', 
+                  filter: selectedNode?.id === node.id ? 
+                    'drop-shadow(0 0 12px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.6))' : 
+                    'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                  transition: 'all 0.2s ease'
+                }}
                 onClick={() => setSelectedNode(node)}
               />
               <text
                 x={node.x}
                 y={node.y + 35}
-              fill="white"
-              fontSize="12"
-              textAnchor="middle"
-              style={{ cursor: 'pointer', userSelect: 'none' }}
-              onClick={() => setSelectedNode(node)}
-            >
-              {(node.label || node.name || 'Unknown').length > 15 ? (node.label || node.name || 'Unknown').substring(0, 15) + '...' : (node.label || node.name || 'Unknown')}
-            </text>
+                fill="#1e293b"
+                fontSize="12"
+                fontWeight="600"
+                textAnchor="middle"
+                style={{ 
+                  cursor: 'pointer', 
+                  userSelect: 'none',
+                  textShadow: '0 1px 2px rgba(255,255,255,0.8)'
+                }}
+                onClick={() => setSelectedNode(node)}
+              >
+                {(node.label || node.name || 'Unknown').length > 15 ? (node.label || node.name || 'Unknown').substring(0, 15) + '...' : (node.label || node.name || 'Unknown')}
+              </text>
           </g>
         );
         })}
@@ -1816,7 +1910,8 @@ const NetworkAnalysis = () => {
         {/* Connection Details */}
         <div style={{ marginBottom: '24px' }}>
           <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
-            Connections ({selectedNode.connections})
+            {analysisMode === 'contacts' ? 'Communications' : 
+             analysisMode === 'locations' ? 'Location Links' : 'Financial Connections'} ({selectedNode.connections || 0})
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {networkData[analysisMode].connections
@@ -1832,27 +1927,49 @@ const NetworkAnalysis = () => {
                     borderRadius: '8px',
                     border: '1px solid #e2e8f0'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px' }}>{otherNode.label || otherNode.name || 'Unknown'}</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                          {otherNode?.label || otherNode?.name || 'Unknown Entity'}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>
+                          {conn.label || conn.type || 'Connected'}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                         <span style={{
                           backgroundColor: getConnectionColor(conn),
-                          color: '#1e293b',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
+                          color: '#ffffff',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
                           fontSize: '10px',
-                          textTransform: 'uppercase'
+                          fontWeight: '500',
+                          textTransform: 'capitalize'
                         }}>
-                          {conn.type}
+                          {conn.type?.replace('-', ' ') || 'Link'}
                         </span>
-                        <span style={{ fontSize: '12px', color: '#64748b' }}>
-                          {conn.strength} interactions
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>
+                          Strength: {conn.strength || 1}
                         </span>
                       </div>
                     </div>
                   </div>
                 );
               })}
+            {networkData[analysisMode].connections
+              .filter(conn => conn.from === selectedNode.id || conn.to === selectedNode.id).length === 0 && (
+              <div style={{
+                backgroundColor: '#f8fafc',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px dashed #e2e8f0',
+                textAlign: 'center',
+                color: '#64748b',
+                fontSize: '13px'
+              }}>
+                No connections found for this entity
+              </div>
+            )}
           </div>
         </div>
 
@@ -1972,7 +2089,14 @@ const NetworkAnalysis = () => {
       <div style={canvasContainerStyle}>
         {/* Toolbar */}
         <div style={toolbarStyle}>
-          <div style={{ display: 'flex', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '4px' }}>
+          <div style={{ 
+            display: 'flex', 
+            backgroundColor: 'rgba(248, 250, 252, 0.95)', 
+            borderRadius: '8px', 
+            padding: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(8px)'
+          }}>
             {[
               { id: 'contacts', label: '👥 Contacts', icon: '👥' },
               { id: 'locations', label: '📍 Locations', icon: '📍' },
@@ -1982,24 +2106,44 @@ const NetworkAnalysis = () => {
                 key={mode.id}
                 style={{
                   backgroundColor: analysisMode === mode.id ? '#0ea5e9' : 'transparent',
-                  color: '#1e293b',
+                  color: analysisMode === mode.id ? '#ffffff' : '#1e293b',
                   border: 'none',
-                  borderRadius: '4px',
-                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  padding: '10px 16px',
                   cursor: 'pointer',
                   fontSize: '14px',
+                  fontWeight: analysisMode === mode.id ? '600' : '500',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: analysisMode === mode.id ? '0 2px 4px rgba(14, 165, 233, 0.3)' : 'none'
                 }}
                 onClick={() => setAnalysisMode(mode.id)}
+                onMouseEnter={(e) => {
+                  if (analysisMode !== mode.id) {
+                    e.target.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (analysisMode !== mode.id) {
+                    e.target.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 {mode.icon} {mode.label.split(' ')[1]}
               </button>
             ))}
           </div>
 
-          <div style={{ display: 'flex', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '4px' }}>
+          <div style={{ 
+            display: 'flex', 
+            backgroundColor: 'rgba(248, 250, 252, 0.95)', 
+            borderRadius: '8px', 
+            padding: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(8px)'
+          }}>
             {[
               { id: 'all', label: 'All Time' },
               { id: '7d', label: '7 Days' },
@@ -2009,14 +2153,27 @@ const NetworkAnalysis = () => {
                 key={range.id}
                 style={{
                   backgroundColor: timeRange === range.id ? '#059669' : 'transparent',
-                  color: '#1e293b',
+                  color: timeRange === range.id ? '#ffffff' : '#1e293b',
                   border: 'none',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   padding: '8px 12px',
                   cursor: 'pointer',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  fontWeight: timeRange === range.id ? '600' : '500',
+                  transition: 'all 0.2s ease',
+                  boxShadow: timeRange === range.id ? '0 2px 4px rgba(5, 150, 105, 0.3)' : 'none'
                 }}
                 onClick={() => setTimeRange(range.id)}
+                onMouseEnter={(e) => {
+                  if (timeRange !== range.id) {
+                    e.target.style.backgroundColor = 'rgba(5, 150, 105, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (timeRange !== range.id) {
+                    e.target.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 {range.label}
               </button>
@@ -2029,28 +2186,76 @@ const NetworkAnalysis = () => {
           position: 'absolute',
           top: '20px',
           right: '20px',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'rgba(248, 250, 252, 0.95)',
           padding: '16px',
           borderRadius: '8px',
-          border: '1px solid #e2e8f0'
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(8px)'
         }}>
-          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Legend</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#1e293b' }}>Risk Levels</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ef4444' }}></div>
-              <span>Subject</span>
+              <div style={{ 
+                width: '14px', 
+                height: '14px', 
+                borderRadius: '50%', 
+                backgroundColor: '#dc2626',
+                border: '2px solid #7f1d1d'
+              }}></div>
+              <span style={{ color: '#1e293b', fontWeight: '500' }}>Critical Risk</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></div>
-              <span>Known Contact</span>
+              <div style={{ 
+                width: '14px', 
+                height: '14px', 
+                borderRadius: '50%', 
+                backgroundColor: '#f59e0b',
+                border: '2px solid #b45309'
+              }}></div>
+              <span style={{ color: '#1e293b', fontWeight: '500' }}>High Risk</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#f59e0b' }}></div>
-              <span>Unknown</span>
+              <div style={{ 
+                width: '14px', 
+                height: '14px', 
+                borderRadius: '50%', 
+                backgroundColor: '#10b981',
+                border: '2px solid #047857'
+              }}></div>
+              <span style={{ color: '#1e293b', fontWeight: '500' }}>Medium Risk</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#8b5cf6' }}></div>
-              <span>International</span>
+              <div style={{ 
+                width: '14px', 
+                height: '14px', 
+                borderRadius: '50%', 
+                backgroundColor: '#64748b',
+                border: '2px solid #374151'
+              }}></div>
+              <span style={{ color: '#1e293b', fontWeight: '500' }}>Low Risk</span>
+            </div>
+          </div>
+          
+          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+            <h5 style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#1e293b' }}>Categories</h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#dc2626' }}>●</span>
+                <span style={{ color: '#64748b' }}>Suspects</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#059669' }}>●</span>
+                <span style={{ color: '#64748b' }}>Victims</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#0ea5e9' }}>●</span>
+                <span style={{ color: '#64748b' }}>Witnesses</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#f59e0b' }}>●</span>
+                <span style={{ color: '#64748b' }}>Financial</span>
+              </div>
             </div>
           </div>
         </div>
@@ -2063,23 +2268,49 @@ const NetworkAnalysis = () => {
           position: 'absolute',
           bottom: '20px',
           left: '20px',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'rgba(248, 250, 252, 0.95)',
           padding: '16px',
           borderRadius: '8px',
-          border: '1px solid #e2e8f0'
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(8px)'
         }}>
           <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
-            <div>
-              <span style={{ color: '#64748b' }}>Nodes: </span>
-              <span style={{ fontWeight: '600' }}>{networkData[analysisMode]?.nodes?.length || 0}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                backgroundColor: '#3b82f6' 
+              }}></div>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>
+                {analysisMode === 'contacts' ? 'Contacts' : 
+                 analysisMode === 'locations' ? 'Locations' : 'Accounts'}: 
+              </span>
+              <span style={{ fontWeight: '700', color: '#1e293b' }}>{networkData[analysisMode]?.nodes?.length || 0}</span>
             </div>
-            <div>
-              <span style={{ color: '#64748b' }}>Connections: </span>
-              <span style={{ fontWeight: '600' }}>{networkData[analysisMode]?.connections?.length || 0}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                backgroundColor: '#10b981' 
+              }}></div>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>
+                {analysisMode === 'contacts' ? 'Communications' : 
+                 analysisMode === 'locations' ? 'Movements' : 'Transactions'}: 
+              </span>
+              <span style={{ fontWeight: '700', color: '#1e293b' }}>{networkData[analysisMode]?.connections?.length || 0}</span>
             </div>
-            <div>
-              <span style={{ color: '#64748b' }}>High Risk: </span>
-              <span style={{ fontWeight: '600', color: '#ef4444' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                backgroundColor: '#ef4444' 
+              }}></div>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>High Risk: </span>
+              <span style={{ fontWeight: '700', color: '#dc2626' }}>
                 {networkData[analysisMode]?.nodes?.filter(n => n.riskLevel === 'high' || n.riskLevel === 'critical' || n.risk === 'high' || n.risk === 'critical').length || 0}
               </span>
             </div>
