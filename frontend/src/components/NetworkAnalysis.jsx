@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet';
 import { useCaseContext } from '../contexts/CaseContext';
 import { useCaseData } from '../contexts/CaseDataContext';
@@ -1153,18 +1153,97 @@ const NetworkAnalysis = () => {
   };
 
   const getNodeColor = (node) => {
-    const colors = {
+    // Risk-based coloring first
+    const riskColors = {
+      'critical': '#dc2626', // Red
+      'high': '#f59e0b',     // Orange
+      'medium': '#10b981',   // Green
+      'low': '#64748b'       // Gray
+    };
+    
+    if (node.riskLevel && riskColors[node.riskLevel]) {
+      return riskColors[node.riskLevel];
+    }
+    
+    // Category-based coloring
+    const categoryColors = {
+      'suspect': '#dc2626',      // Red
+      'victim': '#059669',       // Dark green
+      'witness': '#0ea5e9',      // Blue
+      'contact': '#3b82f6',      // Light blue
+      'person': '#6366f1',       // Indigo
+      'financial': '#f59e0b',    // Orange
+      'location': '#8b5cf6',     // Purple
+      'crime': '#ef4444',        // Bright red
+      'infrastructure': '#0891b2' // Cyan
+    };
+    
+    if (node.category && categoryColors[node.category]) {
+      return categoryColors[node.category];
+    }
+    
+    // Type-based fallback
+    const typeColors = {
       'subject': '#ef4444',
       'contact': '#3b82f6',
       'unknown': '#f59e0b',
       'international': '#8b5cf6',
-      'critical': '#dc2626'
+      'wallet': '#f59e0b',
+      'account': '#059669',
+      'exchange': '#8b5cf6'
     };
-    return colors[node.type] || '#6b7280';
+    
+    return typeColors[node.type] || '#6b7280';
+  };
+
+  const getNodeSize = (node) => {
+    // Base size
+    let size = 15;
+    
+    // Risk-based sizing
+    const riskMultipliers = {
+      'critical': 2.0,
+      'high': 1.5,
+      'medium': 1.2,
+      'low': 1.0
+    };
+    
+    if (node.riskLevel && riskMultipliers[node.riskLevel]) {
+      size *= riskMultipliers[node.riskLevel];
+    }
+    
+    // Connection-based sizing
+    const connections = node.connections || 0;
+    size += Math.min(connections * 2, 15); // Max additional 15px
+    
+    return Math.max(size, 12); // Minimum size of 12px
+  };
+
+  const getNodeStrokeColor = (node) => {
+    if (node.riskLevel === 'critical') return '#991b1b';
+    if (node.riskLevel === 'high') return '#dc2626';
+    if (node.category === 'suspect') return '#7f1d1d';
+    return 'rgba(0,0,0,0.2)';
   };
 
   const getConnectionColor = (connection) => {
+    // Risk-based connection colors
+    if (connection.riskLevel === 'critical') return '#dc2626';
+    if (connection.riskLevel === 'high') return '#f59e0b';
+    
+    // Type-based colors
     const colors = {
+      'communication': '#10b981',
+      'relationship': '#3b82f6', 
+      'suspect-relationship': '#ef4444',
+      'business': '#0ea5e9',
+      'family': '#059669',
+      'movement': '#8b5cf6',
+      'travel': '#6366f1',
+      'crime-scene': '#dc2626',
+      'transfer': '#f59e0b',
+      'payment': '#10b981',
+      'suspicious-activity': '#ef4444',
       'calls': '#10b981',
       'messages': '#3b82f6',
       'encrypted': '#ef4444',
@@ -1360,11 +1439,11 @@ const NetworkAnalysis = () => {
               <circle
                 cx={node.x}
                 cy={node.y}
-                r={Math.max(20, node.connections * 3)}
+                r={getNodeSize(node)}
                 fill={getNodeColor(node)}
-                stroke={selectedNode?.id === node.id ? '#ffffff' : 'transparent'}
-                strokeWidth="3"
-                style={{ cursor: 'pointer' }}
+                stroke={selectedNode?.id === node.id ? '#ffffff' : getNodeStrokeColor(node)}
+                strokeWidth={selectedNode?.id === node.id ? "4" : "2"}
+                style={{ cursor: 'pointer', filter: selectedNode?.id === node.id ? 'drop-shadow(0 0 8px rgba(0,0,0,0.3))' : 'none' }}
                 onClick={() => setSelectedNode(node)}
               />
               <text
