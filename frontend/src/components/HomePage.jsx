@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-const HomePage = ({ onNavigateToDashboard }) => {
+const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     setIsVisible(true);
@@ -139,10 +141,20 @@ const HomePage = ({ onNavigateToDashboard }) => {
             <button
               onClick={() => {
                 console.log('Launch Platform button clicked');
-                if (onNavigateToDashboard) {
-                  onNavigateToDashboard();
+                if (user) {
+                  // User is already logged in, navigate to dashboard
+                  if (onNavigateToDashboard) {
+                    onNavigateToDashboard();
+                  } else {
+                    console.error('onNavigateToDashboard function not provided');
+                  }
                 } else {
-                  console.error('onNavigateToDashboard function not provided');
+                  // User is not logged in, show login
+                  if (onShowLogin) {
+                    onShowLogin();
+                  } else {
+                    console.error('onShowLogin function not provided');
+                  }
                 }
               }}
               style={{
@@ -302,10 +314,20 @@ const HomePage = ({ onNavigateToDashboard }) => {
           <button
             onClick={() => {
               console.log('Start Your Investigation button clicked');
-              if (onNavigateToDashboard) {
-                onNavigateToDashboard();
+              if (user) {
+                // User is already logged in, navigate to dashboard
+                if (onNavigateToDashboard) {
+                  onNavigateToDashboard();
+                } else {
+                  console.error('onNavigateToDashboard function not provided');
+                }
               } else {
-                console.error('onNavigateToDashboard function not provided');
+                // User is not logged in, show login
+                if (onShowLogin) {
+                  onShowLogin();
+                } else {
+                  console.error('onShowLogin function not provided');
+                }
               }
             }}
             style={{

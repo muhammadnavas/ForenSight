@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
+import { useAuth } from '../contexts/AuthContext';
 import { useCaseContext } from '../contexts/CaseContext';
 import { CaseDataProvider, useCaseData } from '../contexts/CaseDataContext';
 import AIInvestigation from './AIInvestigation';
@@ -747,6 +748,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { uploadedFiles, processedFiles, fileAnalytics } = useFiles();
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
   const { selectedCase, caseFiles, cases } = useCaseContext();
+  const { user } = useAuth();
 
   // Check if no cases are available or no case selected
   if (!selectedCase) {
@@ -764,16 +766,54 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
     <div style={{ padding: '24px', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box', position: 'relative' }} className="standard-scrollbar">
       <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'left' }}>
-            📊 Insightic Dashboard
-          </h1>
-          {selectedCase && (
-            <div style={{ fontSize: '16px', color: '#64748b' }}>
-              Viewing case: <span style={{ color: '#0ea5e9', fontWeight: '600' }}>
-                {selectedCase.name || selectedCase.caseName || 'Selected Case'}
-              </span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <div>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'left' }}>
+                📊 ForenSight Dashboard
+              </h1>
+              {selectedCase && (
+                <div style={{ fontSize: '16px', color: '#64748b' }}>
+                  Viewing case: <span style={{ color: '#0ea5e9', fontWeight: '600' }}>
+                    {selectedCase.name || selectedCase.caseName || 'Selected Case'}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+            
+            {/* User Welcome Section */}
+            {user && (
+              <div style={{
+                backgroundColor: '#ffffff',
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                textAlign: 'right'
+              }}>
+                <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>
+                  Welcome back,
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>
+                  {user.firstName} {user.lastName}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  <span style={{
+                    backgroundColor: user.role === 'admin' ? '#dc2626' : user.role === 'supervisor' ? '#f59e0b' : '#0ea5e9',
+                    color: 'white',
+                    padding: '2px 6px',
+                    borderRadius: '10px',
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    marginRight: '8px'
+                  }}>
+                    {user.role}
+                  </span>
+                  {user.department}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {!selectedCase && !hasData && (
@@ -2109,6 +2149,45 @@ const DashboardInner = ({ onNavigateToHome }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const { processUploadedFile } = useCaseData();
   const { cases, selectedCase } = useCaseContext();
+  const { user } = useAuth();
+
+  // Check if user is authenticated
+  if (!user) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        flexDirection: 'column',
+        textAlign: 'center',
+        padding: '40px'
+      }}>
+        <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔐</div>
+        <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
+          Authentication Required
+        </h2>
+        <p style={{ fontSize: '16px', color: '#64748b', maxWidth: '400px', marginBottom: '24px' }}>
+          Please log in to access the dashboard.
+        </p>
+        <button
+          onClick={onNavigateToHome}
+          style={{
+            padding: '12px 24px',
+            fontSize: '16px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: '500'
+          }}
+        >
+          Return to Home
+        </button>
+      </div>
+    );
+  }
   
   // Standard scrollbar styles
   const scrollbarStyles = `

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/apiConfig';
+import { useAuth } from './AuthContext';
 
 const CaseContext = createContext();
 
@@ -18,6 +19,7 @@ export const CaseProvider = ({ children }) => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [caseFiles, setCaseFiles] = useState([]);
+  const { user } = useAuth();
 
   // Load all cases
   const loadCases = async (userId = 'default') => {
@@ -39,8 +41,20 @@ export const CaseProvider = ({ children }) => {
       const data = await response.json();
       
       if (data.success) {
-        setCases(data.cases);
-        return data.cases;
+        // Filter cases to show only cases created by the current user
+        const userCases = data.cases.filter(caseItem => {
+          // If no user is logged in, show no cases
+          if (!user) return false;
+          
+          // Show cases created by the current user
+          return caseItem.createdBy === user.email || 
+                 caseItem.createdBy === user.id ||
+                 caseItem.investigator === user.email ||
+                 caseItem.investigator === user.id;
+        });
+        
+        setCases(userCases);
+        return userCases;
       } else {
         throw new Error(data.error || 'Failed to load cases');
       }
@@ -66,7 +80,9 @@ export const CaseProvider = ({ children }) => {
         },
         body: JSON.stringify({
           ...caseData,
-          userId: 'default', // TODO: Replace with actual user ID from auth
+          userId: user?.id || 'default',
+          createdBy: user?.email || user?.id || 'default',
+          investigator: user?.email || user?.id || 'default',
           status: 'active'
         })
       });
@@ -475,9 +491,15 @@ export const CaseProvider = ({ children }) => {
     }
   };
 
-  // Load cases on mount with retry logic
+  // Load cases on mount and when user changes
   useEffect(() => {
     const loadCasesWithRetry = async () => {
+      // Don't load cases if no user is logged in
+      if (!user) {
+        setCases([]);
+        return;
+      }
+      
       try {
         await loadCases();
       } catch (error) {
@@ -492,7 +514,7 @@ export const CaseProvider = ({ children }) => {
     };
     
     loadCasesWithRetry();
-  }, []);
+  }, [user]);
 
   const value = {
     // State

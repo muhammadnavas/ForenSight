@@ -31,7 +31,12 @@ function buildAllowedOrigins() {
     .map(o => o.replace(/\/$/, '')); // trim trailing /
 
   // Always include localhost dev defaults
-  const devDefaults = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+  const devDefaults = [
+    'http://localhost:5173', 
+    'http://127.0.0.1:5173',
+    'http://localhost:5174', 
+    'http://127.0.0.1:5174'
+  ];
   devDefaults.forEach(d => { if (!list.includes(d)) list.push(d); });
 
   // Include deployed frontend domains if not present
