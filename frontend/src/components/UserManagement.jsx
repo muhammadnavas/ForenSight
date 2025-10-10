@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const UserManagement = () => {
   const { users, user: currentUser, updateUser, createUser, deleteUser, getUserStats, isAdmin } = useAuth();
-  const [filteredUsers, setFilteredUsers] = useState(users);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -39,28 +39,11 @@ const UserManagement = () => {
     );
   }
 
-  // Check if current user has admin permissions
-  if (!isAdmin()) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        flexDirection: 'column',
-        textAlign: 'center',
-        padding: '40px'
-      }}>
-        <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔒</div>
-        <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
-          Access Denied
-        </h2>
-        <p style={{ fontSize: '16px', color: '#64748b', maxWidth: '400px' }}>
-          User management requires administrator privileges. Contact your system administrator.
-        </p>
-      </div>
-    );
-  }
+  // Check if current user has admin permissions (but still show read-only view for non-admins)
+  const hasAdminAccess = isAdmin();
+  
+  // Show access denied only if not logged in
+  // Non-admin users can view users but cannot edit/delete
 
   // Filter users based on search and filters
   useEffect(() => {
@@ -69,10 +52,10 @@ const UserManagement = () => {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(user => 
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.badgeNumber?.includes(searchTerm)
+        (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.badgeNumber || '').includes(searchTerm)
       );
     }
 
@@ -106,8 +89,8 @@ const UserManagement = () => {
     setError('');
 
     try {
-      await deleteUser(userToDelete.id);
-      setSuccess(`User ${userToDelete.firstName} ${userToDelete.lastName} has been deleted successfully.`);
+      await deleteUser(userToDelete._id || userToDelete.id);
+      setSuccess(`User ${userToDelete.name || 'Unknown User'} has been deleted successfully.`);
       setShowDeleteConfirm(false);
       setUserToDelete(null);
       
@@ -157,30 +140,48 @@ const UserManagement = () => {
               👥 User Management
             </h1>
             <p style={{ fontSize: '16px', color: '#64748b', margin: 0 }}>
-              Manage user accounts, roles, and permissions for ForenSight
+              {hasAdminAccess 
+                ? 'Manage user accounts, roles, and permissions for ForenSight'
+                : 'View user accounts and contact information (Read-only access)'
+              }
             </p>
+            {!hasAdminAccess && (
+              <div style={{
+                marginTop: '8px',
+                padding: '8px 12px',
+                backgroundColor: '#fef3c7',
+                border: '1px solid #f59e0b',
+                borderRadius: '6px',
+                fontSize: '14px',
+                color: '#92400e'
+              }}>
+                ⚠️ Limited access: Contact an administrator for user management privileges
+              </div>
+            )}
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            style={{
-              backgroundColor: '#059669',
-              color: 'white',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#047857'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#059669'}
-          >
-            ➕ Add User
-          </button>
+          {hasAdminAccess && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                backgroundColor: '#059669',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#047857'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#059669'}
+            >
+              ➕ Add User
+            </button>
+          )}
         </div>
 
         {/* Success/Error Messages */}
@@ -467,7 +468,7 @@ const UserManagement = () => {
             <tbody>
               {filteredUsers.map((user, index) => (
                 <tr 
-                  key={user.id}
+                  key={user._id || user.id || index}
                   style={{
                     borderBottom: index < filteredUsers.length - 1 ? '1px solid #f1f5f9' : 'none'
                   }}
@@ -486,12 +487,12 @@ const UserManagement = () => {
                         fontSize: '16px',
                         fontWeight: '600'
                       }}>
-                        {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                        {user.name ? user.name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2).toUpperCase() : 'U'}
                       </div>
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
-                          {user.firstName} {user.lastName}
-                          {user.id === currentUser?.id && (
+                          {user.name || 'Unknown User'}
+                          {(user._id || user.id) === (currentUser?._id || currentUser?.id) && (
                             <span style={{
                               marginLeft: '8px',
                               fontSize: '11px',
@@ -565,42 +566,57 @@ const UserManagement = () => {
                   
                   <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        style={{
+                      {hasAdminAccess ? (
+                        <>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            style={{
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              backgroundColor: '#0ea5e9',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontWeight: '500'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#0284c7'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#0ea5e9'}
+                          >
+                            ✏️ Edit
+                          </button>
+                          
+                          {user.id !== currentUser?.id && (
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              style={{
+                                padding: '6px 12px',
+                                fontSize: '12px',
+                                backgroundColor: '#dc2626',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontWeight: '500'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
+                            >
+                              🗑️ Delete
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{
                           padding: '6px 12px',
                           fontSize: '12px',
-                          backgroundColor: '#0ea5e9',
-                          color: 'white',
-                          border: 'none',
+                          backgroundColor: '#f1f5f9',
+                          color: '#64748b',
                           borderRadius: '6px',
-                          cursor: 'pointer',
                           fontWeight: '500'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#0284c7'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#0ea5e9'}
-                      >
-                        ✏️ Edit
-                      </button>
-                      
-                      {user.id !== currentUser?.id && (
-                        <button
-                          onClick={() => handleDeleteUser(user)}
-                          style={{
-                            padding: '6px 12px',
-                            fontSize: '12px',
-                            backgroundColor: '#dc2626',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
-                        >
-                          🗑️ Delete
-                        </button>
+                        }}>
+                          👁️ View Only
+                        </div>
                       )}
                     </div>
                   </td>
@@ -654,7 +670,7 @@ const UserManagement = () => {
                 Delete User Account
               </h3>
               <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5' }}>
-                Are you sure you want to delete <strong>{userToDelete.firstName} {userToDelete.lastName}</strong>? 
+                Are you sure you want to delete <strong>{userToDelete.name || 'Unknown User'}</strong>? 
                 This action cannot be undone and will permanently remove all user data.
               </p>
             </div>
@@ -723,7 +739,7 @@ const UserManagement = () => {
       {/* Create/Edit User Modals would go here - simplified for this example */}
       {/* In a full implementation, you'd have UserCreateModal and UserEditModal components */}
       
-      <style jsx>{`
+      <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

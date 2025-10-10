@@ -140,7 +140,6 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
           }}>
             <button
               onClick={() => {
-                console.log('Launch Platform button clicked');
                 if (user) {
                   // User is already logged in, navigate to dashboard
                   if (onNavigateToDashboard) {

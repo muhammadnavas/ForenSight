@@ -11,6 +11,7 @@ import NetworkAnalysis from './NetworkAnalysis';
 import QueryInterface from './QueryInterface';
 import Reports from './Reports';
 import UploadUFDR from './UploadUFDR';
+import UserManagement from './UserManagement';
 
 // Global File Context for sharing uploaded files across components
 const FileContext = createContext();
@@ -2145,6 +2146,8 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   );
 };
 
+
+
 const DashboardInner = ({ onNavigateToHome }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const { processUploadedFile } = useCaseData();
@@ -3451,12 +3454,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
           )}
 
           {currentView === 'users' && (
-            <div style={{ padding: '24px' }}>
-              <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px' }}>
-                👥 User Management
-              </h1>
-              <p style={{ color: '#64748b' }}>User management requires administrator privileges. Contact your system administrator.</p>
-            </div>
+            <UserManagement />
           )}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 const AuthContext = createContext();
 
@@ -10,82 +11,24 @@ export const useAuth = () => {
   return context;
 };
 
-// Mock user database - in a real app, this would be handled by your backend
-const MOCK_USERS = [
-  {
-    id: 'user-1',
-    firstName: 'John',
-    lastName: 'Investigator',
-    email: 'investigator@forensight.com',
-    password: 'forensic123', // In real app, this would be hashed
-    department: 'Digital Forensics Unit',
-    role: 'investigator',
-    badgeNumber: '12345',
-    phone: '+1 (555) 123-4567',
-    avatar: null,
-    status: 'active',
-    lastLogin: new Date().toISOString(),
-    createdAt: '2024-01-15T10:30:00Z',
-    permissions: ['view_cases', 'create_cases', 'analyze_evidence', 'view_reports']
-  },
-  {
-    id: 'user-2',
-    firstName: 'Jane',
-    lastName: 'Admin',
-    email: 'admin@forensight.com',
-    password: 'admin123',
-    department: 'IT Security',
-    role: 'admin',
-    badgeNumber: '54321',
-    phone: '+1 (555) 987-6543',
-    avatar: null,
-    status: 'active',
-    lastLogin: new Date().toISOString(),
-    createdAt: '2024-01-10T08:15:00Z',
-    permissions: ['*'] // Admin has all permissions
-  },
-  {
-    id: 'user-3',
-    firstName: 'Mike',
-    lastName: 'Analyst',
-    email: 'analyst@forensight.com',
-    password: 'analyst123',
-    department: 'Cyber Crime Unit',
-    role: 'analyst',
-    badgeNumber: '67890',
-    phone: '+1 (555) 456-7890',
-    avatar: null,
-    status: 'active',
-    lastLogin: '2024-10-08T15:22:00Z',
-    createdAt: '2024-02-20T14:45:00Z',
-    permissions: ['view_cases', 'analyze_evidence', 'create_reports']
-  }
-];
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Check for existing session on mount
   useEffect(() => {
-    const checkExistingSession = () => {
+    const checkExistingSession = async () => {
       try {
         const savedUser = localStorage.getItem('forensight_user');
         const savedToken = localStorage.getItem('forensight_token');
         
         if (savedUser && savedToken) {
           const parsedUser = JSON.parse(savedUser);
-          // Verify user still exists in our mock database
-          const existingUser = users.find(u => u.id === parsedUser.id);
-          if (existingUser && existingUser.status === 'active') {
-            setUser(parsedUser);
-          } else {
-            // Clear invalid session
-            localStorage.removeItem('forensight_user');
-            localStorage.removeItem('forensight_token');
-          }
+          // Since we have real API authentication now, trust the saved session
+          // In a production app, you'd validate the token with the server
+          setUser(parsedUser);
         }
       } catch (error) {
         console.error('Session check failed:', error);
@@ -96,54 +39,103 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    // Simulate a small delay for realistic loading
-    setTimeout(checkExistingSession, 500);
+    // Check session on mount
+    checkExistingSession();
+  }, []);
+
+  // Load users from API
+  const loadUsers = async () => {
+    try {
+      setError('');
+      
+      const response = await fetch(API_ENDPOINTS.users, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // Check if response is HTML (likely a 404 page)
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('API endpoint not found - received HTML instead of JSON');
+      }
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch users`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && Array.isArray(data.users)) {
+        setUsers(data.users);
+        return data.users;
+      } else {
+        throw new Error(data.error || 'Invalid users data received');
+      }
+    } catch (error) {
+      console.warn('Failed to load users from API:', error.message);
+      
+      // For development/demo purposes, don't set error state if API is not available
+      // This allows the app to still work without a backend
+      if (error.message.includes('fetch')) {
+        console.warn('Backend API not available - using empty user list');
+        setUsers([]);
+        setError('');
+      } else {
+        setError('Failed to load users. Please check your connection.');
+      }
+      
+      return [];
+    }
+  };
+
+  // Load users on mount
+  useEffect(() => {
+    loadUsers();
   }, []);
 
   const login = async (credentials) => {
     setError('');
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(API_ENDPOINTS.authenticate, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: credentials.email, // API expects username, but we can send email
+          password: credentials.password
+        })
+      });
       
-      // Find user by email
-      const foundUser = users.find(u => u.email.toLowerCase() === credentials.email.toLowerCase());
-      
-      if (!foundUser) {
-        throw new Error('No account found with this email address');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: Authentication failed`);
       }
       
-      if (foundUser.password !== credentials.password) {
-        throw new Error('Invalid password');
+      const data = await response.json();
+      
+      if (!data.success || !data.user) {
+        throw new Error(data.error || 'Invalid response from server');
       }
       
-      if (foundUser.status !== 'active') {
-        throw new Error('Account is not active. Please contact your administrator');
-      }
+      const { user: authenticatedUser } = data;
       
-      // Update last login time
-      const updatedUser = {
-        ...foundUser,
-        lastLogin: new Date().toISOString()
-      };
-      
-      // Update users list
-      setUsers(prevUsers => 
-        prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u)
-      );
-      
-      // Create session
-      const { password, ...userWithoutPassword } = updatedUser;
-      const sessionToken = `token_${updatedUser.id}_${Date.now()}`;
+      // Create session token
+      const sessionToken = `token_${authenticatedUser._id}_${Date.now()}`;
       
       // Save to localStorage
-      localStorage.setItem('forensight_user', JSON.stringify(userWithoutPassword));
+      localStorage.setItem('forensight_user', JSON.stringify(authenticatedUser));
       localStorage.setItem('forensight_token', sessionToken);
       
-      setUser(userWithoutPassword);
+      setUser(authenticatedUser);
       
-      return { success: true, user: userWithoutPassword };
+      // Refresh users list after login
+      await loadUsers();
+      
+      return { success: true, user: authenticatedUser };
     } catch (error) {
       const errorMessage = error.message || 'Login failed. Please try again.';
       setError(errorMessage);
@@ -155,36 +147,36 @@ export const AuthProvider = ({ children }) => {
     setError('');
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch(API_ENDPOINTS.users, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: userData.name,
+          username: userData.username || userData.name.toLowerCase().replace(/\s+/g, '_'),
+          email: userData.email,
+          password: userData.password,
+          role: userData.role,
+          badgeNumber: userData.badgeNumber,
+          department: userData.department,
+          profileImage: userData.avatar || null
+        })
+      });
       
-      // Check if email already exists
-      const existingUser = users.find(u => u.email.toLowerCase() === userData.email.toLowerCase());
-      if (existingUser) {
-        throw new Error('An account with this email already exists');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: Registration failed`);
       }
       
-      // Check if badge number already exists (if provided)
-      if (userData.badgeNumber) {
-        const existingBadge = users.find(u => u.badgeNumber === userData.badgeNumber);
-        if (existingBadge) {
-          throw new Error('This badge number is already registered');
-        }
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Registration failed');
       }
       
-      // Create new user
-      const newUser = {
-        id: `user-${Date.now()}`,
-        ...userData,
-        avatar: null,
-        status: 'active', // In real app, might need admin approval
-        lastLogin: null,
-        createdAt: new Date().toISOString(),
-        permissions: getDefaultPermissions(userData.role)
-      };
-      
-      // Add to users list
-      setUsers(prevUsers => [...prevUsers, newUser]);
+      // Refresh users list after registration
+      await loadUsers();
       
       return { success: true, message: 'Account created successfully! You can now sign in.' };
     } catch (error) {
@@ -325,6 +317,7 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     createUser,
     deleteUser,
+    loadUsers,
     
     // Utilities
     hasPermission,

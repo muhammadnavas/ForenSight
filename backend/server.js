@@ -7,6 +7,7 @@ require('dotenv').config();
 
 // Import routes
 const caseRoutes = require('./routes/cases');
+const userRoutes = require('./routes/users');
 
 const app = express();
 // Render/hosting note:
@@ -164,6 +165,7 @@ const upload = multer({
 
 // Routes
 app.use('/api/cases', caseRoutes);
+app.use('/api/users', userRoutes);
 
 // File upload endpoint
 app.post('/api/cases/:caseId/upload', upload.single('file'), async (req, res) => {
@@ -273,6 +275,9 @@ app.get('/', (req, res) => {
     <li><code>GET /api/cases</code> – list cases</li>
     <li><code>POST /api/cases</code> – create a case</li>
     <li><code>POST /api/cases/:caseId/upload</code> – upload a file to a case</li>
+    <li><code>GET /api/users</code> – list users</li>
+    <li><code>POST /api/users</code> – create a user</li>
+    <li><code>POST /api/users/authenticate</code> – authenticate user</li>
   </ul>
   <p>If you're seeing this on Render, the server bound correctly to <code>0.0.0.0:${PORT}</code>.</p>
   <footer>ForenSight &middot; ${new Date().getFullYear()}</footer>

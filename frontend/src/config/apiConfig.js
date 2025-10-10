@@ -12,6 +12,8 @@ const getApiBaseUrl = () => {
 export const API_BASE_URL = getApiBaseUrl();
 export const API_ENDPOINTS = {
   cases: `${API_BASE_URL}/api/cases`,
+  users: `${API_BASE_URL}/api/users`,
+  authenticate: `${API_BASE_URL}/api/users/authenticate`,
   upload: (caseId) => `${API_BASE_URL}/api/cases/${caseId}/upload`,
   download: (caseId, fileId) => `${API_BASE_URL}/api/cases/${caseId}/files/${fileId}/download`,
   health: `${API_BASE_URL}/api/health`

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
+import AuthComponent from './components/AuthComponent';
 import Dashboard from './components/Dashboard';
 import HomePage from './components/HomePage';
-import Login from './components/Login';
-import Register from './components/Register';
 import UserManagement from './components/UserManagement';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CaseProvider } from './contexts/CaseContext';
@@ -31,7 +30,7 @@ const ProtectedRoute = ({ children, allowHomepage = false }) => {
           animation: 'spin 1s linear infinite'
         }} />
         <p style={{ color: '#64748b', fontSize: '14px' }}>Loading ForenSight...</p>
-        <style jsx>{`
+        <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -48,64 +47,12 @@ const ProtectedRoute = ({ children, allowHomepage = false }) => {
   return children;
 };
 
-// Authentication Flow Component
+// Simple Auth Flow - just returns AuthComponent
 const AuthFlow = ({ onClose, onLoginSuccess }) => {
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
-  const [error, setError] = useState('');
-  const { login, register } = useAuth();
-
-  const handleLogin = async (credentials) => {
-    setError('');
-    try {
-      await login(credentials);
-      console.log('Login successful in AuthFlow');
-      // Close the auth overlay and trigger success callback
-      if (onClose) {
-        onClose();
-      }
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
-    } catch (err) {
-      console.error('Login failed:', err.message);
-      setError(err.message);
-    }
-  };
-
-  const handleRegister = async (userData) => {
-    setError('');
-    try {
-      await register(userData);
-      // On successful registration, switch to login
-      setAuthMode('login');
-      setError(''); // Clear any previous errors
-      // Note: In a real app, you might want to show a success message
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  if (authMode === 'register') {
-    return (
-      <Register
-        onRegister={handleRegister}
-        onSwitchToLogin={() => {
-          setAuthMode('login');
-          setError('');
-        }}
-        error={error}
-      />
-    );
-  }
-
   return (
-    <Login
-      onLogin={handleLogin}
-      onSwitchToRegister={() => {
-        setAuthMode('register');
-        setError('');
-      }}
-      error={error}
+    <AuthComponent 
+      onClose={onClose}
+      onLoginSuccess={onLoginSuccess}
     />
   );
 };
@@ -132,18 +79,14 @@ const AppContent = () => {
 
   // Effect to handle pending navigation after successful login
   useEffect(() => {
-    console.log('Pending navigation effect triggered:', { user: !!user, pendingNavigation });
     if (user && pendingNavigation) {
       console.log('User logged in with pending navigation:', pendingNavigation);
       // User just logged in and has a pending navigation
       if (pendingNavigation === 'dashboard') {
-        console.log('Navigating to dashboard');
         setCurrentView('dashboard');
       } else if (pendingNavigation === 'users' && user.role === 'admin') {
-        console.log('Navigating to users (admin)');
         setCurrentView('users');
       } else if (pendingNavigation === 'users' && user.role !== 'admin') {
-        console.log('Redirecting non-admin to dashboard');
         setCurrentView('dashboard'); // Redirect non-admin to dashboard
       }
       setShowAuth(false);

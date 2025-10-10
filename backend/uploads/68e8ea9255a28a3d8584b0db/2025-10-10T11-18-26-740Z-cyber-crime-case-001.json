@@ -1,0 +1,568 @@
+{
+  "caseId": "CC-2025-001",
+  "caseName": "Operation Dark Web Marketplace",
+  "caseType": "Cyber Crime Investigation",
+  "status": "Active",
+  "priority": "High",
+  "createdAt": "2025-01-15T09:00:00Z",
+  "updatedAt": "2025-10-10T11:15:00Z",
+  "lastActivity": "2025-10-10T11:15:00Z",
+  "estimatedCompletionDate": "2025-12-15T23:59:59Z",
+  
+  "caseOverview": {
+    "description": "Investigation into an international dark web marketplace selling stolen credit card data, personal information, and malware-as-a-service. The operation spans multiple countries and involves sophisticated cryptocurrency laundering schemes.",
+    "incidentDate": "2025-01-10T14:30:00Z",
+    "reportedDate": "2025-01-12T08:15:00Z",
+    "investigationStart": "2025-01-15T09:00:00Z",
+    "jurisdiction": "International",
+    "criminalActivity": [
+      "Identity Theft",
+      "Credit Card Fraud", 
+      "Money Laundering",
+      "Cybercrime as a Service",
+      "Dark Web Operations",
+      "Cryptocurrency Fraud"
+    ]
+  },
+
+  "investigators": [
+    {
+      "id": "INV-001",
+      "name": "Detective Sarah Mitchell",
+      "role": "Lead Investigator", 
+      "department": "Cyber Crime Unit",
+      "email": "s.mitchell@cybercrime.gov",
+      "phone": "+1-555-0101",
+      "badgeNumber": "CC-4891",
+      "assignedDate": "2025-01-15T09:00:00Z"
+    },
+    {
+      "id": "INV-002", 
+      "name": "Agent Marcus Chen",
+      "role": "Digital Forensics Analyst",
+      "department": "Federal Cyber Division",
+      "email": "m.chen@fbi.gov",
+      "phone": "+1-555-0102",
+      "badgeNumber": "FD-7823",
+      "assignedDate": "2025-01-16T10:30:00Z"
+    },
+    {
+      "id": "INV-003",
+      "name": "Dr. Elena Rodriguez",
+      "role": "Cryptocurrency Specialist",
+      "department": "Financial Crimes Unit", 
+      "email": "e.rodriguez@fincen.gov",
+      "phone": "+1-555-0103",
+      "badgeNumber": "FC-5567",
+      "assignedDate": "2025-01-20T14:00:00Z"
+    }
+  ],
+
+  "locations": [
+    {
+      "id": "LOC-001",
+      "type": "Primary Server Location",
+      "name": "DataVault Hosting Facility",
+      "address": {
+        "street": "1247 Industrial Blvd",
+        "city": "Amsterdam", 
+        "state": "North Holland",
+        "country": "Netherlands",
+        "postalCode": "1101 AB",
+        "coordinates": {
+          "latitude": 52.3676,
+          "longitude": 4.9041
+        }
+      },
+      "description": "Primary hosting location for the dark web marketplace servers",
+      "significance": "Main infrastructure hub",
+      "discoveredDate": "2025-02-03T16:45:00Z",
+      "status": "Under Surveillance"
+    },
+    {
+      "id": "LOC-002", 
+      "type": "Suspect Residence",
+      "name": "Aleksei Volkov Apartment",
+      "address": {
+        "street": "789 Nevsky Prospect, Apt 15B",
+        "city": "St. Petersburg",
+        "state": "Leningrad Oblast", 
+        "country": "Russia",
+        "postalCode": "190000",
+        "coordinates": {
+          "latitude": 59.9311,
+          "longitude": 30.3609
+        }
+      },
+      "description": "Residence of primary suspect and alleged marketplace administrator",
+      "significance": "Command and control center",
+      "discoveredDate": "2025-03-12T11:20:00Z", 
+      "status": "Raided"
+    },
+    {
+      "id": "LOC-003",
+      "type": "Financial Hub",
+      "name": "CryptoExchange Office", 
+      "address": {
+        "street": "2156 Crypto Valley Road",
+        "city": "Zug",
+        "state": "Canton of Zug",
+        "country": "Switzerland", 
+        "postalCode": "6300",
+        "coordinates": {
+          "latitude": 47.1662,
+          "longitude": 8.5152
+        }
+      },
+      "description": "Cryptocurrency exchange used for money laundering operations",
+      "significance": "Primary money laundering venue",
+      "discoveredDate": "2025-04-08T09:15:00Z",
+      "status": "Cooperating"
+    }
+  ],
+
+  "suspects": [
+    {
+      "id": "SUS-001",
+      "name": "Aleksei Volkov",
+      "alias": ["DarkMaster", "CryptoKing", "VladTheImpaler"],
+      "age": 34,
+      "nationality": "Russian",
+      "role": "Marketplace Administrator",
+      "status": "At Large",
+      "riskLevel": "High",
+      "lastKnownLocation": "LOC-002",
+      "physicalDescription": {
+        "height": "5'11\"",
+        "weight": "180 lbs", 
+        "hairColor": "Dark Brown",
+        "eyeColor": "Blue",
+        "distinguishingMarks": "Scar on left cheek, tattoo on right forearm"
+      },
+      "knownAssociates": ["SUS-002", "SUS-003"],
+      "criminalHistory": [
+        {
+          "date": "2018-05-15",
+          "charge": "Computer Fraud", 
+          "jurisdiction": "Estonia",
+          "outcome": "Convicted - 2 years suspended"
+        }
+      ],
+      "digitalFootprint": {
+        "usernames": ["DarkMaster2025", "CryptoKing_AV"],
+        "emailAddresses": ["aleksei.v@tempmail.org", "darkmaster@protonmail.com"],
+        "walletAddresses": [
+          "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+          "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+        ]
+      }
+    },
+    {
+      "id": "SUS-002",
+      "name": "Maria Santos", 
+      "alias": ["CreditQueen", "DataMiner"],
+      "age": 28,
+      "nationality": "Brazilian",
+      "role": "Data Broker",
+      "status": "Under Surveillance", 
+      "riskLevel": "Medium",
+      "lastKnownLocation": "São Paulo, Brazil",
+      "knownAssociates": ["SUS-001", "SUS-004"],
+      "digitalFootprint": {
+        "usernames": ["CreditQueen88", "DataMiner_MS"],
+        "emailAddresses": ["maria.s.crypto@tutanota.com"],
+        "walletAddresses": [
+          "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy"
+        ]
+      }
+    },
+    {
+      "id": "SUS-003",
+      "name": "Chen Wei",
+      "alias": ["ByteNinja", "CyberSamurai"],
+      "age": 31, 
+      "nationality": "Chinese",
+      "role": "Technical Developer",
+      "status": "Arrested",
+      "riskLevel": "High",
+      "lastKnownLocation": "Hong Kong Detention Center",
+      "arrestDate": "2025-06-15T03:45:00Z",
+      "knownAssociates": ["SUS-001"],
+      "digitalFootprint": {
+        "usernames": ["ByteNinja_CW", "CyberSamurai2025"],
+        "emailAddresses": ["chen.w.dev@protonmail.com"],
+        "walletAddresses": [
+          "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+        ]
+      }
+    }
+  ],
+
+  "victims": [
+    {
+      "id": "VIC-001",
+      "type": "Individual",
+      "name": "John Anderson", 
+      "contactInfo": {
+        "email": "j.anderson@email.com",
+        "phone": "+1-555-7890"
+      },
+      "damageAmount": 15420.00,
+      "currency": "USD",
+      "incidentDate": "2024-12-20T19:30:00Z",
+      "description": "Credit card information stolen and used for fraudulent purchases",
+      "status": "Cooperating Witness"
+    },
+    {
+      "id": "VIC-002",
+      "type": "Business",
+      "name": "TechCorp Solutions Inc.",
+      "contactInfo": {
+        "email": "security@techcorp.com",
+        "phone": "+1-555-8901" 
+      },
+      "damageAmount": 2500000.00,
+      "currency": "USD",
+      "incidentDate": "2025-01-05T02:15:00Z",
+      "description": "Employee database compromised, 50,000 records stolen",
+      "status": "Civil Litigation Pending"
+    }
+  ],
+
+  "evidence": [
+    {
+      "id": "EVD-001",
+      "type": "Digital Evidence",
+      "category": "Hard Drive",
+      "name": "Seized Server Hard Drive #1",
+      "description": "2TB hard drive seized from DataVault facility containing marketplace database",
+      "collectedBy": "Agent Marcus Chen",
+      "collectionDate": "2025-02-05T14:30:00Z",
+      "location": "LOC-001",
+      "chainOfCustody": [
+        {
+          "date": "2025-02-05T14:30:00Z",
+          "person": "Agent Marcus Chen",
+          "action": "Seized on-site"
+        },
+        {
+          "date": "2025-02-05T16:45:00Z", 
+          "person": "Evidence Technician Sarah Kim",
+          "action": "Logged into evidence storage"
+        }
+      ],
+      "analysis": {
+        "status": "Complete",
+        "analyst": "Dr. James Wilson",
+        "completionDate": "2025-03-01T17:00:00Z",
+        "findings": "Contains 1.2 million stolen credit card records, user transaction logs, and encrypted communications"
+      },
+      "hash": {
+        "md5": "d41d8cd98f00b204e9800998ecf8427e",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "EVD-002",
+      "type": "Digital Evidence", 
+      "category": "Network Traffic",
+      "name": "Wireshark Capture Files",
+      "description": "Network traffic captures from marketplace during operational period",
+      "collectedBy": "Detective Sarah Mitchell",
+      "collectionDate": "2025-01-25T10:15:00Z",
+      "fileSize": "4.7 GB",
+      "analysis": {
+        "status": "In Progress",
+        "analyst": "Cyber Analyst Tom Rodriguez", 
+        "startDate": "2025-02-10T09:00:00Z",
+        "findings": "Identified communication patterns, user login sequences, and payment processing flows"
+      }
+    },
+    {
+      "id": "EVD-003",
+      "type": "Financial Evidence",
+      "category": "Cryptocurrency Transactions", 
+      "name": "Bitcoin Wallet Analysis",
+      "description": "Complete transaction history for primary suspect's Bitcoin wallets",
+      "collectedBy": "Dr. Elena Rodriguez",
+      "collectionDate": "2025-04-20T11:30:00Z",
+      "analysis": {
+        "status": "Complete", 
+        "analyst": "Dr. Elena Rodriguez",
+        "completionDate": "2025-05-15T16:00:00Z",
+        "findings": "Traced $2.3M in Bitcoin transactions through multiple mixing services to traditional bank accounts"
+      },
+      "relatedWallets": [
+        "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+        "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+      ]
+    },
+    {
+      "id": "EVD-004",
+      "type": "Communication Evidence",
+      "category": "Encrypted Messages",
+      "name": "Telegram Chat Logs",
+      "description": "Decrypted Telegram communications between suspects",
+      "collectedBy": "Agent Marcus Chen",
+      "collectionDate": "2025-06-16T08:20:00Z",
+      "analysis": {
+        "status": "Complete",
+        "analyst": "Cryptography Expert Lisa Chang",
+        "completionDate": "2025-07-01T14:30:00Z", 
+        "findings": "Contains operational planning, profit sharing agreements, and victim targeting discussions"
+      },
+      "participantIds": ["SUS-001", "SUS-002", "SUS-003"]
+    }
+  ],
+
+  "relationships": [
+    {
+      "id": "REL-001",
+      "type": "Criminal Association",
+      "entity1": "SUS-001",
+      "entity1Type": "Suspect", 
+      "entity2": "SUS-002",
+      "entity2Type": "Suspect",
+      "relationshipType": "Business Partner",
+      "strength": "Strong",
+      "description": "Co-administrators of the dark web marketplace, profit-sharing agreement in place",
+      "evidence": ["EVD-004"],
+      "establishedDate": "2024-08-15T00:00:00Z"
+    },
+    {
+      "id": "REL-002", 
+      "type": "Technical Collaboration",
+      "entity1": "SUS-001",
+      "entity1Type": "Suspect",
+      "entity2": "SUS-003", 
+      "entity2Type": "Suspect",
+      "relationshipType": "Employer-Employee",
+      "strength": "Strong",
+      "description": "Volkov hired Chen to develop and maintain marketplace infrastructure",
+      "evidence": ["EVD-004", "EVD-001"],
+      "establishedDate": "2024-06-01T00:00:00Z"
+    },
+    {
+      "id": "REL-003",
+      "type": "Infrastructure Connection",
+      "entity1": "LOC-001", 
+      "entity1Type": "Location",
+      "entity2": "SUS-001",
+      "entity2Type": "Suspect",
+      "relationshipType": "Rented Infrastructure",
+      "strength": "Direct",
+      "description": "Volkov rented server space using false identity documents", 
+      "evidence": ["EVD-001"],
+      "establishedDate": "2024-05-20T00:00:00Z"
+    },
+    {
+      "id": "REL-004",
+      "type": "Financial Flow",
+      "entity1": "SUS-002",
+      "entity1Type": "Suspect", 
+      "entity2": "LOC-003",
+      "entity2Type": "Location",
+      "relationshipType": "Money Laundering",
+      "strength": "Strong", 
+      "description": "Santos used Swiss cryptocurrency exchange to convert stolen funds",
+      "evidence": ["EVD-003"],
+      "establishedDate": "2024-09-10T00:00:00Z"
+    }
+  ],
+
+  "timeline": [
+    {
+      "id": "TL-001",
+      "date": "2024-05-20T00:00:00Z",
+      "event": "Marketplace Infrastructure Setup",
+      "description": "Volkov establishes server infrastructure in Amsterdam",
+      "participants": ["SUS-001"],
+      "locations": ["LOC-001"], 
+      "evidence": ["EVD-001"],
+      "eventType": "Criminal Activity"
+    },
+    {
+      "id": "TL-002",
+      "date": "2024-08-15T00:00:00Z",
+      "event": "Partnership Formation",
+      "description": "Volkov and Santos form business partnership for marketplace operations",
+      "participants": ["SUS-001", "SUS-002"],
+      "evidence": ["EVD-004"],
+      "eventType": "Criminal Association"
+    },
+    {
+      "id": "TL-003", 
+      "date": "2025-01-10T14:30:00Z",
+      "event": "Major Data Breach",
+      "description": "TechCorp Solutions database compromised, 50,000 records stolen",
+      "participants": ["SUS-003"],
+      "victims": ["VIC-002"],
+      "evidence": ["EVD-001"],
+      "eventType": "Criminal Activity"
+    },
+    {
+      "id": "TL-004",
+      "date": "2025-06-15T03:45:00Z", 
+      "event": "Arrest of Chen Wei",
+      "description": "Hong Kong authorities arrest Chen Wei based on international warrant",
+      "participants": ["SUS-003"],
+      "eventType": "Law Enforcement Action"
+    }
+  ],
+
+  "technicalAnalysis": {
+    "networkInfrastructure": {
+      "domains": [
+        "darkmarket-secure.onion",
+        "cryptovault-hidden.onion" 
+      ],
+      "ipAddresses": [
+        "192.168.1.100",
+        "10.0.0.45"
+      ],
+      "technologies": [
+        "Tor Hidden Services",
+        "Bitcoin Payment Processing",
+        "Encrypted PostgreSQL Database",
+        "Nginx Web Server"
+      ]
+    },
+    "malwareAnalysis": {
+      "samples": [
+        {
+          "name": "CreditStealer.exe",
+          "hash": "a1b2c3d4e5f6789012345678901234567890abcd", 
+          "type": "Credential Harvester",
+          "firstSeen": "2024-11-15T12:00:00Z"
+        }
+      ]
+    }
+  },
+
+  "financialAnalysis": {
+    "totalDamageEstimate": 12500000.00,
+    "currency": "USD",
+    "recoveredAssets": 750000.00, 
+    "cryptoWallets": [
+      {
+        "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+        "cryptocurrency": "Bitcoin",
+        "balance": 45.7823,
+        "lastTransaction": "2025-06-10T15:30:00Z"
+      }
+    ],
+    "bankAccounts": [
+      {
+        "accountNumber": "CH93 0076 2011 6238 5295 7", 
+        "bank": "Swiss National Bank",
+        "balance": 125000.00,
+        "currency": "CHF",
+        "status": "Frozen"
+      }
+    ]
+  },
+
+  "legalStatus": {
+    "charges": [
+      {
+        "suspectId": "SUS-001",
+        "charges": [
+          "Identity Theft (18 U.S.C. § 1028)",
+          "Wire Fraud (18 U.S.C. § 1343)", 
+          "Money Laundering (18 U.S.C. § 1956)"
+        ],
+        "jurisdiction": "Federal",
+        "status": "Warrant Issued"
+      },
+      {
+        "suspectId": "SUS-003",
+        "charges": [
+          "Computer Fraud and Abuse Act Violation (18 U.S.C. § 1030)"
+        ],
+        "jurisdiction": "Federal",
+        "status": "In Custody"
+      }
+    ],
+    "internationalRequests": [
+      {
+        "country": "Netherlands", 
+        "type": "Mutual Legal Assistance Treaty Request",
+        "status": "Approved",
+        "requestDate": "2025-02-01T00:00:00Z"
+      }
+    ]
+  },
+
+  "caseFiles": [
+    {
+      "id": "FILE-001",
+      "name": "Initial Incident Report",
+      "type": "Report",
+      "createdBy": "Detective Sarah Mitchell",
+      "createdDate": "2025-01-15T09:30:00Z", 
+      "lastModified": "2025-01-16T14:20:00Z",
+      "classification": "Confidential"
+    },
+    {
+      "id": "FILE-002",
+      "name": "Digital Forensics Analysis Report",
+      "type": "Technical Analysis",
+      "createdBy": "Agent Marcus Chen",
+      "createdDate": "2025-03-05T16:00:00Z",
+      "lastModified": "2025-03-05T16:00:00Z", 
+      "classification": "Secret"
+    }
+  ],
+
+  "notes": [
+    {
+      "id": "NOTE-001",
+      "author": "Detective Sarah Mitchell",
+      "date": "2025-08-15T10:30:00Z",
+      "content": "Suspect Volkov appears to have fled Russia. Interpol has been notified. Monitoring known cryptocurrency addresses for activity.",
+      "tags": ["suspect-movement", "international-cooperation"]
+    },
+    {
+      "id": "NOTE-002", 
+      "author": "Dr. Elena Rodriguez",
+      "date": "2025-09-20T14:15:00Z",
+      "content": "New cryptocurrency mixing service identified. Appears to be laundering funds from multiple cybercrime operations. Recommend expansion of investigation scope.",
+      "tags": ["financial-analysis", "scope-expansion"]
+    }
+  ],
+
+  "collaboratingAgencies": [
+    {
+      "name": "FBI Cyber Division",
+      "country": "United States",
+      "contactPerson": "Agent Lisa Thompson",
+      "email": "l.thompson@fbi.gov",
+      "role": "Lead Federal Agency"
+    },
+    {
+      "name": "Europol Cybercrime Centre",
+      "country": "European Union", 
+      "contactPerson": "Inspector Hans Mueller",
+      "email": "h.mueller@europol.europa.eu",
+      "role": "International Coordination"
+    },
+    {
+      "name": "Hong Kong Police Cybersecurity Unit",
+      "country": "Hong Kong",
+      "contactPerson": "Chief Inspector Wong",
+      "email": "wong.cybercrime@hkpf.gov.hk", 
+      "role": "Suspect Custody"
+    }
+  ],
+
+  "metadata": {
+    "version": "2.1",
+    "schemaVersion": "ForenSight-CaseFile-v1.0",
+    "lastBackup": "2025-10-10T06:00:00Z",
+    "accessLevel": "Top Secret", 
+    "handlingCaveats": ["NOFORN", "ORCON"],
+    "retentionPeriod": "25 years",
+    "createdBy": "Detective Sarah Mitchell",
+    "lastModifiedBy": "Agent Marcus Chen"
+  }
+}
