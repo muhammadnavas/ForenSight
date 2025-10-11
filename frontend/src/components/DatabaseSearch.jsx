@@ -180,8 +180,8 @@ const DatabaseSearch = () => {
       }
       
       if (!fileContent) {
-        console.log('⚠️ No content available, will generate realistic mock data');
-        return null;
+        console.log('⚠️ No content available - returning empty results');
+        return [];
       }
       
       console.log('📝 File content found, length:', typeof fileContent === 'string' ? fileContent.length : 'Not string');
@@ -208,8 +208,8 @@ const DatabaseSearch = () => {
     const results = [];
     
     if (!parsedContent) {
-      console.log('⚠️ No parsed content available, generating realistic mock data');
-      return generateRealisticMockData(filename);
+      console.log('⚠️ No parsed content available - returning empty results');
+      return [];
     }
     
     console.log('🔍 Extracting real data from parsed content...');
@@ -309,96 +309,7 @@ const DatabaseSearch = () => {
     return results;
   };
 
-  // Generate realistic mock data when real content isn't available
-  const generateRealisticMockData = (filename) => {
-    const results = [];
-    
-    // Sample forensic case data with realistic names and information
-    const sampleSuspects = [
-      { name: 'Jane Anderson', age: 32, location: 'Chicago, IL', role: 'Primary Suspect', charges: ['Fraud', 'Identity Theft'], riskLevel: 'high' },
-      { name: 'John Mitchell', age: 28, location: 'New York, NY', role: 'Associate', charges: ['Money Laundering'], riskLevel: 'medium' },
-      { name: 'Michael Rodriguez', age: 45, location: 'Los Angeles, CA', role: 'Financier', charges: ['RICO'], riskLevel: 'high' },
-      { name: 'Sarah Chen', age: 35, location: 'Seattle, WA', role: 'Tech Specialist', charges: ['Computer Fraud'], riskLevel: 'medium' }
-    ];
-    
-    const sampleVictims = [
-      { name: 'Robert Johnson', age: 67, location: 'Miami, FL', impactType: 'Financial', financialLoss: 125000 },
-      { name: 'Mary Williams', age: 54, location: 'Boston, MA', impactType: 'Identity Theft', financialLoss: 45000 }
-    ];
-    
-    const sampleEvidence = [
-      { type: 'Digital', description: 'Encrypted hard drive from suspect residence', significance: 'high' },
-      { type: 'Financial', description: 'Bank records showing suspicious transactions', significance: 'high' },
-      { type: 'Communication', description: 'Email correspondence between suspects', significance: 'medium' },
-      { type: 'Document', description: 'Forged identification documents', significance: 'high' }
-    ];
-    
-    // Add suspects
-    sampleSuspects.forEach((suspect, index) => {
-      results.push({
-        id: `suspect_real_${index}`,
-        type: 'Suspect',
-        name: suspect.name,
-        description: `${suspect.role} - ${suspect.charges.join(', ')}`,
-        content: `Name: ${suspect.name}, Age: ${suspect.age}, Location: ${suspect.location}, Role: ${suspect.role}, Charges: ${suspect.charges.join(', ')}`,
-        source: filename,
-        category: 'person',
-        riskLevel: suspect.riskLevel,
-        location: suspect.location,
-        phone: `+1-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`,
-        age: suspect.age,
-        timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        relevance: 95 - index * 2,
-        icon: '👤',
-        color: '#ef4444',
-        rawData: suspect
-      });
-    });
-    
-    // Add victims
-    sampleVictims.forEach((victim, index) => {
-      results.push({
-        id: `victim_real_${index}`,
-        type: 'Victim',
-        name: victim.name,
-        description: `${victim.impactType} - Financial loss: $${victim.financialLoss.toLocaleString()}`,
-        content: `Name: ${victim.name}, Age: ${victim.age}, Location: ${victim.location}, Impact: ${victim.impactType}, Financial Loss: $${victim.financialLoss.toLocaleString()}`,
-        source: filename,
-        category: 'person',
-        riskLevel: 'critical',
-        location: victim.location,
-        phone: `+1-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`,
-        age: victim.age,
-        timestamp: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
-        relevance: 90 - index * 2,
-        icon: '😢',
-        color: '#10b981',
-        rawData: victim
-      });
-    });
-    
-    // Add evidence
-    sampleEvidence.forEach((evidence, index) => {
-      results.push({
-        id: `evidence_real_${index}`,
-        type: 'Evidence',
-        name: evidence.description,
-        description: `${evidence.type} evidence - ${evidence.significance} significance`,
-        content: `Type: ${evidence.type}, Description: ${evidence.description}, Significance: ${evidence.significance}`,
-        source: filename,
-        category: 'evidence',
-        riskLevel: evidence.significance,
-        timestamp: new Date(Date.now() - Math.random() * 45 * 24 * 60 * 60 * 1000).toISOString(),
-        relevance: 85 - index * 3,
-        icon: '📋',
-        color: '#f59e0b',
-        rawData: evidence
-      });
-    });
-    
-    console.log('✅ Generated realistic forensic data with actual names:', results.length, 'entries');
-    return results;
-  };
+
 
   // Generate database search results from files (updated to use real content)
   const generateSearchResultsFromFiles = async (fileObjects) => {

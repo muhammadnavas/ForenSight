@@ -434,6 +434,14 @@ const CaseSelector = () => {
     loadCases();
   }, []);
 
+  // Auto-select first case if none selected
+  useEffect(() => {
+    if (!selectedCase && cases && cases.length > 0) {
+      console.log('Auto-selecting first case:', cases[0]);
+      setSelectedCase(cases[0]);
+    }
+  }, [cases, selectedCase, setSelectedCase]);
+
   // Auto-refresh cases every 30 seconds to stay synced
   useEffect(() => {
     const interval = setInterval(() => {
@@ -778,39 +786,37 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
               )}
             </div>
             
-            {/* User Welcome Section */}
-            {user && (
-              <div style={{
-                backgroundColor: '#ffffff',
-                padding: '16px',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                textAlign: 'right'
-              }}>
-                <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>
-                  Welcome to
-                </div>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>
-                  ForenSight Platform
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
-                  <span style={{
-                    backgroundColor: '#0ea5e9',
-                    color: 'white',
-                    padding: '2px 6px',
-                    borderRadius: '10px',
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    marginRight: '8px'
-                  }}>
-                    SYSTEM
-                  </span>
-                  Digital Forensics
-                </div>
+            {/* Welcome Section */}
+            <div style={{
+              backgroundColor: '#ffffff',
+              padding: '16px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              textAlign: 'right'
+            }}>
+              <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>
+                Welcome to
               </div>
-            )}
+              <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>
+                ForenSight Platform
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>
+                <span style={{
+                  backgroundColor: '#0ea5e9',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '10px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  marginRight: '8px'
+                }}>
+                  SYSTEM
+                </span>
+                Digital Forensics
+              </div>
+            </div>
           </div>
         </div>
 
@@ -847,33 +853,7 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
             >
               📤 Upload Files
             </button>
-            <button 
-              style={{
-                backgroundColor: '#059669',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onClick={async () => {
-                try {
-                  const response = await fetch('/sample-case-data.json');
-                  const data = await response.json();
-                  await processUploadedFile({ text: async () => JSON.stringify(data) });
-                } catch (error) {
-                  console.error('Error loading sample data:', error);
-                  alert('Failed to load sample data: ' + error.message);
-                }
-              }}
-            >
-              📋 Load Sample Data
-            </button>
+
           </div>
         )}
         </div>

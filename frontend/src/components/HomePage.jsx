@@ -644,7 +644,7 @@ const HomePage = ({ onNavigateToDashboard }) => {
       </div>
 
       {/* CSS Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes slideInUp {
           from {
             transform: translateY(60px);

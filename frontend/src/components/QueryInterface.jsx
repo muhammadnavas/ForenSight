@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { GEMINI_CONFIG, makeGeminiRequest } from '../config/geminiConfig.js';
 import { useCaseContext } from '../contexts/CaseContext';
+import { useCaseData } from '../contexts/CaseDataContext';
 
 const QueryInterface = () => {
   const { selectedCase, caseFiles, selectedFiles = [], getSelectedFileObjects } = useCaseContext();
+  const { caseData, hasData, statistics } = useCaseData();
   
   // Get case data from selected case and files
-  const selectedCaseData = selectedCase ? {
+  const selectedCaseData = hasData ? caseData : (selectedCase ? {
     case: selectedCase,
     files: caseFiles,
     selectedFiles: getSelectedFileObjects()
-  } : null;
+  } : null);
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -142,23 +144,103 @@ const QueryInterface = () => {
     }
 
     try {
-      // Create AI-powered search prompt
+      // Create AI-powered search prompt with detailed case data
       const searchPrompt = `
 You are a forensic digital evidence search AI. Analyze the following case data and respond to the search query with relevant evidence.
 
 CASE DATA:
-${JSON.stringify(selectedCaseData, null, 2)}
+${hasData ? `
+CASE OVERVIEW:
+- Case ID: ${caseData.caseId || 'Unknown'}
+- Name: ${caseData.name || 'Unknown'}
+- Type: ${caseData.type || 'Unknown'}
+- Status: ${caseData.status || 'Unknown'}
+- Priority: ${caseData.priority || 'Unknown'}
+- Description: ${caseData.description || 'No description'}
+
+SUSPECTS:
+${caseData.suspects ? caseData.suspects.map(suspect => `
+- Name: ${suspect.name || 'Unknown'}
+- Role: ${suspect.role || 'Unknown'}
+- Status: ${suspect.status || 'Unknown'}
+- Details: ${suspect.details || 'No details'}
+- Evidence: ${suspect.evidence ? suspect.evidence.join(', ') : 'None'}
+- Associations: ${suspect.associations ? suspect.associations.join(', ') : 'None'}
+`).join('') : 'No suspects data'}
+
+VICTIMS:
+${caseData.victims ? caseData.victims.map(victim => `
+- Name: ${victim.name || 'Unknown'}
+- Type: ${victim.type || 'Unknown'}
+- Status: ${victim.status || 'Unknown'}
+- Impact: ${victim.impact || 'Unknown'}
+- Details: ${victim.details || 'No details'}
+`).join('') : 'No victims data'}
+
+EVIDENCE:
+${caseData.evidence ? caseData.evidence.map(evidence => `
+- Type: ${evidence.type || 'Unknown'}
+- Description: ${evidence.description || 'No description'}
+- Source: ${evidence.source || 'Unknown'}
+- Status: ${evidence.status || 'Unknown'}
+- Hash: ${evidence.hash || 'No hash'}
+- Timeline: ${evidence.timeline || 'No timeline'}
+`).join('') : 'No evidence data'}
+
+TIMELINE:
+${caseData.timeline ? caseData.timeline.map(event => `
+- Date: ${event.date || 'Unknown'}
+- Event: ${event.event || 'Unknown'}
+- Type: ${event.type || 'Unknown'}
+- Description: ${event.description || 'No description'}
+- Evidence: ${event.evidence ? event.evidence.join(', ') : 'None'}
+`).join('') : 'No timeline data'}
+
+NETWORK TOPOLOGY:
+${caseData.network ? `
+- Infrastructure: ${caseData.network.infrastructure ? caseData.network.infrastructure.map(infra => `${infra.name} (${infra.type})`).join(', ') : 'None'}
+- Connections: ${caseData.network.connections ? caseData.network.connections.map(conn => `${conn.from} -> ${conn.to} (${conn.type})`).join(', ') : 'None'}
+- Communication Patterns: ${caseData.network.communicationPatterns || 'None'}
+- Access Patterns: ${caseData.network.accessPatterns || 'None'}
+` : 'No network data'}
+
+GEOGRAPHIC DATA:
+${caseData.geographic ? caseData.geographic.map(geo => `
+- Location: ${geo.name || 'Unknown'} (${geo.latitude}, ${geo.longitude})
+- Type: ${geo.type || 'Unknown'}
+- Significance: ${geo.significance || 'No significance'}
+- Evidence: ${geo.evidence ? geo.evidence.join(', ') : 'None'}
+`).join('') : 'No geographic data'}
+
+FINANCIAL ANALYSIS:
+${caseData.financial ? `
+- Cryptocurrency: ${caseData.financial.cryptocurrency ? caseData.financial.cryptocurrency.map(crypto => `${crypto.address} (${crypto.currency}): ${crypto.amount}`).join(', ') : 'None'}
+- Transactions: ${caseData.financial.transactions ? caseData.financial.transactions.map(tx => `${tx.from} -> ${tx.to}: ${tx.amount} on ${tx.date}`).join(', ') : 'None'}
+- Money Flow: ${caseData.financial.moneyFlow || 'No analysis'}
+` : 'No financial data'}
+
+DIGITAL FORENSICS:
+${caseData.digitalForensics ? `
+- File Analysis: ${caseData.digitalForensics.fileAnalysis || 'None'}
+- Network Traffic: ${caseData.digitalForensics.networkTraffic || 'None'}
+- System Logs: ${caseData.digitalForensics.systemLogs || 'None'}
+- Malware Analysis: ${caseData.digitalForensics.malwareAnalysis || 'None'}
+- Data Recovery: ${caseData.digitalForensics.dataRecovery || 'None'}
+` : 'No digital forensics data'}
+` : JSON.stringify(selectedCaseData, null, 2)}
 
 SEARCH QUERY: "${query}"
 
 Please provide:
 1. Relevant evidence items that match the query
-2. Key findings and insights
+2. Key findings and insights from the case data
 3. Context and significance of the findings
-4. Relevance score (0-100%) for each finding
-5. Timestamps and metadata when available
+4. Connections between different evidence pieces
+5. Relevance score (0-100%) for each finding
+6. Timestamps and metadata when available
+7. Investigative recommendations based on the findings
 
-Format your response as a structured analysis with clear sections for each relevant finding. If no relevant evidence is found, explain why and suggest alternative search terms.
+Format your response as a structured forensic analysis with clear sections for each relevant finding. If no relevant evidence is found, explain why and suggest alternative search terms or investigative approaches based on the available case data.
       `;
 
       const requestBody = {
@@ -368,12 +450,24 @@ Format your response as a structured analysis with clear sections for each relev
           </div>
           <div style={{
             ...statusItemStyle,
-            backgroundColor: selectedCaseData ? '#8b5cf6' : '#dc2626',
+            backgroundColor: hasData ? '#059669' : (selectedCaseData ? '#8b5cf6' : '#dc2626'),
             color: 'white'
           }}>
-            <span>{selectedCaseData ? '🟢' : '❌'}</span>
-            <span>{selectedCaseData ? 'AI Search Ready' : 'No Data Available'}</span>
+            <span>{hasData ? '🟢' : (selectedCaseData ? '�' : '❌')}</span>
+            <span>
+              {hasData ? 'Detailed Case Data Available' : 
+               selectedCaseData ? 'Basic Case Data Only' : 
+               'No Data Available'}
+            </span>
           </div>
+          {hasData && statistics && (
+            <div style={statusItemStyle}>
+              <span>📊</span>
+              <span>
+                {statistics.suspectsCount || 0} suspects, {statistics.victimsCount || 0} victims, {statistics.evidenceCount || 0} evidence
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

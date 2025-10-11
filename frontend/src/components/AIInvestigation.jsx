@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { GEMINI_CONFIG, makeGeminiRequest } from '../config/geminiConfig.js';
+import { useEffect, useRef, useState } from 'react';
+import { makeGeminiRequest } from '../config/geminiConfig.js';
 import { useCaseContext } from '../contexts/CaseContext.jsx';
+import { useCaseData } from '../contexts/CaseDataContext.jsx';
 
 const AIInvestigation = () => {
   const { selectedCase, caseFiles, getSelectedFileObjects } = useCaseContext();
+  const { caseData, hasData, statistics, getNetworkData, getGeographicData, getEvidenceData } = useCaseData();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
@@ -88,28 +90,79 @@ Case ID: ${selectedCase.caseId || selectedCase._id}
 Case Name: ${selectedCase.name || selectedCase.title}
 Case Description: ${selectedCase.description || 'No description available'}
 Case Status: ${selectedCase.status || 'Unknown'}
-Total Evidence Files: ${caseFiles ? caseFiles.length : 0}
+Priority: ${selectedCase.priority || 'Unknown'}
+Investigator: ${selectedCase.investigator || 'Unknown'}
 
-EVIDENCE FILES:
-${caseFiles && caseFiles.length > 0 ? 
-  caseFiles.map(file => 
-    `- ${file.originalName || file.filename} (${file.size || 'Unknown size'} bytes, Type: ${file.contentType || 'Unknown'})`
-  ).join('\n') : 
-  'No evidence files available'
-}
+${caseData ? `
+DETAILED CASE DATA:
 
-SELECTED FILES FOR ANALYSIS:
-${getSelectedFileObjects().length > 0 ? 
-  getSelectedFileObjects().map(file => 
-    `- ${file.originalName || file.filename} (${file.size || 'Unknown size'} bytes, Type: ${file.contentType || 'Unknown'})`
-  ).join('\n') : 
-  'No specific files selected - analyze all available evidence'
-}
+SUSPECTS:
+${caseData.suspects ? caseData.suspects.map(suspect => `
+- ${suspect.name} (${suspect.nationality}, Age: ${suspect.age})
+  Role: ${suspect.role}
+  Risk Level: ${suspect.riskLevel}
+  Aliases: ${suspect.alias ? suspect.alias.join(', ') : 'None'}
+  Known Addresses: ${suspect.knownAddresses ? suspect.knownAddresses.join('; ') : 'Unknown'}
+  Digital Footprint: ${suspect.digitalFootprint ? JSON.stringify(suspect.digitalFootprint) : 'None'}
+`).join('\n') : 'No suspect information available'}
+
+VICTIMS:
+${caseData.victims ? caseData.victims.map(victim => `
+- ${victim.name} (${victim.type})
+  Financial Loss: $${victim.financialLoss ? victim.financialLoss.toLocaleString() : 'Unknown'}
+  Incident Date: ${victim.incidentDate || 'Unknown'}
+  Systems Affected: ${victim.systemsAffected ? victim.systemsAffected.join(', ') : 'Unknown'}
+  Compromised Assets: ${victim.compromisedAssets ? victim.compromisedAssets.join(', ') : 'Unknown'}
+`).join('\n') : 'No victim information available'}
+
+EVIDENCE:
+${caseData.evidence ? caseData.evidence.map(evidence => `
+- ${evidence.name} (${evidence.type} - ${evidence.category})
+  Description: ${evidence.description}
+  Collection Date: ${evidence.collectedDate}
+  Analysis Status: ${evidence.analysis?.status || 'Pending'}
+  Key Findings: ${evidence.analysis?.findings ? JSON.stringify(evidence.analysis.findings) : 'None'}
+`).join('\n') : 'No evidence information available'}
+
+NETWORK TOPOLOGY:
+${caseData.networkTopology ? `
+Nodes: ${caseData.networkTopology.nodes ? caseData.networkTopology.nodes.map(node => 
+  `${node.label} (${node.type}, Risk: ${node.riskLevel})`).join(', ') : 'None'}
+Connections: ${caseData.networkTopology.edges ? caseData.networkTopology.edges.length : 0} relationships
+` : 'No network topology available'}
+
+GEOGRAPHIC DATA:
+Suspect Locations: ${caseData.geographicData?.suspectLocations?.length || 0}
+Criminal Activities: ${caseData.geographicData?.criminalActivity?.length || 0}
+Infrastructure Points: ${caseData.geographicData?.infrastructure?.length || 0}
+
+FINANCIAL ANALYSIS:
+${caseData.cryptoAnalysis ? `
+Total Value: $${caseData.cryptoAnalysis.totalValueUSD?.toLocaleString() || 'Unknown'}
+Unique Wallets: ${caseData.cryptoAnalysis.uniqueWallets || 'Unknown'}
+Exchanges Used: ${caseData.cryptoAnalysis.exchangesUsed || 'Unknown'}
+` : 'No financial analysis available'}
+
+DIGITAL FORENSICS:
+${caseData.digitalForensics ? `
+Key Findings: ${caseData.digitalForensics.keyFindings ? caseData.digitalForensics.keyFindings.join('; ') : 'None'}
+Tools Used: ${caseData.digitalForensics.forensicTools ? caseData.digitalForensics.forensicTools.join(', ') : 'None'}
+Recovery Stats: ${caseData.digitalForensics.dataRecovery ? JSON.stringify(caseData.digitalForensics.dataRecovery) : 'None'}
+` : 'No digital forensics data available'}
+` : 'No detailed case data loaded - only basic case information available'}
+
+CASE STATISTICS:
+- Total Suspects: ${statistics.totalSuspects}
+- Total Victims: ${statistics.totalVictims}
+- Total Evidence: ${statistics.totalEvidence}
+- Total Locations: ${statistics.totalLocations}
+- Risk Level: ${statistics.riskLevel}
+- Completion: ${statistics.completionPercentage}%
 
 INVESTIGATION QUERY:
 ${messageToSend}
 
-Please provide a detailed forensic analysis based on the available evidence and case information. Focus on actionable insights and professional forensic investigation practices.
+Please provide a detailed forensic analysis based on the available evidence and case information. Focus on actionable insights, professional forensic investigation practices, and specific details from the case data provided above.
       `;
 
       const result = await makeGeminiRequest(contextPrompt);

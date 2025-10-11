@@ -208,8 +208,8 @@ const UploadUFDR = ({ setCurrentView }) => {
               });
               
               // Update the case context with the new file
-              if (data.file && addFileToCase) {
-                addFileToCase(selectedCase, data.file).catch(contextError => {
+              if (data.file && addFileToCase && selectedCase?._id) {
+                addFileToCase(selectedCase._id, data.file).catch(contextError => {
                   console.warn('Failed to update case context:', contextError);
                 });
               }

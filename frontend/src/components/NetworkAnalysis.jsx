@@ -156,6 +156,13 @@ const NetworkAnalysis = () => {
   const generateAnalysisFromFiles = (fileObjects) => {
     console.log('🔧 Generating enhanced analysis from files:', fileObjects.length);
     
+    // First, try to use actual case data if available
+    if (hasData && caseData) {
+      console.log('📊 Using actual case data for network analysis');
+      return generateNetworkFromCaseData();
+    }
+    
+    // Return empty network structure when no case data available
     const networkData = {
       contacts: { nodes: [], connections: [] },
       locations: { nodes: [], connections: [] },
@@ -170,283 +177,204 @@ const NetworkAnalysis = () => {
       hotspots: []
     };
 
-    // Define realistic contact names and locations
-    const contactNames = [
-      'Alex Johnson', 'Maria Rodriguez', 'David Chen', 'Sarah Wilson', 'Michael Brown',
-      'Emma Davis', 'James Miller', 'Lisa Garcia', 'Robert Taylor', 'Jennifer Anderson',
-      'William Martinez', 'Ashley Thomas', 'Christopher Lee', 'Amanda White', 'Daniel Moore'
-    ];
-    
-    const locations = [
-      { city: 'New York', state: 'NY', lat: 40.7128, lng: -74.0060 },
-      { city: 'Los Angeles', state: 'CA', lat: 34.0522, lng: -118.2437 },
-      { city: 'Chicago', state: 'IL', lat: 41.8781, lng: -87.6298 },
-      { city: 'Houston', state: 'TX', lat: 29.7604, lng: -95.3698 },
-      { city: 'Phoenix', state: 'AZ', lat: 33.4484, lng: -112.0740 },
-      { city: 'Philadelphia', state: 'PA', lat: 39.9526, lng: -75.1652 },
-      { city: 'San Antonio', state: 'TX', lat: 29.4241, lng: -98.4936 },
-      { city: 'San Diego', state: 'CA', lat: 32.7157, lng: -117.1611 },
-      { city: 'Dallas', state: 'TX', lat: 32.7767, lng: -96.7970 },
-      { city: 'San Jose', state: 'CA', lat: 37.3382, lng: -121.8863 }
-    ];
+    console.log('✅ No case data available - returning empty network structure');
+    return { networkData, analyticsData };
+  };
 
-    fileObjects.forEach((file, fileIndex) => {
-      const filename = file.originalName || file.filename || file.name || 'unknown';
-      const fileType = getFileType(filename);
-      console.log('📄 Processing file:', filename, 'Type:', fileType);
-      
-      // Generate contacts based on file type
-      let contactCount = 8; // Default
-      if (fileType === 'contacts') contactCount = 20;
-      else if (fileType === 'communications') contactCount = 15;
-      else if (fileType === 'mobile') contactCount = 25;
-      else if (fileType === 'data') contactCount = 12;
-      
-      const contacts = Array.from({ length: contactCount }, (_, i) => {
-        const contactName = contactNames[i % contactNames.length];
-        const riskLevels = ['low', 'medium', 'high', 'critical'];
-        const riskWeights = [0.4, 0.3, 0.2, 0.1]; // More low risk, fewer critical
-        const riskLevel = riskLevels[Math.floor(Math.random() * 100) < 40 ? 0 : Math.floor(Math.random() * 100) < 70 ? 1 : Math.floor(Math.random() * 100) < 90 ? 2 : 3];
-        
-        return {
-          id: `contact_${file.fileId || file._id || fileIndex}_${i}`,
-          name: `${contactName} ${i > 14 ? Math.floor(i/15) + 1 : ''}`.trim(),
-          label: `${contactName} ${i > 14 ? Math.floor(i/15) + 1 : ''}`.trim(),
-          phone: `+1${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
-          email: `${contactName.toLowerCase().replace(' ', '.')}${i > 14 ? Math.floor(i/15) + 1 : ''}@${['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'][Math.floor(Math.random() * 4)]}`,
-          type: fileType === 'contacts' ? ['contact', 'family', 'business'][Math.floor(Math.random() * 3)] : 'person',
-          category: ['suspect', 'victim', 'witness', 'contact'][Math.floor(Math.random() * 4)],
-          riskLevel: riskLevel,
-          lastContact: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-          connections: Math.floor(Math.random() * 8) + 1,
-          source: filename,
-          fileType: fileType,
-          // Add required coordinates for SVG rendering
-          x: Math.random() * 600 + 100,
-          y: Math.random() * 400 + 100
-        };
-      });
-      
-      networkData.contacts.nodes.push(...contacts);
-      console.log('👥 Added contacts:', contacts.length);
-      
-      // Generate locations based on file type and realistic data
-      let locationCount = 5; // Default
-      if (fileType === 'location') locationCount = 15;
-      else if (fileType === 'mobile') locationCount = 12;
-      else if (fileType === 'communications') locationCount = 8;
-      
-      const locationNodes = Array.from({ length: locationCount }, (_, i) => {
-        const location = locations[i % locations.length];
-        const variation = 0.1; // Add some randomness to coordinates
-        
-        return {
-          id: `location_${file.fileId || file._id || fileIndex}_${i}`,
-          name: `${location.city} Area ${Math.floor(i/locations.length) + 1}`,
-          label: `${location.city}, ${location.state}`,
-          latitude: location.lat + (Math.random() - 0.5) * variation,
-          longitude: location.lng + (Math.random() - 0.5) * variation,
-          address: `${Math.floor(Math.random() * 9999) + 1} ${['Main St', 'Oak Ave', 'Park Blvd', 'First St', 'Second Ave'][Math.floor(Math.random() * 5)]}, ${location.city}, ${location.state}`,
-          visitCount: Math.floor(Math.random() * 50) + 1,
-          type: ['suspect-location', 'victim-location', 'crime-location', 'infrastructure-location'][Math.floor(Math.random() * 4)],
-          category: ['suspect', 'victim', 'crime', 'infrastructure'][Math.floor(Math.random() * 4)],
-          riskLevel: ['low', 'medium', 'high', 'critical'][Math.floor(Math.random() * 100) < 50 ? 0 : Math.floor(Math.random() * 100) < 80 ? 1 : Math.floor(Math.random() * 100) < 95 ? 2 : 3],
-          source: filename,
-          fileType: fileType,
-          x: Math.random() * 600 + 100,
-          y: Math.random() * 400 + 100,
-          connections: Math.floor(Math.random() * 5) + 1
-        };
-      });
-      
-      networkData.locations.nodes.push(...locationNodes);
-      console.log('📍 Added locations:', locationNodes.length);
-      
-      // Generate financial/transaction nodes based on file type
-      let transactionCount = 6; // Default
-      if (fileType === 'financial') transactionCount = 15;
-      else if (fileType === 'mobile') transactionCount = 10;
-      else if (fileType === 'data') transactionCount = 8;
-      
-      const transactionNodes = Array.from({ length: transactionCount }, (_, i) => {
-        const accountTypes = ['checking', 'savings', 'credit', 'wallet', 'exchange', 'investment'];
-        const institutions = ['Chase Bank', 'Bank of America', 'Wells Fargo', 'Citibank', 'PayPal', 'Venmo', 'CashApp', 'Bitcoin Wallet'];
-        
-        return {
-          id: `transaction_${file.fileId || file._id || fileIndex}_${i}`,
-          name: `${institutions[i % institutions.length]} ${Math.floor(i/institutions.length) + 1}`,
-          label: `${accountTypes[i % accountTypes.length]} account`,
-          type: accountTypes[i % accountTypes.length],
-          category: 'financial',
-          institution: institutions[i % institutions.length],
-          amount: Math.floor(Math.random() * 500000) + 1000,
-          balance: Math.floor(Math.random() * 100000) + 500,
-          riskLevel: ['low', 'medium', 'high', 'critical'][Math.floor(Math.random() * 100) < 60 ? 0 : Math.floor(Math.random() * 100) < 85 ? 1 : Math.floor(Math.random() * 100) < 95 ? 2 : 3],
-          source: filename,
-          fileType: fileType,
-          x: Math.random() * 600 + 100,
-          y: Math.random() * 400 + 100,
-          connections: Math.floor(Math.random() * 6) + 1
-        };
-      });
-      
-      networkData.transactions.nodes.push(...transactionNodes);
-      console.log('💰 Added transactions:', transactionNodes.length);
-    });
+  // Generate network data from actual case data
+  const generateNetworkFromCaseData = () => {
+    console.log('🎯 Generating network from actual case data');
+    
+    const networkData = {
+      contacts: { nodes: [], connections: [] },
+      locations: { nodes: [], connections: [] },
+      transactions: { nodes: [], connections: [] }
+    };
+    
+    const analyticsData = {
+      totalEntities: 0,
+      totalConnections: 0,
+      riskDistribution: { low: 0, medium: 0, high: 0, critical: 0 },
+      connectionTypes: {},
+      timelineData: [],
+      hotspots: []
+    };
 
-    // Generate intelligent connections between nodes
-    ['contacts', 'locations', 'transactions'].forEach(mode => {
-      const nodes = networkData[mode].nodes;
-      const connections = [];
+    // Process suspects as contact nodes
+    if (caseData.suspects) {
+      const suspectNodes = caseData.suspects.map((suspect, index) => ({
+        id: suspect.id,
+        name: suspect.name,
+        label: suspect.name,
+        phone: suspect.phoneNumbers ? suspect.phoneNumbers[0] : 'Unknown',
+        email: suspect.emailAccounts ? suspect.emailAccounts[0] : 'Unknown',
+        type: 'suspect',
+        category: 'suspect',
+        riskLevel: suspect.riskLevel ? suspect.riskLevel.toLowerCase() : 'medium',
+        lastContact: new Date().toISOString(),
+        source: 'Case Data',
+        fileType: 'case-data',
+        aliases: suspect.alias || [],
+        occupation: suspect.occupation,
+        nationality: suspect.nationality,
+        age: suspect.age,
+        role: suspect.role,
+        x: Math.random() * 600 + 100,
+        y: Math.random() * 400 + 100,
+        connections: caseData.networkTopology?.edges?.filter(edge => 
+          edge.from === suspect.id || edge.to === suspect.id).length || 0
+      }));
+      networkData.contacts.nodes.push(...suspectNodes);
       
-      if (nodes.length > 1) {
-        // Create hub nodes (high-risk entities with more connections)
-        const hubNodes = nodes.filter(n => n.riskLevel === 'high' || n.riskLevel === 'critical');
-        const regularNodes = nodes.filter(n => n.riskLevel === 'low' || n.riskLevel === 'medium');
-        
-        // Connect hub nodes to multiple other nodes
-        hubNodes.forEach((hubNode, hubIndex) => {
-          const connectionCount = Math.floor(Math.random() * 6) + 4; // 4-9 connections for hubs
-          const availableNodes = nodes.filter(n => n.id !== hubNode.id);
-          
-          for (let i = 0; i < Math.min(connectionCount, availableNodes.length); i++) {
-            const targetNode = availableNodes[Math.floor(Math.random() * availableNodes.length)];
-            
-            // Avoid duplicate connections
-            if (!connections.some(c => 
-              (c.from === hubNode.id && c.to === targetNode.id) || 
-              (c.from === targetNode.id && c.to === hubNode.id)
-            )) {
-              const connectionStrength = hubNode.riskLevel === 'critical' ? 
-                Math.floor(Math.random() * 5) + 6 : // 6-10 for critical
-                Math.floor(Math.random() * 4) + 4;   // 4-7 for high
-              
-              connections.push({
-                id: `${mode}_hub_conn_${hubIndex}_${i}`,
-                from: hubNode.id,
-                to: targetNode.id,
-                type: getConnectionType(mode, hubNode, targetNode),
-                strength: connectionStrength,
-                label: getConnectionLabel(mode, hubNode, targetNode),
-                riskLevel: hubNode.riskLevel
-              });
-            }
-          }
-        });
-        
-        // Create clusters of regular nodes
-        const clusterSize = Math.floor(regularNodes.length / 3) + 2;
-        for (let cluster = 0; cluster < Math.ceil(regularNodes.length / clusterSize); cluster++) {
-          const clusterNodes = regularNodes.slice(cluster * clusterSize, (cluster + 1) * clusterSize);
-          
-          // Connect nodes within cluster
-          for (let i = 0; i < clusterNodes.length - 1; i++) {
-            for (let j = i + 1; j < clusterNodes.length; j++) {
-              if (Math.random() > 0.6) { // 40% chance of connection within cluster
-                const strength = Math.floor(Math.random() * 4) + 2; // 2-5 strength
-                
-                connections.push({
-                  id: `${mode}_cluster_conn_${cluster}_${i}_${j}`,
-                  from: clusterNodes[i].id,
-                  to: clusterNodes[j].id,
-                  type: getConnectionType(mode, clusterNodes[i], clusterNodes[j]),
-                  strength: strength,
-                  label: getConnectionLabel(mode, clusterNodes[i], clusterNodes[j])
-                });
-              }
-            }
-          }
-        }
-        
-        // Add some random long-distance connections for complexity
-        for (let i = 0; i < Math.floor(nodes.length / 4); i++) {
-          const node1 = nodes[Math.floor(Math.random() * nodes.length)];
-          const node2 = nodes[Math.floor(Math.random() * nodes.length)];
-          
-          if (node1.id !== node2.id && !connections.some(c => 
-            (c.from === node1.id && c.to === node2.id) || 
-            (c.from === node2.id && c.to === node1.id)
-          )) {
-            connections.push({
-              id: `${mode}_random_conn_${i}`,
-              from: node1.id,
-              to: node2.id,
-              type: getConnectionType(mode, node1, node2),
-              strength: Math.floor(Math.random() * 3) + 1, // 1-3 strength for random
-              label: getConnectionLabel(mode, node1, node2)
-            });
-          }
-        }
-      }
-      
-      networkData[mode].connections = connections;
-      console.log(`🔗 Generated ${connections.length} intelligent connections for ${mode}`);
-    });
-    
-    // Helper functions for connection generation
-    function getConnectionType(mode, node1, node2) {
-      const types = {
-        contacts: ['communication', 'relationship', 'business', 'family', 'suspect-victim'],
-        locations: ['movement', 'travel', 'proximity', 'frequent-visit', 'crime-scene'],
-        transactions: ['transfer', 'payment', 'deposit', 'withdrawal', 'suspicious-activity']
-      };
-      
-      // Risk-based connection types
-      if ((node1.riskLevel === 'high' || node1.riskLevel === 'critical') && 
-          (node2.riskLevel === 'high' || node2.riskLevel === 'critical')) {
-        return mode === 'contacts' ? 'suspect-relationship' : 
-               mode === 'locations' ? 'crime-scene' : 'suspicious-activity';
-      }
-      
-      const modeTypes = types[mode] || ['connection'];
-      return modeTypes[Math.floor(Math.random() * modeTypes.length)];
-    }
-    
-    function getConnectionLabel(mode, node1, node2) {
-      // Generate more meaningful labels based on context
-      const riskBasedLabels = {
-        contacts: {
-          high: ['Suspicious Call', 'Encrypted Chat', 'Secret Meeting', 'Criminal Contact'],
-          medium: ['Frequent Contact', 'Business Call', 'Regular Meeting', 'Known Associate'],
-          low: ['Social Contact', 'Family Call', 'Friend', 'Casual Meeting']
-        },
-        locations: {
-          high: ['Crime Scene Visit', 'Surveillance Location', 'Hidden Meeting', 'Suspicious Movement'],
-          medium: ['Frequent Visit', 'Business Location', 'Regular Travel', 'Known Area'],
-          low: ['Casual Visit', 'Social Location', 'Travel Route', 'Public Area']
-        },
-        transactions: {
-          high: ['Suspicious Transfer', 'Large Payment', 'Hidden Transaction', 'Money Laundering'],
-          medium: ['Business Payment', 'Regular Transfer', 'Known Transaction', 'Financial Link'],
-          low: ['Small Payment', 'Personal Transfer', 'Regular Transaction', 'Normal Payment']
-        }
-      };
-      
-      // Determine risk level for labeling
-      const node1Risk = node1.riskLevel || 'low';
-      const node2Risk = node2.riskLevel || 'low';
-      const maxRisk = (node1Risk === 'critical' || node2Risk === 'critical') ? 'high' :
-                     (node1Risk === 'high' || node2Risk === 'high') ? 'high' :
-                     (node1Risk === 'medium' || node2Risk === 'medium') ? 'medium' : 'low';
-      
-      const modeLabels = riskBasedLabels[mode] && riskBasedLabels[mode][maxRisk] || 
-                        ['Connected', 'Linked', 'Associated', 'Related'];
-      
-      return modeLabels[Math.floor(Math.random() * modeLabels.length)];
+      // Update risk distribution
+      suspectNodes.forEach(node => {
+        const risk = node.riskLevel === 'extreme' ? 'critical' : node.riskLevel;
+        analyticsData.riskDistribution[risk] = (analyticsData.riskDistribution[risk] || 0) + 1;
+      });
     }
 
-    // Calculate analytics
-    analyticsData.totalEntities = networkData.contacts.nodes.length + networkData.locations.nodes.length + networkData.transactions.nodes.length;
-    analyticsData.totalConnections = networkData.contacts.connections.length + networkData.locations.connections.length + networkData.transactions.connections.length;
-    
-    // Calculate risk distribution
-    [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].forEach(item => {
-      if (item.riskLevel) {
-        analyticsData.riskDistribution[item.riskLevel] = (analyticsData.riskDistribution[item.riskLevel] || 0) + 1;
+    // Process victims as contact nodes  
+    if (caseData.victims) {
+      const victimNodes = caseData.victims.map((victim, index) => ({
+        id: victim.id,
+        name: victim.name,
+        label: victim.name,
+        phone: victim.contactInfo?.phone || 'Unknown',
+        email: victim.contactInfo?.email || 'Unknown',
+        type: 'victim',
+        category: 'victim',
+        riskLevel: 'low',
+        lastContact: victim.incidentDate || new Date().toISOString(),
+        source: 'Case Data',
+        fileType: 'case-data',
+        victimType: victim.type,
+        financialLoss: victim.financialLoss,
+        industry: victim.industry,
+        location: victim.location || victim.headquartersLocation,
+        x: Math.random() * 600 + 100,
+        y: Math.random() * 400 + 100,
+        connections: 2 // Typically connected to suspects and evidence
+      }));
+      networkData.contacts.nodes.push(...victimNodes);
+      
+      victimNodes.forEach(() => {
+        analyticsData.riskDistribution.low += 1;
+      });
+    }
+
+    // Process geographic data as location nodes
+    if (caseData.geographicData) {
+      // Suspect locations
+      if (caseData.geographicData.suspectLocations) {
+        const suspectLocationNodes = caseData.geographicData.suspectLocations.map(location => ({
+          id: location.id,
+          name: location.name,
+          label: location.name,
+          latitude: location.coordinates[1],
+          longitude: location.coordinates[0],
+          address: location.address,
+          type: 'suspect-location',
+          category: 'suspect',
+          riskLevel: 'high',
+          significance: location.significance,
+          suspect: location.suspect,
+          x: Math.random() * 600 + 100,
+          y: Math.random() * 400 + 100,
+          connections: 3
+        }));
+        networkData.locations.nodes.push(...suspectLocationNodes);
       }
+
+      // Criminal activity locations
+      if (caseData.geographicData.criminalActivity) {
+        const crimeLocationNodes = caseData.geographicData.criminalActivity.map(activity => ({
+          id: activity.id,
+          name: activity.name,
+          label: activity.name,
+          latitude: activity.coordinates[1],
+          longitude: activity.coordinates[0], 
+          address: activity.address,
+          type: 'crime-location',
+          category: 'crime',
+          riskLevel: activity.impact === 'HIGH' ? 'critical' : activity.impact === 'MEDIUM' ? 'high' : 'medium',
+          activityType: activity.type,
+          date: activity.date,
+          x: Math.random() * 600 + 100,
+          y: Math.random() * 400 + 100,
+          connections: 4
+        }));
+        networkData.locations.nodes.push(...crimeLocationNodes);
+      }
+    }
+
+    // Process cryptocurrency data as transaction nodes
+    if (caseData.evidence) {
+      caseData.evidence.forEach(evidence => {
+        if (evidence.type === 'FINANCIAL' && evidence.cryptoAnalysis) {
+          const cryptoNodes = evidence.cryptoAnalysis.primaryWallets?.map((wallet, index) => ({
+            id: `crypto_${wallet.address.slice(-8)}`,
+            name: `${wallet.currency} Wallet`,
+            label: `${wallet.balance} ${wallet.currency}`,
+            type: 'cryptocurrency',
+            category: 'financial', 
+            currency: wallet.currency,
+            balance: wallet.balance,
+            address: wallet.address,
+            linkedSuspect: wallet.linkedSuspect,
+            riskLevel: wallet.balance > 100 ? 'critical' : wallet.balance > 50 ? 'high' : 'medium',
+            lastActivity: wallet.lastActivity,
+            x: Math.random() * 600 + 100,
+            y: Math.random() * 400 + 100,
+            connections: 5
+          })) || [];
+          networkData.transactions.nodes.push(...cryptoNodes);
+        }
+      });
+    }
+
+    // Generate connections based on network topology
+    if (caseData.networkTopology?.edges) {
+      const connections = caseData.networkTopology.edges.map(edge => ({
+        from: edge.from,
+        to: edge.to,
+        type: edge.type,
+        strength: edge.strength,
+        frequency: edge.frequency,
+        volume: edge.volume
+      }));
+      
+      networkData.contacts.connections.push(...connections);
+      analyticsData.totalConnections += connections.length;
+      
+      // Count connection types
+      connections.forEach(conn => {
+        analyticsData.connectionTypes[conn.type] = (analyticsData.connectionTypes[conn.type] || 0) + 1;
+      });
+    }
+
+    // Calculate total entities
+    analyticsData.totalEntities = 
+      networkData.contacts.nodes.length + 
+      networkData.locations.nodes.length + 
+      networkData.transactions.nodes.length;
+
+    // Generate timeline data from evidence
+    if (caseData.evidence) {
+      analyticsData.timelineData = caseData.evidence.map(evidence => ({
+        date: evidence.collectedDate,
+        event: `Evidence collected: ${evidence.name}`,
+        type: evidence.type,
+        category: evidence.category
+      }));
+    }
+
+    console.log('✅ Generated network data from case:', {
+      contacts: networkData.contacts.nodes.length,
+      locations: networkData.locations.nodes.length, 
+      transactions: networkData.transactions.nodes.length,
+      connections: analyticsData.totalConnections
     });
 
-    console.log('✅ Analysis complete - Total entities:', analyticsData.totalEntities, 'Total connections:', analyticsData.totalConnections);
     return { networkData, analyticsData };
   };
   
