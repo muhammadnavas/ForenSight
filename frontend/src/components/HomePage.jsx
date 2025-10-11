@@ -13,31 +13,99 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
   const features = [
     {
       icon: '🔍',
-      title: 'Natural Language Queries',
-      description: 'Ask questions in plain English and get instant forensic insights from complex UFDR data structures.',
+      title: 'RAG-Powered Queries',
+      description: 'Advanced Retrieval-Augmented Generation enables natural language queries across vast UFDR datasets with contextual understanding.',
       color: '#3b82f6',
-      bgColor: 'rgba(59, 130, 246, 0.1)'
+      bgColor: 'rgba(59, 130, 246, 0.1)',
+      details: ['Vector-based document search', 'Semantic similarity matching', 'Multi-modal evidence retrieval', 'Real-time knowledge synthesis']
     },
     {
       icon: '🤖',
-      title: 'AI-Powered Analysis',
-      description: 'Advanced machine learning algorithms analyze digital evidence with unprecedented accuracy and speed.',
+      title: 'AI Evidence Analysis',
+      description: 'Deep learning models automatically classify, correlate, and extract insights from digital artifacts with forensic precision.',
       color: '#10b981',
-      bgColor: 'rgba(16, 185, 129, 0.1)'
+      bgColor: 'rgba(16, 185, 129, 0.1)',
+      details: ['Automated artifact classification', 'Timeline reconstruction', 'Anomaly detection', 'Predictive analysis']
+    },
+    {
+      icon: '🕸️',
+      title: 'Network Intelligence',
+      description: 'Advanced graph analytics reveal hidden connections, communication patterns, and criminal network structures.',
+      color: '#8b5cf6',
+      bgColor: 'rgba(139, 92, 246, 0.1)',
+      details: ['Social network analysis', 'Communication mapping', 'Entity relationship graphs', 'Behavioral clustering']
+    },
+    {
+      icon: '🔐',
+      title: 'Crypto Forensics',
+      description: 'Comprehensive blockchain analysis, wallet tracking, and cryptocurrency transaction flow investigation capabilities.',
+      color: '#f59e0b',
+      bgColor: 'rgba(245, 158, 11, 0.1)',
+      details: ['Multi-blockchain support', 'Wallet clustering', 'Transaction tracing', 'DeFi protocol analysis']
+    },
+    {
+      icon: '📱',
+      title: 'Mobile Forensics',
+      description: 'Extract and analyze data from iOS, Android, and legacy mobile devices with advanced recovery techniques.',
+      color: '#ef4444',
+      bgColor: 'rgba(239, 68, 68, 0.1)',
+      details: ['Physical & logical extraction', 'Deleted data recovery', 'App data analysis', 'Location intelligence']
+    },
+    {
+      icon: '☁️',
+      title: 'Cloud Investigation',
+      description: 'Investigate cloud storage, SaaS applications, and distributed infrastructure with proper legal compliance.',
+      color: '#06b6d4',
+      bgColor: 'rgba(6, 182, 212, 0.1)',
+      details: ['Multi-cloud platform support', 'API-based acquisition', 'Metadata preservation', 'Compliance frameworks']
+    },
+    {
+      icon: '🧬',
+      title: 'Malware Analysis',
+      description: 'Dynamic and static malware analysis with behavioral profiling, IOC extraction, and threat attribution.',
+      color: '#dc2626',
+      bgColor: 'rgba(220, 38, 38, 0.1)',
+      details: ['Sandbox environments', 'Code disassembly', 'Behavior monitoring', 'Threat intelligence integration']
     },
     {
       icon: '📊',
       title: 'Visual Analytics',
-      description: 'Interactive dashboards and network visualizations reveal hidden patterns in forensic data.',
-      color: '#8b5cf6',
-      bgColor: 'rgba(139, 92, 246, 0.1)'
+      description: 'Interactive dashboards, timeline analysis, and 3D network visualizations for complex case understanding.',
+      color: '#7c3aed',
+      bgColor: 'rgba(124, 58, 237, 0.1)',
+      details: ['Real-time dashboards', 'Timeline reconstruction', '3D network graphs', 'Geospatial analysis']
+    },
+    {
+      icon: '🔬',
+      title: 'Memory Analysis',
+      description: 'Advanced RAM dump analysis, process reconstruction, and volatile data recovery from system memory.',
+      color: '#059669',
+      bgColor: 'rgba(5, 150, 105, 0.1)',
+      details: ['Process analysis', 'Network connections', 'Registry extraction', 'Encryption key recovery']
+    },
+    {
+      icon: '🌐',
+      title: 'Internet Evidence',
+      description: 'Web history analysis, social media investigation, and deep web artifact recovery with metadata preservation.',
+      color: '#0891b2',
+      bgColor: 'rgba(8, 145, 178, 0.1)',
+      details: ['Browser forensics', 'Social media analysis', 'Web cache recovery', 'Internet history timeline']
+    },
+    {
+      icon: '🛡️',
+      title: 'Chain of Custody',
+      description: 'Automated evidence integrity verification, digital signatures, and blockchain-based custody tracking.',
+      color: '#7c2d12',
+      bgColor: 'rgba(124, 45, 18, 0.1)',
+      details: ['Cryptographic verification', 'Audit trail logging', 'Evidence integrity checks', 'Legal compliance']
     },
     {
       icon: '⚖️',
-      title: 'Court-Ready Reports',
-      description: 'Generate comprehensive legal documentation with complete chain of custody and evidence integrity.',
-      color: '#f59e0b',
-      bgColor: 'rgba(245, 158, 11, 0.1)'
+      title: 'Legal Reporting',
+      description: 'Generate court-ready reports, expert testimony support, and compliance documentation with legal standards.',
+      color: '#b45309',
+      bgColor: 'rgba(180, 83, 9, 0.1)',
+      details: ['Automated report generation', 'Legal templates', 'Expert witness support', 'Compliance verification']
     }
   ];
 
@@ -188,6 +256,123 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
           </div>
         </div>
 
+        {/* RAG Technology Highlight */}
+        <div style={{
+          marginBottom: '100px',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(203, 213, 225, 0.3)',
+          borderRadius: '32px',
+          padding: '80px 40px',
+          animation: isVisible ? 'slideInUp 1s ease-out 0.8s both' : 'none'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '24px' }}>🧠</div>
+            <h2 style={{
+              fontSize: '3rem',
+              fontWeight: '900',
+              marginBottom: '24px',
+              background: 'linear-gradient(45deg, #3b82f6, #8b5cf6)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              RAG-Powered Intelligence
+            </h2>
+            <p style={{
+              fontSize: '1.3rem',
+              color: '#475569',
+              maxWidth: '800px',
+              margin: '0 auto',
+              lineHeight: '1.8'
+            }}>
+              Revolutionary Retrieval-Augmented Generation technology transforms how forensic investigators 
+              interact with evidence. Ask complex questions and receive intelligent, context-aware answers 
+              from your entire case database.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '40px',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
+            {[
+              {
+                icon: '🔗',
+                title: 'Semantic Search',
+                description: 'Vector embeddings understand context, not just keywords. Find related evidence across different file types and formats.',
+                examples: ['Find all communications about "Project X"', 'Show financial transfers to offshore accounts', 'Identify suspicious login patterns']
+              },
+              {
+                icon: '🎯',
+                title: 'Contextual Answers',
+                description: 'AI synthesizes information from multiple sources to provide comprehensive, accurate responses with evidence citations.',
+                examples: ['What was the suspect\'s location on March 15?', 'Summarize cryptocurrency transactions', 'Explain the attack timeline']
+              },
+              {
+                icon: '⚡',
+                title: 'Real-time Analysis',
+                description: 'Process new evidence instantly and update knowledge base automatically. No manual indexing required.',
+                examples: ['Auto-categorize uploaded files', 'Detect anomalous patterns', 'Generate investigation leads']
+              }
+            ].map((ragFeature, index) => (
+              <div key={index} style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(203, 213, 225, 0.3)',
+                borderRadius: '24px',
+                padding: '40px 32px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '20px' }}>{ragFeature.icon}</div>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  marginBottom: '16px',
+                  color: '#1e293b'
+                }}>
+                  {ragFeature.title}
+                </h3>
+                <p style={{
+                  color: '#64748b',
+                  lineHeight: '1.6',
+                  marginBottom: '24px'
+                }}>
+                  {ragFeature.description}
+                </p>
+                <div style={{ textAlign: 'left' }}>
+                  <h4 style={{
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: '#475569',
+                    marginBottom: '12px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    Example Queries:
+                  </h4>
+                  {ragFeature.examples.map((example, i) => (
+                    <div key={i} style={{
+                      padding: '8px 12px',
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      borderRadius: '8px',
+                      marginBottom: '8px',
+                      fontSize: '0.85rem',
+                      color: '#3b82f6',
+                      fontFamily: 'monospace'
+                    }}>
+                      "{example}"
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Features Section */}
         <div style={{
           marginBottom: '100px'
@@ -200,25 +385,25 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            animation: isVisible ? 'slideInUp 1s ease-out 0.8s both' : 'none'
+            animation: isVisible ? 'slideInUp 1s ease-out 1.2s both' : 'none'
           }}>
-            Powerful Forensic Capabilities
+            Comprehensive Forensic Capabilities
           </h2>
           
           <p style={{
             fontSize: '1.1rem',
             color: '#64748b',
             marginBottom: '60px',
-            animation: isVisible ? 'slideInUp 1s ease-out 1s both' : 'none'
+            animation: isVisible ? 'slideInUp 1s ease-out 1.4s both' : 'none'
           }}>
-            Everything you need for comprehensive digital investigations
+            Advanced tools for every aspect of digital investigation
           </p>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
             gap: '32px',
-            maxWidth: '1000px',
+            maxWidth: '1400px',
             margin: '0 auto'
           }}>
             {features.map((feature, index) => (
@@ -231,46 +416,413 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${hoveredFeature === index ? feature.color + '30' : 'rgba(203, 213, 225, 0.3)'}`,
                   borderRadius: '20px',
-                  padding: '40px 24px',
-                  textAlign: 'center',
+                  padding: '32px 24px',
+                  textAlign: 'left',
                   cursor: 'pointer',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   transform: hoveredFeature === index ? 'translateY(-8px) scale(1.02)' : 'translateY(0) scale(1)',
                   boxShadow: hoveredFeature === index 
                     ? `0 25px 50px -12px ${feature.color}30` 
                     : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-                  animation: `slideInUp 0.6s ease-out ${index * 0.1 + 1.2}s both`
+                  animation: `slideInUp 0.6s ease-out ${Math.floor(index / 4) * 0.3 + (index % 4) * 0.1 + 1.6}s both`
                 }}
                 onMouseEnter={() => setHoveredFeature(index)}
                 onMouseLeave={() => setHoveredFeature(null)}
               >
-                {/* Feature Icon */}
-                <div style={{
-                  fontSize: '3rem',
-                  marginBottom: '24px',
-                  transform: hoveredFeature === index ? 'scale(1.1)' : 'scale(1)',
-                  transition: 'transform 0.3s ease'
-                }}>
-                  {feature.icon}
+                {/* Feature Header */}
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+                  <div style={{
+                    fontSize: '2rem',
+                    marginRight: '16px',
+                    transform: hoveredFeature === index ? 'scale(1.1)' : 'scale(1)',
+                    transition: 'transform 0.3s ease'
+                  }}>
+                    {feature.icon}
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '700',
+                    color: hoveredFeature === index ? '#1e293b' : '#64748b',
+                    margin: 0
+                  }}>
+                    {feature.title}
+                  </h3>
                 </div>
-
-                {/* Feature Title */}
-                <h3 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '700',
-                  marginBottom: '16px',
-                  color: hoveredFeature === index ? '#1e293b' : '#64748b'
-                }}>
-                  {feature.title}
-                </h3>
 
                 {/* Feature Description */}
                 <p style={{
                   color: hoveredFeature === index ? '#475569' : '#64748b',
                   lineHeight: '1.6',
-                  fontSize: '0.95rem'
+                  fontSize: '0.95rem',
+                  marginBottom: '20px'
                 }}>
                   {feature.description}
+                </p>
+
+                {/* Feature Details */}
+                {feature.details && (
+                  <div style={{
+                    display: hoveredFeature === index ? 'block' : 'none',
+                    animation: hoveredFeature === index ? 'fadeIn 0.3s ease-out' : 'none'
+                  }}>
+                    <h4 style={{
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                      color: '#475569',
+                      marginBottom: '12px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      Key Features:
+                    </h4>
+                    <div style={{ display: 'grid', gap: '6px' }}>
+                      {feature.details.map((detail, i) => (
+                        <div key={i} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '0.85rem',
+                          color: '#64748b'
+                        }}>
+                          <div style={{
+                            width: '4px',
+                            height: '4px',
+                            borderRadius: '50%',
+                            backgroundColor: feature.color,
+                            marginRight: '10px'
+                          }} />
+                          {detail}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Technical Specifications */}
+        <div style={{
+          marginBottom: '100px',
+          background: 'rgba(30, 41, 59, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(203, 213, 225, 0.3)',
+          borderRadius: '32px',
+          padding: '80px 40px',
+          animation: isVisible ? 'slideInUp 1s ease-out 2.4s both' : 'none'
+        }}>
+          <h2 style={{
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            marginBottom: '24px',
+            textAlign: 'center',
+            background: 'linear-gradient(45deg, #1e293b, #475569)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Enterprise-Grade Infrastructure
+          </h2>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '40px',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
+            {[
+              {
+                icon: '🚀',
+                title: 'Performance',
+                specs: [
+                  'Process 10TB+ datasets',
+                  'Sub-second query response',
+                  'Parallel processing engine',
+                  'GPU-accelerated analysis'
+                ]
+              },
+              {
+                icon: '🔒',
+                title: 'Security & Compliance',
+                specs: [
+                  'End-to-end encryption',
+                  'FIPS 140-2 compliance',
+                  'SOC 2 Type II certified',
+                  'Zero-knowledge architecture'
+                ]
+              },
+              {
+                icon: '🌐',
+                title: 'Integration',
+                specs: [
+                  'REST/GraphQL APIs',
+                  '50+ tool integrations',
+                  'STIX/TAXII support',
+                  'Custom plugin framework'
+                ]
+              },
+              {
+                icon: '📈',
+                title: 'Scalability',
+                specs: [
+                  'Auto-scaling infrastructure',
+                  'Multi-tenant architecture',
+                  'Global deployment',
+                  '99.9% uptime SLA'
+                ]
+              }
+            ].map((spec, index) => (
+              <div key={index} style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(203, 213, 225, 0.3)',
+                borderRadius: '20px',
+                padding: '32px 28px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '20px' }}>{spec.icon}</div>
+                <h3 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: '700',
+                  marginBottom: '20px',
+                  color: '#1e293b'
+                }}>
+                  {spec.title}
+                </h3>
+                <div style={{ textAlign: 'left' }}>
+                  {spec.specs.map((item, i) => (
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '8px 0',
+                      fontSize: '0.9rem',
+                      color: '#64748b',
+                      borderBottom: i < spec.specs.length - 1 ? '1px solid rgba(203, 213, 225, 0.2)' : 'none'
+                    }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: '#10b981',
+                        marginRight: '12px'
+                      }} />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Intelligence Showcase */}
+        <div style={{
+          marginBottom: '100px',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(6, 182, 212, 0.05))',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(203, 213, 225, 0.3)',
+          borderRadius: '32px',
+          padding: '80px 40px',
+          animation: isVisible ? 'slideInUp 1s ease-out 2.8s both' : 'none'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <h2 style={{
+              fontSize: '2.8rem',
+              fontWeight: '900',
+              marginBottom: '24px',
+              background: 'linear-gradient(45deg, #10b981, #06b6d4)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              Next-Generation AI Integration
+            </h2>
+            <p style={{
+              fontSize: '1.2rem',
+              color: '#475569',
+              maxWidth: '800px',
+              margin: '0 auto',
+              lineHeight: '1.8'
+            }}>
+              Seamlessly integrate with your existing forensic workflow while leveraging 
+              cutting-edge AI models for unprecedented investigative capabilities.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+            gap: '40px',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
+            {[
+              {
+                icon: '🔮',
+                title: 'Predictive Analytics',
+                description: 'Machine learning models predict investigation outcomes and suggest optimal evidence collection strategies.',
+                features: ['Risk assessment scoring', 'Evidence prioritization', 'Timeline prediction', 'Resource optimization'],
+                color: '#10b981'
+              },
+              {
+                icon: '🎨',
+                title: 'Multi-Modal AI',
+                description: 'Process text, images, audio, video, and binary data with unified AI models for comprehensive analysis.',
+                features: ['Image recognition & OCR', 'Audio transcription & analysis', 'Video content extraction', 'Cross-media correlation'],
+                color: '#06b6d4'
+              },
+              {
+                icon: '🔄',
+                title: 'Automated Workflows',
+                description: 'Intelligent automation reduces manual tasks while maintaining forensic integrity and legal compliance.',
+                features: ['Smart case routing', 'Evidence classification', 'Report generation', 'Quality assurance checks'],
+                color: '#8b5cf6'
+              }
+            ].map((aiFeature, index) => (
+              <div key={index} style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(203, 213, 225, 0.3)',
+                borderRadius: '24px',
+                padding: '40px 32px',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Animated background gradient */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: `linear-gradient(90deg, ${aiFeature.color}, ${aiFeature.color}80, ${aiFeature.color})`,
+                  backgroundSize: '200% 100%',
+                  animation: 'gradientShift 3s ease-in-out infinite'
+                }} />
+                
+                <div style={{ fontSize: '3rem', marginBottom: '24px' }}>{aiFeature.icon}</div>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  marginBottom: '16px',
+                  color: '#1e293b'
+                }}>
+                  {aiFeature.title}
+                </h3>
+                <p style={{
+                  color: '#64748b',
+                  lineHeight: '1.6',
+                  marginBottom: '28px',
+                  fontSize: '1rem'
+                }}>
+                  {aiFeature.description}
+                </p>
+                
+                <div style={{ textAlign: 'left' }}>
+                  {aiFeature.features.map((feature, i) => (
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '10px 16px',
+                      background: `${aiFeature.color}10`,
+                      borderRadius: '12px',
+                      marginBottom: '8px',
+                      fontSize: '0.9rem',
+                      color: '#475569',
+                      border: `1px solid ${aiFeature.color}20`
+                    }}>
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: aiFeature.color,
+                        marginRight: '12px',
+                        flexShrink: 0
+                      }} />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Integration Partners */}
+        <div style={{
+          marginBottom: '100px',
+          textAlign: 'center',
+          animation: isVisible ? 'slideInUp 1s ease-out 3.2s both' : 'none'
+        }}>
+          <h2 style={{
+            fontSize: '2.2rem',
+            fontWeight: '800',
+            marginBottom: '24px',
+            color: '#1e293b'
+          }}>
+            Trusted by Leading Organizations
+          </h2>
+          
+          <p style={{
+            fontSize: '1.1rem',
+            color: '#64748b',
+            marginBottom: '50px',
+            maxWidth: '600px',
+            margin: '0 auto 50px'
+          }}>
+            Seamlessly integrates with your existing forensic tools and enterprise infrastructure
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '30px',
+            maxWidth: '1000px',
+            margin: '0 auto'
+          }}>
+            {[
+              { name: 'EnCase', category: 'Digital Forensics' },
+              { name: 'Cellebrite', category: 'Mobile Forensics' },
+              { name: 'X1 Social Discovery', category: 'Social Media' },
+              { name: 'Oxygen Forensic Suite', category: 'Mobile & Cloud' },
+              { name: 'MSAB XRY', category: 'Mobile Analysis' },
+              { name: 'AccessData FTK', category: 'Enterprise Forensics' },
+              { name: 'Magnet AXIOM', category: 'Digital Investigation' },
+              { name: 'Nuix', category: 'eDiscovery Platform' }
+            ].map((partner, index) => (
+              <div key={index} style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(203, 213, 225, 0.3)',
+                borderRadius: '16px',
+                padding: '24px 20px',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}>
+                <h3 style={{
+                  fontSize: '1.1rem',
+                  fontWeight: '700',
+                  marginBottom: '8px',
+                  color: '#1e293b'
+                }}>
+                  {partner.name}
+                </h3>
+                <p style={{
+                  fontSize: '0.85rem',
+                  color: '#64748b',
+                  margin: 0
+                }}>
+                  {partner.category}
                 </p>
               </div>
             ))}
@@ -279,85 +831,324 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
 
         {/* Final CTA Section */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.9)',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(203, 213, 225, 0.3)',
           borderRadius: '24px',
-          padding: '60px 40px',
+          padding: '80px 40px',
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-          animation: isVisible ? 'slideInUp 1s ease-out 1.6s both' : 'none'
+          textAlign: 'center',
+          animation: isVisible ? 'slideInUp 1s ease-out 3.6s both' : 'none'
         }}>
+          <div style={{ fontSize: '4rem', marginBottom: '24px' }}>🚀</div>
+          
           <h2 style={{
-            fontSize: '2.2rem',
-            fontWeight: '800',
-            marginBottom: '20px',
+            fontSize: '3rem',
+            fontWeight: '900',
+            marginBottom: '24px',
             background: 'linear-gradient(45deg, #3b82f6, #8b5cf6)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Ready to Revolutionize Your Investigations?
+            Transform Your Investigations Today
           </h2>
           
           <p style={{
-            fontSize: '1.2rem',
+            fontSize: '1.3rem',
             color: '#475569',
-            marginBottom: '40px',
-            maxWidth: '600px',
-            margin: '0 auto 40px'
+            marginBottom: '48px',
+            maxWidth: '700px',
+            margin: '0 auto 48px',
+            lineHeight: '1.7'
           }}>
-            Join forensic professionals worldwide who trust Insightic for faster, 
-            more accurate digital investigations.
+            Join thousands of forensic professionals who have accelerated their investigations 
+            with AI-powered intelligence. Experience the future of digital forensics.
           </p>
           
-          <button
-            onClick={() => {
-              console.log('Start Your Investigation button clicked');
-              if (user) {
-                // User is already logged in, navigate to dashboard
-                if (onNavigateToDashboard) {
-                  onNavigateToDashboard();
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '24px',
+            flexWrap: 'wrap'
+          }}>
+            <button
+              onClick={() => {
+                console.log('Start Your Investigation button clicked');
+                if (user) {
+                  if (onNavigateToDashboard) {
+                    onNavigateToDashboard();
+                  } else {
+                    console.error('onNavigateToDashboard function not provided');
+                  }
                 } else {
-                  console.error('onNavigateToDashboard function not provided');
+                  if (onShowLogin) {
+                    onShowLogin();
+                  } else {
+                    console.error('onShowLogin function not provided');
+                  }
                 }
-              } else {
-                // User is not logged in, show login
-                if (onShowLogin) {
-                  onShowLogin();
-                } else {
-                  console.error('onShowLogin function not provided');
-                }
-              }
-            }}
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              color: 'white',
-              border: 'none',
-              padding: '18px 40px',
-              borderRadius: '14px',
-              fontSize: '1.2rem',
-              fontWeight: '700',
-              cursor: 'pointer',
-              boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.4)',
-              transition: 'all 0.3s ease',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-4px)';
-              e.target.style.boxShadow = '0 25px 50px -12px rgba(59, 130, 246, 0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.4)';
-            }}
-          >
-            <span>⚡</span>
-            Start Your Investigation
-          </button>
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                color: 'white',
+                border: 'none',
+                padding: '20px 48px',
+                borderRadius: '16px',
+                fontSize: '1.2rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.4)',
+                transition: 'all 0.3s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '12px',
+                minWidth: '240px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-4px) scale(1.05)';
+                e.target.style.boxShadow = '0 25px 50px -12px rgba(59, 130, 246, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0) scale(1)';
+                e.target.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.4)';
+              }}
+            >
+              <span>⚡</span>
+              Launch Platform
+            </button>
+
+            <button
+              onClick={() => {
+                // Scroll to features section for demo
+                document.querySelector('h2').scrollIntoView({ behavior: 'smooth' });
+              }}
+              style={{
+                background: 'transparent',
+                color: '#3b82f6',
+                border: '2px solid #3b82f6',
+                padding: '18px 40px',
+                borderRadius: '16px',
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#3b82f6';
+                e.target.style.color = 'white';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = '#3b82f6';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <span>🎯</span>
+              Explore Features
+            </button>
+          </div>
+
+          {/* Trust indicators */}
+          <div style={{
+            marginTop: '60px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '40px',
+            flexWrap: 'wrap',
+            opacity: '0.8'
+          }}>
+            {[
+              { icon: '🔒', text: 'SOC 2 Compliant' },
+              { icon: '⚖️', text: 'Legally Defensible' },
+              { icon: '🌍', text: 'Global Deployment' },
+              { icon: '🛡️', text: 'Zero Trust Security' }
+            ].map((trust, index) => (
+              <div key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '0.9rem',
+                color: '#64748b'
+              }}>
+                <span>{trust.icon}</span>
+                <span>{trust.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes slideInUp {
+          from {
+            transform: translateY(60px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+          }
+          25% {
+            transform: translateY(-20px) translateX(10px);
+          }
+          50% {
+            transform: translateY(-10px) translateX(-5px);
+          }
+          75% {
+            transform: translateY(-15px) translateX(-10px);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.6;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+
+        @keyframes gradientShift {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        .gradient-text {
+          background: linear-gradient(45deg, #3b82f6, #8b5cf6, #10b981);
+          background-size: 200% 200%;
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .feature-hover {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-hover:hover {
+          transform: translateY(-12px) scale(1.03);
+        }
+
+        .tech-spec {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .tech-spec::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+          transform: rotate(45deg);
+          transition: transform 0.6s;
+        }
+
+        .tech-spec:hover::before {
+          transform: rotate(45deg) translateX(100%);
+        }
+
+        .rag-demo {
+          background: linear-gradient(135deg, 
+            rgba(59, 130, 246, 0.1), 
+            rgba(139, 92, 246, 0.1), 
+            rgba(16, 185, 129, 0.1));
+          background-size: 400% 400%;
+          animation: gradientShift 8s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+          .grid-responsive {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+          
+          .text-responsive {
+            font-size: 1rem;
+            line-height: 1.6;
+          }
+          
+          .title-responsive {
+            font-size: 2rem;
+          }
+        }
+
+        .loading-shimmer {
+          background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.4), 
+            transparent);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+
+        .particle-animation {
+          position: relative;
+        }
+
+        .particle-animation::before {
+          content: '';
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: currentColor;
+          border-radius: 50%;
+          opacity: 0.6;
+          animation: particle-float 6s ease-in-out infinite;
+        }
+
+        @keyframes particle-float {
+          0%, 100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translateY(-30px) scale(1.2);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 };

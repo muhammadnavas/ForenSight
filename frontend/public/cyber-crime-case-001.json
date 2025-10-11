@@ -31,67 +31,223 @@
   "locations": [
     {
       "id": "LOC-001",
-      "type": "Primary Server Location",
-      "name": "DataVault Hosting Facility",
-      "address": {
-        "street": "1247 Industrial Blvd",
-        "city": "Amsterdam", 
-        "state": "North Holland",
-        "country": "Netherlands",
-        "postalCode": "1101 AB",
-        "coordinates": {
-          "latitude": 52.3676,
-          "longitude": 4.9041
-        }
+      "name": "DataVault Server Hosting Facility", 
+      "address": "1547 Industrial Boulevard, Newark, NJ 07105, United States",
+      "coordinates": {
+        "lat": 40.7282,
+        "lng": -74.1776
       },
-      "description": "Primary hosting location for the dark web marketplace servers",
-      "significance": "Main infrastructure hub",
-      "discoveredDate": "2025-02-03T16:45:00Z",
-      "status": "Under Surveillance"
+      "type": "Commercial Server Facility",
+      "significance": "Primary criminal marketplace infrastructure hosting location",
+      "description": "24/7 managed server hosting facility with 500+ rack spaces, used to host the criminal marketplace servers",
+      "searchDetails": {
+        "date": "2025-02-05",
+        "time": "14:30:00Z",
+        "warrant": "Federal Search Warrant #2025-SW-1147",
+        "leadAgent": "Agent Marcus Chen",
+        "duration": "6 hours",
+        "officers": 12
+      },
+      "facilityDetails": {
+        "operator": "DataVault Technologies LLC",
+        "established": "2018",
+        "totalRacks": 542,
+        "suspectRacks": ["Rack 127-A", "Rack 127-B", "Rack 128-A"],
+        "monthlyRent": 4500.00,
+        "paymentMethod": "Cryptocurrency (Bitcoin)",
+        "customerAlias": "TechSolutions International"
+      },
+      "evidenceSeized": ["EVD-001", "EVD-002", "Network logs", "Customer records", "Security footage"]
     },
     {
       "id": "LOC-002", 
-      "type": "Suspect Residence",
-      "name": "Aleksei Volkov Apartment",
-      "address": {
-        "street": "789 Nevsky Prospect, Apt 15B",
-        "city": "St. Petersburg",
-        "state": "Leningrad Oblast", 
-        "country": "Russia",
-        "postalCode": "190000",
-        "coordinates": {
-          "latitude": 59.9311,
-          "longitude": 30.3609
-        }
+      "name": "Aleksei Volkov's Primary Residence",
+      "address": "Apartment 15B, 42 Tverskaya Street, Tverskoy District, Moscow 125009, Russia",
+      "coordinates": {
+        "lat": 55.7558,
+        "lng": 37.6176
       },
-      "description": "Residence of primary suspect and alleged marketplace administrator",
-      "significance": "Command and control center",
-      "discoveredDate": "2025-03-12T11:20:00Z", 
-      "status": "Raided"
+      "type": "Luxury Residential Apartment",
+      "significance": "Primary suspect's residence and operational command center",
+      "description": "High-end apartment in central Moscow, purchased for $850,000 USD in 2023 with cryptocurrency proceeds",
+      "searchDetails": {
+        "date": "2025-03-12",
+        "time": "15:45:00Z",
+        "authority": "Russian Federal Police (FSB) via MLAT request",
+        "warrant": "Moscow District Court Order #2025-MDC-7743",
+        "duration": "8 hours",
+        "officers": 8
+      },
+      "propertyDetails": {
+        "purchaseDate": "2023-07-15",
+        "purchasePrice": 850000.00,
+        "currency": "USD equivalent in cryptocurrency",
+        "floorArea": "180 square meters",
+        "bedrooms": 3,
+        "luxuryFeatures": ["Home office with high-end computing equipment", "Private elevator access", "Security system"]
+      },
+      "evidenceSeized": [
+        "EVD-005 (MacBook Pro)",
+        "Personal documents and identity papers",
+        "USB drives with encrypted data",
+        "Cash equivalent to $45,000 USD",
+        "Luxury watches worth $120,000",
+        "Handwritten notes about operations"
+      ]
     },
     {
       "id": "LOC-003",
-      "type": "Financial Hub",
-      "name": "CryptoExchange Office", 
-      "address": {
-        "street": "2156 Crypto Valley Road",
-        "city": "Zug",
-        "state": "Canton of Zug",
-        "country": "Switzerland", 
-        "postalCode": "6300",
-        "coordinates": {
-          "latitude": 47.1662,
-          "longitude": 8.5152
-        }
+      "name": "Credit Suisse Private Banking Division",
+      "address": "Paradeplatz 8, 8001 Zürich, Switzerland", 
+      "coordinates": {
+        "lat": 47.3686,
+        "lng": 8.5391
       },
-      "description": "Cryptocurrency exchange used for money laundering operations",
-      "significance": "Primary money laundering venue",
-      "discoveredDate": "2025-04-08T09:15:00Z",
-      "status": "Cooperating"
+      "type": "International Financial Institution",
+      "significance": "Primary money laundering and asset conversion hub",
+      "description": "Historic Swiss bank used for converting cryptocurrency proceeds into traditional banking system",
+      "investigationDetails": {
+        "date": "2025-04-08",
+        "cooperatingAuthority": "Swiss Financial Intelligence Unit (FIU)",
+        "legalBasis": "Mutual Legal Assistance Treaty (MLAT)",
+        "accountsInvestigated": 7,
+        "totalValue": 3400000.00,
+        "currency": "CHF"
+      },
+      "accountDetails": {
+        "primaryAccount": "CH93 0483 5012 3456 7890 1",
+        "accountHolder": "Volkov Holdings SA",
+        "openedDate": "2024-03-22",
+        "initialDeposit": 50000.00,
+        "peakBalance": 1200000.00,
+        "currentBalance": 340000.00,
+        "currency": "CHF"
+      },
+      "transactionPattern": {
+        "frequentTransfers": "Every 2-3 weeks",
+        "averageAmount": 75000.00,
+        "destinationCountries": ["Cyprus", "Malta", "Panama", "British Virgin Islands"],
+        "suspiciousActivity": "Structured deposits to avoid reporting thresholds"
+      }
+    },
+    {
+      "id": "LOC-004",
+      "name": "Carlos Silva's Apartment",
+      "address": "Rua Augusta 1247, Apt 902, São Paulo, SP 01305-100, Brazil",
+      "coordinates": {
+        "lat": -23.5505,
+        "lng": -46.6333
+      },
+      "type": "Residential Apartment",
+      "significance": "Technical operations center for cryptocurrency mixing services",
+      "description": "Modest apartment used as base for cryptocurrency laundering operations",
+      "searchDetails": {
+        "date": "2025-05-20",
+        "authority": "Brazilian Federal Police",
+        "warrant": "São Paulo Federal Court Order #2025-SP-9821", 
+        "duration": "4 hours",
+        "officers": 6
+      },
+      "evidenceSeized": [
+        "Gaming computer with multiple GPUs for mining",
+        "Hardware wallets (Ledger, Trezor)",
+        "Notebooks with wallet addresses and private keys",
+        "Prepaid phones and SIM cards"
+      ]
+    },
+    {
+      "id": "LOC-005",
+      "name": "Marina Petrov's Safe House", 
+      "address": "25 Elm Street, Unit 4C, Toronto, ON M5G 1H1, Canada",
+      "coordinates": {
+        "lat": 43.6532,
+        "lng": -79.3832
+      },
+      "type": "Temporary Residence",
+      "significance": "Identity fraud operations base and document forgery center",
+      "description": "Rented apartment used for creating false identities and forged documents",
+      "searchDetails": {
+        "date": "2025-06-02",
+        "authority": "Royal Canadian Mounted Police (RCMP)",
+        "warrant": "Ontario Superior Court Warrant #2025-ON-5643",
+        "duration": "5 hours",
+        "officers": 10
+      },
+      "evidenceSeized": [
+        "Document forgery equipment",
+        "Blank passports and identity cards",
+        "High-resolution printers and laminators", 
+        "Digital cameras for ID photos",
+        "Samples of forged documents from 12 countries"
+      ]
+    },
+    {
+      "id": "LOC-006",
+      "name": "Viktor Chen's Electronics Shop",
+      "address": "Shop 15, Golden Mile Complex, 6001 Beach Road, Singapore 199589",
+      "coordinates": {
+        "lat": 1.3021,
+        "lng": 103.8198
+      },
+      "type": "Commercial Electronics Store",
+      "significance": "Front operation for malware distribution and money transfer",
+      "description": "Legitimate electronics business used as cover for illegal malware sales and hawala money transfers",
+      "investigationDetails": {
+        "date": "2025-06-25",
+        "authority": "Singapore Police Force - Commercial Affairs Department",
+        "warrant": "Singapore High Court Order #2025-SHC-3344",
+        "duration": "7 hours",
+        "officers": 15
+      },
+      "businessDetails": {
+        "registeredName": "Golden Tech Solutions Pte Ltd",
+        "registration": "2019-04-12",
+        "legitimateRevenue": 180000.00,
+        "suspectedIllegalRevenue": 2400000.00,
+        "currency": "SGD"
+      },
+      "evidenceSeized": [
+        "Business computers with customer databases",
+        "USB devices preloaded with malware",
+        "Cash counting machines",
+        "International wire transfer records",
+        "Customer communication logs"
+      ]
+    },
+    {
+      "id": "LOC-007",
+      "name": "Dmitri Kozlov's Cryptocurrency Mining Farm",
+      "address": "Industrial Zone 7, Warehouse 23B, Astana 010000, Kazakhstan",
+      "coordinates": {
+        "lat": 51.1694,
+        "lng": 71.4491
+      },
+      "type": "Cryptocurrency Mining Facility", 
+      "significance": "Large-scale cryptocurrency mining and laundering operation",
+      "description": "Industrial warehouse housing 500+ ASIC miners used for Bitcoin mining and transaction mixing",
+      "searchDetails": {
+        "date": "2025-07-10",
+        "authority": "Kazakhstan Financial Police",
+        "warrant": "Astana Regional Court Order #2025-ARC-8876",
+        "duration": "12 hours",
+        "officers": 20
+      },
+      "facilityDetails": {
+        "totalMiners": 547,
+        "hashRate": "45 TH/s",
+        "monthlyPowerConsumption": "850 MWh", 
+        "estimatedMonthlyRevenue": 180000.00,
+        "operationalSince": "2024-01-15"
+      },
+      "evidenceSeized": [
+        "Mining operation control computers",
+        "Pool configuration files",
+        "Wallet management software",
+        "Power consumption records",
+        "Maintenance and revenue logs"
+      ]
     }
-  ],
-
-  "suspects": [
+  ],  "suspects": [
     {
       "id": "SUS-001",
       "name": "Aleksei Volkov",
@@ -561,84 +717,285 @@
       "id": "EVD-001",
       "type": "Digital Evidence",
       "category": "Hard Drive",
-      "name": "Seized Server Hard Drive #1",
-      "description": "2TB hard drive seized from DataVault facility containing marketplace database",
+      "name": "Seized Server Hard Drive #1 - Primary Database",
+      "description": "2TB Western Digital hard drive seized from DataVault facility containing complete marketplace database and user logs",
       "collectedBy": "Agent Marcus Chen",
       "collectionDate": "2025-02-05T14:30:00Z",
       "location": "LOC-001",
+      "evidenceNumber": "FBI-CC-2025-001-EVD001",
+      "storageLocation": "FBI Digital Forensics Lab - Vault 7-A",
       "chainOfCustody": [
         {
           "date": "2025-02-05T14:30:00Z",
           "person": "Agent Marcus Chen",
-          "action": "Seized on-site"
+          "badgeNumber": "FD-7823",
+          "action": "Physical seizure on-site with warrant #2025-WD-1147"
         },
         {
           "date": "2025-02-05T16:45:00Z", 
           "person": "Evidence Technician Sarah Kim",
-          "action": "Logged into evidence storage"
+          "badgeNumber": "ET-9934",
+          "action": "Logged into evidence storage, created forensic image"
+        },
+        {
+          "date": "2025-02-06T09:00:00Z",
+          "person": "Dr. James Wilson",
+          "badgeNumber": "DF-5578",
+          "action": "Digital forensic analysis initiated"
         }
       ],
+      "technicalDetails": {
+        "manufacturer": "Western Digital",
+        "model": "WD2003FYYS",
+        "serialNumber": "WD-WCAVY1234567",
+        "capacity": "2TB",
+        "fileSystem": "NTFS",
+        "encryptionStatus": "AES-256 encrypted"
+      },
       "analysis": {
         "status": "Complete",
         "analyst": "Dr. James Wilson",
+        "startDate": "2025-02-06T09:00:00Z",
         "completionDate": "2025-03-01T17:00:00Z",
-        "findings": "Contains 1.2 million stolen credit card records, user transaction logs, and encrypted communications"
+        "toolsUsed": ["EnCase", "FTK Imager", "Autopsy", "Volatility"],
+        "findings": {
+          "summary": "Contains complete marketplace operational data including user accounts, transaction logs, and communication records",
+          "details": [
+            "1,247,382 stolen credit card records with full details",
+            "456,789 compromised user accounts from various breaches",
+            "2.1 million transaction records spanning 18 months",
+            "Encrypted communications between 47 criminal users",
+            "Source code for custom malware tools",
+            "Administrative logs showing suspect access patterns"
+          ]
+        },
+        "recoveredFiles": 127549,
+        "deletedFilesRecovered": 23847
       },
       "hash": {
-        "md5": "d41d8cd98f00b204e9800998ecf8427e",
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        "md5": "a3c65929e8b7f7b2c5e3d1f8c9a4b7e6",
+        "sha1": "f4a8d6c3b9e7f2a1c5e8d9b7c4a6e3f1d8b5c2a9",
+        "sha256": "7b8e9f1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9"
       }
     },
     {
       "id": "EVD-002",
       "type": "Digital Evidence", 
       "category": "Network Traffic",
-      "name": "Wireshark Capture Files",
-      "description": "Network traffic captures from marketplace during operational period",
+      "name": "Network Traffic Captures - Marketplace Operations",
+      "description": "Comprehensive network traffic captures from marketplace servers during 6-month operational period",
       "collectedBy": "Detective Sarah Mitchell",
       "collectionDate": "2025-01-25T10:15:00Z",
-      "fileSize": "4.7 GB",
+      "evidenceNumber": "FBI-CC-2025-001-EVD002",
+      "technicalDetails": {
+        "captureMethod": "Deep packet inspection using Wireshark",
+        "timeRange": "2024-08-15 to 2025-01-25",
+        "fileSize": "4.7 GB compressed, 23.2 GB uncompressed",
+        "format": "PCAP files",
+        "protocols": ["HTTPS", "Tor", "Bitcoin", "Monero", "Telegram"]
+      },
       "analysis": {
-        "status": "In Progress",
+        "status": "Complete",
         "analyst": "Cyber Analyst Tom Rodriguez", 
         "startDate": "2025-02-10T09:00:00Z",
-        "findings": "Identified communication patterns, user login sequences, and payment processing flows"
+        "completionDate": "2025-04-15T16:30:00Z",
+        "toolsUsed": ["Wireshark", "NetworkMiner", "Zeek", "Suricata"],
+        "findings": {
+          "summary": "Detailed communication patterns revealing operational structure and user behavior",
+          "details": [
+            "47,293 unique Tor connections to marketplace",
+            "892 administrative login sessions from suspect locations", 
+            "15,847 cryptocurrency payment transactions",
+            "Communication with 23 different money laundering services",
+            "Evidence of DDoS attacks against competitor sites"
+          ]
+        }
       }
     },
     {
       "id": "EVD-003",
       "type": "Financial Evidence",
-      "category": "Cryptocurrency Transactions", 
-      "name": "Bitcoin Wallet Analysis",
-      "description": "Complete transaction history for primary suspect's Bitcoin wallets",
+      "category": "Cryptocurrency Analysis", 
+      "name": "Multi-Currency Blockchain Analysis",
+      "description": "Complete transaction analysis across Bitcoin, Ethereum, and Monero blockchains linked to suspects",
       "collectedBy": "Dr. Elena Rodriguez",
       "collectionDate": "2025-04-20T11:30:00Z",
+      "evidenceNumber": "FBI-CC-2025-001-EVD003",
       "analysis": {
         "status": "Complete", 
         "analyst": "Dr. Elena Rodriguez",
+        "startDate": "2025-04-21T08:00:00Z",
         "completionDate": "2025-05-15T16:00:00Z",
-        "findings": "Traced $2.3M in Bitcoin transactions through multiple mixing services to traditional bank accounts"
+        "toolsUsed": ["Chainalysis", "Elliptic", "Crystal Blockchain", "Custom Analysis Scripts"],
+        "findings": {
+          "summary": "Traced $12.7M in cryptocurrency through complex laundering network",
+          "totalAmount": 12700000.00,
+          "currency": "USD equivalent",
+          "details": [
+            "Bitcoin transactions: $8.3M through 47 mixing services",
+            "Ethereum smart contracts: $2.9M in DeFi protocols",
+            "Monero privacy coins: $1.5M (partial tracing only)",
+            "Final destinations: 23 exchange accounts, 8 traditional banks"
+          ]
+        }
       },
-      "relatedWallets": [
-        "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-        "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
-      ]
+      "relatedWallets": {
+        "bitcoin": [
+          "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+          "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+          "3FupnrNGpCQBjaC7p8FBktfbnFeb3YHRhq"
+        ],
+        "ethereum": [
+          "0x742d35cc6251c532c3c02b958b0c5b04c9d2f2a5",
+          "0xa4b15c2e7f8d9c3b6e5f4a7d8c9b2e1f6a3b4c5d"
+        ],
+        "monero": [
+          "4AdUndXHHZ6cfufTMvppY6JwXNouMBzSkbLYfpAV5Usx3skxNgYeYTRj5UzqtReoS44qo9mtmXCqY45DJ852K5Jv2684Rge"
+        ]
+      }
     },
     {
       "id": "EVD-004",
       "type": "Communication Evidence",
-      "category": "Encrypted Messages",
-      "name": "Telegram Chat Logs",
-      "description": "Decrypted Telegram communications between suspects",
+      "category": "Encrypted Communications",
+      "name": "Multi-Platform Communication Archive",
+      "description": "Decrypted communications from Telegram, Signal, Discord, and custom encrypted channels",
       "collectedBy": "Agent Marcus Chen",
       "collectionDate": "2025-06-16T08:20:00Z",
+      "evidenceNumber": "FBI-CC-2025-001-EVD004",
+      "technicalDetails": {
+        "platforms": ["Telegram", "Signal", "Discord", "Wickr", "Custom IRC"],
+        "decryptionMethod": "Seized devices with active sessions + cryptographic analysis",
+        "timeRange": "2024-01-01 to 2025-06-15",
+        "messageCount": 78492
+      },
       "analysis": {
         "status": "Complete",
         "analyst": "Cryptography Expert Lisa Chang",
+        "startDate": "2025-06-17T09:00:00Z",
         "completionDate": "2025-07-01T14:30:00Z", 
-        "findings": "Contains operational planning, profit sharing agreements, and victim targeting discussions"
+        "findings": {
+          "summary": "Detailed operational communications revealing organizational structure and criminal activities",
+          "details": [
+            "Administrative discussions between SUS-001 and subordinates",
+            "Profit sharing agreements and payment schedules",
+            "Victim targeting strategies and social engineering tactics",
+            "Technical discussions about marketplace improvements",
+            "Coordination with money laundering services"
+          ]
+        }
       },
-      "participantIds": ["SUS-001", "SUS-002", "SUS-003"]
+      "participantIds": ["SUS-001", "SUS-002", "SUS-003", "SUS-004", "SUS-005"]
+    },
+    {
+      "id": "EVD-005",
+      "type": "Physical Evidence",
+      "category": "Computer Hardware",
+      "name": "Suspect's Personal Laptop - Aleksei Volkov",
+      "description": "MacBook Pro seized from suspect's apartment containing personal and operational data",
+      "collectedBy": "Russian Federal Police (via MLAT)",
+      "collectionDate": "2025-03-12T15:45:00Z",
+      "location": "LOC-002",
+      "evidenceNumber": "FBI-CC-2025-001-EVD005",
+      "technicalDetails": {
+        "manufacturer": "Apple",
+        "model": "MacBook Pro 16-inch (2023)",
+        "serialNumber": "F4H7N8R2Q1WE",
+        "specifications": "M3 Max, 64GB RAM, 2TB SSD",
+        "operatingSystem": "macOS Ventura 13.6.1",
+        "encryptionStatus": "FileVault encrypted - decrypted via suspect cooperation"
+      },
+      "analysis": {
+        "status": "Complete",
+        "analyst": "Digital Forensics Specialist Maria Santos",
+        "findings": {
+          "personalFiles": "Family photos, personal documents, financial records",
+          "operationalData": "VPN configurations, Tor browser history, encrypted wallets",
+          "malwareTools": "Custom keyloggers, phishing page templates, credential harvesters"
+        }
+      }
+    },
+    {
+      "id": "EVD-006", 
+      "type": "Financial Evidence",
+      "category": "Banking Records",
+      "name": "Swiss Bank Account Records",
+      "description": "Complete transaction history from suspect's Swiss cryptocurrency exchange accounts",
+      "collectedBy": "Swiss Financial Intelligence Unit",
+      "collectionDate": "2025-04-08T12:00:00Z",
+      "location": "LOC-003",
+      "evidenceNumber": "FBI-CC-2025-001-EVD006",
+      "analysis": {
+        "status": "Complete",
+        "findings": {
+          "totalTransactions": 2847,
+          "totalValue": 3400000.00,
+          "currency": "CHF",
+          "suspiciousTransactions": 347,
+          "linkedAccounts": 15
+        }
+      }
+    },
+    {
+      "id": "EVD-007",
+      "type": "Digital Evidence",
+      "category": "Malware Samples", 
+      "name": "Custom Malware Arsenal",
+      "description": "Collection of custom-developed malware tools used in various attacks",
+      "collectedBy": "Malware Analysis Team",
+      "collectionDate": "2025-05-10T14:20:00Z",
+      "evidenceNumber": "FBI-CC-2025-001-EVD007",
+      "analysis": {
+        "status": "Complete",
+        "analyst": "Malware Analyst Dr. Robert Kim",
+        "findings": {
+          "samples": [
+            {
+              "name": "CreditStealer.exe",
+              "hash": "a1b2c3d4e5f6789012345678901234567890abcd",
+              "type": "Credential Harvester",
+              "targets": ["Banking websites", "E-commerce platforms"],
+              "firstSeen": "2024-11-15T12:00:00Z"
+            },
+            {
+              "name": "DataMiner.dll",
+              "hash": "b2c3d4e5f6a78901234567890abcdef123456789",
+              "type": "Database Extraction Tool",
+              "capabilities": ["SQL injection automation", "Data exfiltration"],
+              "firstSeen": "2024-09-22T08:30:00Z"
+            },
+            {
+              "name": "CryptoLocker.bin",
+              "hash": "c3d4e5f6a7b890123456789abcdef1234567890a",
+              "type": "Ransomware",
+              "encryption": "AES-256",
+              "firstSeen": "2025-01-08T16:15:00Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "EVD-008",
+      "type": "Communication Evidence", 
+      "category": "Voice Communications",
+      "name": "Intercepted Voice Calls",
+      "description": "Recorded voice communications between suspects obtained via lawful intercept",
+      "collectedBy": "Wiretap Operations Unit",
+      "collectionDate": "2025-07-15T10:30:00Z",
+      "evidenceNumber": "FBI-CC-2025-001-EVD008",
+      "legalAuthorization": "Federal Wiretap Order #2025-WT-4891",
+      "analysis": {
+        "status": "Complete",
+        "totalRecordings": 247,
+        "totalDuration": "18.5 hours",
+        "languages": ["Russian", "English", "Portuguese"],
+        "keyFindings": [
+          "Discussion of new victim targeting strategies",
+          "Coordination of money laundering operations", 
+          "Planning of infrastructure changes to avoid detection"
+        ]
+      }
     }
   ],
 
