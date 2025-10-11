@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 
-const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
+const HomePage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredFeature, setHoveredFeature] = useState(null);
-  const { user } = useAuth();
 
   useEffect(() => {
     setIsVisible(true);
@@ -208,21 +206,9 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
           }}>
             <button
               onClick={() => {
-                if (user) {
-                  // User is already logged in, navigate to dashboard
-                  if (onNavigateToDashboard) {
-                    onNavigateToDashboard();
-                  } else {
-                    console.error('onNavigateToDashboard function not provided');
-                  }
-                } else {
-                  // User is not logged in, show login
-                  if (onShowLogin) {
-                    onShowLogin();
-                  } else {
-                    console.error('onShowLogin function not provided');
-                  }
-                }
+                console.log('Explore Platform button clicked');
+                // Scroll to features section
+                document.querySelector('h2').scrollIntoView({ behavior: 'smooth' });
               }}
               style={{
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
@@ -251,7 +237,7 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
               }}
             >
               <span>🚀</span>
-              Launch Platform
+              Explore Platform
             </button>
           </div>
         </div>
@@ -548,19 +534,8 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
             <button
               onClick={() => {
                 console.log('Start Your Investigation button clicked');
-                if (user) {
-                  if (onNavigateToDashboard) {
-                    onNavigateToDashboard();
-                  } else {
-                    console.error('onNavigateToDashboard function not provided');
-                  }
-                } else {
-                  if (onShowLogin) {
-                    onShowLogin();
-                  } else {
-                    console.error('onShowLogin function not provided');
-                  }
-                }
+                // Scroll to RAG section for demo
+                document.querySelector('[style*="RAG-Powered Intelligence"]')?.scrollIntoView({ behavior: 'smooth' });
               }}
               style={{
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
@@ -588,7 +563,7 @@ const HomePage = ({ onNavigateToDashboard, onShowLogin }) => {
               }}
             >
               <span>⚡</span>
-              Launch Platform
+              Start Exploring
             </button>
 
             <button
