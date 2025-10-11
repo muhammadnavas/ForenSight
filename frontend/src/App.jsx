@@ -8,10 +8,12 @@ const AppContent = () => {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'dashboard'
 
   const navigateToDashboard = () => {
+    console.log('navigateToDashboard called, changing view from', currentView, 'to dashboard');
     setCurrentView('dashboard');
   };
 
   const navigateToHome = () => {
+    console.log('navigateToHome called, changing view from', currentView, 'to home');
     setCurrentView('home');
   };
 

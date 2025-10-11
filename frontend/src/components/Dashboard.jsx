@@ -10,7 +10,6 @@ import NetworkAnalysis from './NetworkAnalysis';
 import QueryInterface from './QueryInterface';
 import Reports from './Reports';
 import UploadUFDR from './UploadUFDR';
-import UserManagement from './UserManagement';
 
 // Global File Context for sharing uploaded files across components
 const FileContext = createContext();
@@ -2495,12 +2494,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
         { icon: '🎬', label: 'Media Analysis', view: 'media-analysis', active: currentView === 'media-analysis' }
       ]
     },
-    {
-      title: 'ADMINISTRATION',
-      items: [
-        { icon: '👥', label: 'User Management', view: 'users', active: currentView === 'users' },
-      ]
-    }
+
   ];
 
   const renderMenuItem = (item, index) => {
@@ -3413,9 +3407,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
             )
           )}
 
-          {currentView === 'users' && (
-            <UserManagement />
-          )}
+
         </div>
       </div>
     </FileContext.Provider>
