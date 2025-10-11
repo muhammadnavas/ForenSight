@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { useAuth } from '../contexts/AuthContext';
 import { useCaseContext } from '../contexts/CaseContext';
 import { CaseDataProvider, useCaseData } from '../contexts/CaseDataContext';
 import AIInvestigation from './AIInvestigation';
@@ -749,7 +748,6 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
   const { uploadedFiles, processedFiles, fileAnalytics } = useFiles();
   const { caseData, statistics, loading, hasData, isDemo } = useCaseData();
   const { selectedCase, caseFiles, cases } = useCaseContext();
-  const { user } = useAuth();
 
   // Check if no cases are available or no case selected
   if (!selectedCase) {
@@ -792,14 +790,14 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                 textAlign: 'right'
               }}>
                 <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>
-                  Welcome back,
+                  Welcome to
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>
-                  {user.firstName} {user.lastName}
+                  ForenSight Platform
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748b' }}>
                   <span style={{
-                    backgroundColor: user.role === 'admin' ? '#dc2626' : user.role === 'supervisor' ? '#f59e0b' : '#0ea5e9',
+                    backgroundColor: '#0ea5e9',
                     color: 'white',
                     padding: '2px 6px',
                     borderRadius: '10px',
@@ -808,9 +806,9 @@ const DashboardContent = ({ setCurrentView, processUploadedFile }) => {
                     textTransform: 'uppercase',
                     marginRight: '8px'
                   }}>
-                    {user.role}
+                    SYSTEM
                   </span>
-                  {user.department}
+                  Digital Forensics
                 </div>
               </div>
             )}
@@ -2152,45 +2150,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
   const [currentView, setCurrentView] = useState('dashboard');
   const { processUploadedFile } = useCaseData();
   const { cases, selectedCase } = useCaseContext();
-  const { user } = useAuth();
 
-  // Check if user is authenticated
-  if (!user) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        flexDirection: 'column',
-        textAlign: 'center',
-        padding: '40px'
-      }}>
-        <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔐</div>
-        <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
-          Authentication Required
-        </h2>
-        <p style={{ fontSize: '16px', color: '#64748b', maxWidth: '400px', marginBottom: '24px' }}>
-          Please log in to access the dashboard.
-        </p>
-        <button
-          onClick={onNavigateToHome}
-          style={{
-            padding: '12px 24px',
-            fontSize: '16px',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '500'
-          }}
-        >
-          Return to Home
-        </button>
-      </div>
-    );
-  }
   
   // Standard scrollbar styles
   const scrollbarStyles = `

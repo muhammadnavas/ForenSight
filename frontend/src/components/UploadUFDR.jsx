@@ -236,7 +236,7 @@ const UploadUFDR = ({ setCurrentView }) => {
       
       // Configure and send request
       xhr.timeout = 300000; // 5 minute timeout
-      xhr.open('POST', `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/cases/${selectedCase._id || selectedCase.caseId}/upload`);
+      xhr.open('POST', `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/cases/${selectedCase._id || selectedCase.caseId}/files`);
       xhr.send(formData);
       
     } catch (error) {

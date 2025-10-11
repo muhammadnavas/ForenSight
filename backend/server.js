@@ -2,12 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
+const fileUpload = require('express-fileupload');
 const fs = require('fs');
 require('dotenv').config();
 
 // Import routes
 const caseRoutes = require('./routes/cases');
-const userRoutes = require('./routes/users');
 
 const app = express();
 // Render/hosting note:
@@ -93,6 +93,15 @@ const maxFileSize = process.env.MAX_FILE_SIZE || '50mb';
 app.use(express.json({ limit: maxFileSize }));
 app.use(express.urlencoded({ extended: true, limit: maxFileSize }));
 
+// File upload middleware
+app.use(fileUpload({
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB max file size
+  useTempFiles: true,
+  tempFileDir: path.join(__dirname, 'temp'),
+  createParentPath: true,
+  debug: process.env.DEBUG_MODE === 'true'
+}));
+
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, process.env.UPLOAD_DIR || 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -165,7 +174,6 @@ const upload = multer({
 
 // Routes
 app.use('/api/cases', caseRoutes);
-app.use('/api/users', userRoutes);
 
 // File upload endpoint
 app.post('/api/cases/:caseId/upload', upload.single('file'), async (req, res) => {
@@ -275,9 +283,8 @@ app.get('/', (req, res) => {
     <li><code>GET /api/cases</code> – list cases</li>
     <li><code>POST /api/cases</code> – create a case</li>
     <li><code>POST /api/cases/:caseId/upload</code> – upload a file to a case</li>
-    <li><code>GET /api/users</code> – list users</li>
-    <li><code>POST /api/users</code> – create a user</li>
-    <li><code>POST /api/users/authenticate</code> – authenticate user</li>
+    <li><code>GET /api/cases/:caseId/files</code> – list case files</li>
+    <li><code>POST /api/cases/:caseId/files</code> – add file to case</li>
   </ul>
   <p>If you're seeing this on Render, the server bound correctly to <code>0.0.0.0:${PORT}</code>.</p>
   <footer>ForenSight &middot; ${new Date().getFullYear()}</footer>

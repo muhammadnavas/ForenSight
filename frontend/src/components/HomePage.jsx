@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const HomePage = () => {
+const HomePage = ({ onNavigateToDashboard }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredFeature, setHoveredFeature] = useState(null);
 
@@ -114,6 +114,73 @@ const HomePage = () => {
       color: '#1e293b',
       overflow: 'hidden'
     }}>
+      {/* Navigation Header */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(203, 213, 225, 0.3)',
+        padding: '16px 24px'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          {/* Logo */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '1.5rem',
+            fontWeight: '800',
+            color: '#1e293b'
+          }}>
+            <span>🔬</span>
+            <span>ForenSight</span>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <button
+              onClick={() => {
+                if (onNavigateToDashboard) {
+                  onNavigateToDashboard();
+                }
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                color: 'white',
+                border: 'none',
+                padding: '8px 20px',
+                borderRadius: '8px',
+                fontSize: '0.95rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              Enter Platform
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Background Effects */}
       <div style={{
         position: 'absolute',
@@ -152,7 +219,7 @@ const HomePage = () => {
         zIndex: 2,
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '80px 24px',
+        padding: '60px 24px 80px',
         textAlign: 'center'
       }}>
         {/* Hero Section */}
@@ -207,8 +274,12 @@ const HomePage = () => {
             <button
               onClick={() => {
                 console.log('Explore Platform button clicked');
-                // Scroll to features section
-                document.querySelector('h2').scrollIntoView({ behavior: 'smooth' });
+                if (onNavigateToDashboard) {
+                  onNavigateToDashboard();
+                } else {
+                  // Fallback: scroll to features section
+                  document.querySelector('h2').scrollIntoView({ behavior: 'smooth' });
+                }
               }}
               style={{
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
@@ -533,9 +604,13 @@ const HomePage = () => {
           }}>
             <button
               onClick={() => {
-                console.log('Start Your Investigation button clicked');
-                // Scroll to RAG section for demo
-                document.querySelector('[style*="RAG-Powered Intelligence"]')?.scrollIntoView({ behavior: 'smooth' });
+                console.log('Start Exploring button clicked');
+                if (onNavigateToDashboard) {
+                  onNavigateToDashboard();
+                } else {
+                  // Fallback: scroll to RAG section for demo
+                  document.querySelector('[style*="RAG-Powered Intelligence"]')?.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
               style={{
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
