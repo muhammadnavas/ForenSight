@@ -599,6 +599,48 @@ const NetworkAnalysis = () => {
       });
     }
 
+    // Add strategic connections between APT case entities (cleaner approach)
+    const contactNodes = networkData.contacts.nodes;
+    if (contactNodes.length > 0) {
+      // Find suspects and victims
+      const suspects = contactNodes.filter(n => n.type === 'suspect');
+      const victims = contactNodes.filter(n => n.type === 'victim');
+      
+      // Create key connections between main suspects only (avoid overcrowding)
+      if (suspects.length >= 2) {
+        // Connect Dr. Tanaka (main suspect) to other suspects
+        const mainSuspect = suspects.find(s => s.name.includes('Tanaka')) || suspects[0];
+        suspects.forEach(suspect => {
+          if (suspect.id !== mainSuspect.id) {
+            contactConnections.push({
+              from: mainSuspect.id,
+              to: suspect.id,
+              type: 'criminal_network',
+              strength: 7,
+              label: 'Network'
+            });
+          }
+        });
+      }
+      
+      // Create selective attack connections (not all-to-all to reduce clutter)
+      if (suspects.length > 0 && victims.length > 0) {
+        // Each suspect targets 1-2 specific victims instead of all
+        suspects.forEach((suspect, index) => {
+          const targetVictim = victims[index % victims.length];
+          if (targetVictim) {
+            contactConnections.push({
+              from: suspect.id,
+              to: targetVictim.id,
+              type: 'cyber_attack',
+              strength: 8,
+              label: 'Attack'
+            });
+          }
+        });
+      }
+    }
+
     // Create location connections (geographic relationships)
     const locationConnections = [];
     const locationNodes = networkData.locations.nodes;
@@ -970,11 +1012,11 @@ const NetworkAnalysis = () => {
     );
   };
 
-  // Improved layout algorithm to prevent node overlap
+  // Improved layout algorithm with better spacing and grouping
   const calculateOptimalLayout = (nodes, connections) => {
     const width = 800;
     const height = 600;
-    const margin = 80;
+    const margin = 100;
     
     // Create a copy of nodes with positioned coordinates
     const layoutNodes = nodes.map((node, index) => ({ ...node }));
@@ -985,29 +1027,45 @@ const NetworkAnalysis = () => {
       return layoutNodes;
     }
     
-    // Calculate circular layout as base positioning
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) / 2 - margin;
+    // Group nodes by type for better organization
+    const suspects = layoutNodes.filter(n => n.type === 'suspect');
+    const victims = layoutNodes.filter(n => n.type === 'victim');
+    const others = layoutNodes.filter(n => n.type !== 'suspect' && n.type !== 'victim');
     
-    layoutNodes.forEach((node, index) => {
-      const angle = (2 * Math.PI * index) / layoutNodes.length;
-      node.x = centerX + radius * Math.cos(angle);
-      node.y = centerY + radius * Math.sin(angle);
+    // Position suspects in upper area (criminal network)
+    suspects.forEach((node, index) => {
+      const angle = (2 * Math.PI * index) / suspects.length;
+      const radius = Math.min(120, suspects.length * 30);
+      node.x = width * 0.3 + radius * Math.cos(angle);
+      node.y = height * 0.3 + radius * Math.sin(angle);
     });
     
-    // Force-directed layout simulation to improve positioning
-    for (let iteration = 0; iteration < 50; iteration++) {
-      // Repulsive forces between nodes
+    // Position victims in lower area (targets)
+    victims.forEach((node, index) => {
+      const angle = (2 * Math.PI * index) / victims.length;
+      const radius = Math.min(100, victims.length * 25);
+      node.x = width * 0.7 + radius * Math.cos(angle);
+      node.y = height * 0.7 + radius * Math.sin(angle);
+    });
+    
+    // Position other nodes on the side
+    others.forEach((node, index) => {
+      node.x = width * 0.1;
+      node.y = height * 0.2 + (index * 80);
+    });
+    
+    // Force-directed layout simulation (fewer iterations for cleaner result)
+    for (let iteration = 0; iteration < 30; iteration++) {
+      // Repulsive forces between nodes (stronger to prevent overlap)
       for (let i = 0; i < layoutNodes.length; i++) {
         for (let j = i + 1; j < layoutNodes.length; j++) {
           const dx = layoutNodes[j].x - layoutNodes[i].x;
           const dy = layoutNodes[j].y - layoutNodes[i].y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-          const minDistance = 120; // Minimum distance between nodes
+          const minDistance = 140; // Increased minimum distance
           
           if (distance < minDistance) {
-            const force = (minDistance - distance) / distance * 0.5;
+            const force = (minDistance - distance) / distance * 0.7;
             const forceX = dx * force;
             const forceY = dy * force;
             
@@ -1019,7 +1077,7 @@ const NetworkAnalysis = () => {
         }
       }
       
-      // Attractive forces for connected nodes
+      // Weaker attractive forces for connected nodes
       connections.forEach(conn => {
         const fromNode = layoutNodes.find(n => n.id === conn.from);
         const toNode = layoutNodes.find(n => n.id === conn.to);
@@ -1028,9 +1086,9 @@ const NetworkAnalysis = () => {
           const dx = toNode.x - fromNode.x;
           const dy = toNode.y - fromNode.y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-          const idealDistance = 150;
+          const idealDistance = 180; // Increased ideal distance
           
-          const force = (distance - idealDistance) / distance * 0.1;
+          const force = (distance - idealDistance) / distance * 0.05; // Weaker force
           const forceX = dx * force;
           const forceY = dy * force;
           
@@ -1110,20 +1168,27 @@ const NetworkAnalysis = () => {
           
           if (!fromNode || !toNode) return null;
 
-          const strokeWidth = Math.max(2, (conn.strength || 5) / 2);
-          const opacity = Math.max(0.6, (conn.strength || 5) / 10);
+          const strokeWidth = Math.max(2, (conn.strength || 5) / 3);
+          const opacity = Math.max(0.4, (conn.strength || 5) / 12);
           
-          // Connection type colors
+          // Connection type colors (more distinct colors)
           const getConnectionColor = (type) => {
             switch (type) {
-              case 'data_supply': return '#3b82f6';
-              case 'payment_processing': return '#f59e0b';
-              case 'tech_transfer': return '#10b981';
-              case 'fund_transfer': return '#dc2626';
-              case 'geographic_proximity': return '#8b5cf6';
-              default: return '#64748b';
+              case 'criminal_network': return '#dc2626';  // Red for criminal connections
+              case 'cyber_attack': return '#f59e0b';      // Orange for attacks
+              case 'data_supply': return '#3b82f6';       // Blue for data
+              case 'payment_processing': return '#10b981'; // Green for payments
+              case 'tech_transfer': return '#8b5cf6';     // Purple for tech
+              case 'fund_transfer': return '#dc2626';     // Red for funds
+              case 'geographic_proximity': return '#64748b'; // Gray for location
+              default: return '#94a3b8';                  // Light gray default
             }
           };
+
+          // Calculate line offset to reduce overlapping
+          const lineOffset = (index % 3 - 1) * 3; // Slight offset for parallel lines
+          const midX = (fromNode.x + toNode.x) / 2;
+          const midY = (fromNode.y + toNode.y) / 2;
 
           return (
             <g key={`connection-${index}`}>
@@ -1135,30 +1200,32 @@ const NetworkAnalysis = () => {
                 stroke={getConnectionColor(conn.type)}
                 strokeWidth={strokeWidth}
                 opacity={opacity}
-                strokeDasharray={conn.type === 'suspicious' ? '8,4' : 'none'}
+                strokeDasharray={conn.type === 'criminal_network' ? '6,3' : 'none'}
                 markerEnd="url(#arrowhead)"
+                transform={`translate(${lineOffset}, ${lineOffset})`}
               />
-              {/* Connection label with background */}
-              {conn.label && (
-                <g>
+              
+              {/* Only show labels for important connections and avoid overlap */}
+              {conn.label && index < 5 && ( // Limit labels to first 5 connections
+                <g opacity="0.8">
                   <rect
-                    x={(fromNode.x + toNode.x) / 2 - 20}
-                    y={(fromNode.y + toNode.y) / 2 - 10}
-                    width="40"
-                    height="16"
-                    fill="white"
-                    stroke="#e2e8f0"
-                    rx="8"
-                    opacity="0.9"
+                    x={midX - 18}
+                    y={midY - 8 + (index % 3) * 16} // Offset labels vertically
+                    width="36"
+                    height="14"
+                    fill="rgba(255,255,255,0.95)"
+                    stroke={getConnectionColor(conn.type)}
+                    strokeWidth="1"
+                    rx="7"
                   />
                   <text
-                    x={(fromNode.x + toNode.x) / 2}
-                    y={(fromNode.y + toNode.y) / 2}
+                    x={midX}
+                    y={midY + (index % 3) * 16}
                     textAnchor="middle"
                     dominantBaseline="central"
-                    fontSize="10"
-                    fill="#475569"
-                    fontWeight="500"
+                    fontSize="9"
+                    fill={getConnectionColor(conn.type)}
+                    fontWeight="600"
                   >
                     {conn.label}
                   </text>
@@ -1169,54 +1236,125 @@ const NetworkAnalysis = () => {
         })}
 
         {/* Render nodes */}
-        {nodes.map((node, index) => (
-          <g 
-            key={`node-${index}`}
-            onClick={() => setSelectedNode(node)}
-            style={{ cursor: 'pointer' }}
-            transform={`translate(${node.x}, ${node.y})`}
-          >
-            {/* Node circle */}
-            <circle
-              r={selectedNode?.id === node.id ? 25 : 20}
-              fill={getNodeColor(node)}
-              stroke={selectedNode?.id === node.id ? '#1e293b' : 'white'}
-              strokeWidth={selectedNode?.id === node.id ? 3 : 2}
-              className={isAnalyzing ? 'pulse-animation' : ''}
-            />
-            
-            {/* Node icon */}
-            <text
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize="16"
-              fill="white"
+        {nodes.map((node, index) => {
+          const isSelected = selectedNode?.id === node.id;
+          const nodeRadius = isSelected ? 30 : 25;
+          
+          return (
+            <g 
+              key={`node-${index}`}
+              onClick={() => setSelectedNode(node)}
+              style={{ cursor: 'pointer' }}
+              transform={`translate(${node.x}, ${node.y})`}
             >
-              {getNodeIcon(node)}
-            </text>
-            
-            {/* Node label */}
-            <text
-              y={35}
-              textAnchor="middle"
-              fontSize="12"
-              fill="#1e293b"
-              fontWeight="500"
-            >
-              {node.label || node.name}
-            </text>
-            
-            {/* Connection count */}
-            <text
-              y={50}
-              textAnchor="middle"
-              fontSize="10"
-              fill="#64748b"
-            >
-              {node.connections || 0} connections
-            </text>
-          </g>
-        ))}
+              {/* Node glow effect for selected */}
+              {isSelected && (
+                <circle
+                  r={nodeRadius + 8}
+                  fill={getNodeColor(node)}
+                  opacity="0.3"
+                  className="pulse-animation"
+                />
+              )}
+              
+              {/* Node shadow */}
+              <circle
+                r={nodeRadius}
+                fill="rgba(0,0,0,0.1)"
+                transform="translate(2, 2)"
+              />
+              
+              {/* Node circle */}
+              <circle
+                r={nodeRadius}
+                fill={getNodeColor(node)}
+                stroke={isSelected ? '#1e293b' : 'white'}
+                strokeWidth={isSelected ? 4 : 3}
+                filter={isSelected ? 'brightness(1.1)' : 'none'}
+              />
+              
+              {/* Node icon */}
+              <text
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={isSelected ? "20" : "18"}
+                fill="white"
+                fontWeight="bold"
+                style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+              >
+                {getNodeIcon(node)}
+              </text>
+              
+              {/* Node label background */}
+              <rect
+                y={nodeRadius + 8}
+                x={-30}
+                width="60"
+                height="18"
+                fill="white"
+                stroke="#e2e8f0"
+                strokeWidth="1"
+                rx="9"
+                opacity="0.95"
+              />
+              
+              {/* Node label */}
+              <text
+                y={nodeRadius + 20}
+                textAnchor="middle"
+                fontSize="11"
+                fill="#1e293b"
+                fontWeight="600"
+              >
+                {(node.label || node.name).length > 12 ? 
+                  (node.label || node.name).substring(0, 12) + '...' : 
+                  (node.label || node.name)}
+              </text>
+              
+              {/* Connection count badge */}
+              <g transform={`translate(${nodeRadius - 8}, ${-nodeRadius + 8})`}>
+                <circle
+                  r="12"
+                  fill="#1e293b"
+                  stroke="white"
+                  strokeWidth="2"
+                />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="10"
+                  fill="white"
+                  fontWeight="bold"
+                >
+                  {node.connections || 0}
+                </text>
+              </g>
+              
+              {/* Risk level indicator */}
+              <g transform={`translate(${-nodeRadius + 8}, ${-nodeRadius + 8})`}>
+                <circle
+                  r="8"
+                  fill={node.riskLevel === 'extreme' ? '#991b1b' : 
+                       node.riskLevel === 'critical' ? '#dc2626' :
+                       node.riskLevel === 'high' ? '#f59e0b' : '#10b981'}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="8"
+                  fill="white"
+                  fontWeight="bold"
+                >
+                  {node.riskLevel === 'extreme' ? '!' :
+                   node.riskLevel === 'critical' ? '⚠' :
+                   node.riskLevel === 'high' ? '△' : '○'}
+                </text>
+              </g>
+            </g>
+          );
+        })}
       </svg>
     );
   };
