@@ -26,36 +26,78 @@ const QueryInterface = () => {
   const formatMarkdownReport = (text) => {
     if (!text) return '';
     
-    return text
-      // Convert **bold** to <strong>
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Convert ### headers to h3
-      .replace(/^### (.*$)/gm, '<h3 style="color: #1e293b; font-size: 16px; font-weight: 700; margin: 20px 0 10px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">$1</h3>')
-      // Convert ## headers to h2  
-      .replace(/^## (.*$)/gm, '<h2 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 24px 0 12px 0;">$1</h2>')
-      // Convert # headers to h1
-      .replace(/^# (.*$)/gm, '<h1 style="color: #1e293b; font-size: 20px; font-weight: 700; margin: 24px 0 16px 0;">$1</h1>')
-      // Convert numbered lists
-      .replace(/^\d+\.\s+\*\*(.*?)\*\*(.*?)$/gm, '<div style="margin: 12px 0;"><strong style="color: #059669;">$1</strong>$2</div>')
-      .replace(/^\d+\.\s+(.*?)$/gm, '<div style="margin: 8px 0; padding-left: 16px; border-left: 3px solid #059669;"><strong style="color: #059669;">$1</strong></div>')
-      // Convert bullet points with indentation
-      .replace(/^(\s*)\*\s+\*\*(.*?)\*\*(.*?)$/gm, '<div style="margin: 8px 0; padding-left: 24px;"><strong style="color: #0ea5e9;">$2</strong>$3</div>')
-      .replace(/^(\s*)\*\s+(.*?)$/gm, '<div style="margin: 6px 0; padding-left: 20px; color: #475569;">• $2</div>')
-      // Convert horizontal rules
-      .replace(/^---$/gm, '<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 20px 0;" />')
-      // Convert line breaks
-      .replace(/\n\n/g, '<br><br>')
-      .replace(/\n/g, '<br>')
-      // Style case ID and metadata
-      .replace(/\*\*Case ID:\*\* (.*?)<br>/g, '<div style="background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin: 8px 0;"><strong>Case ID:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">$1</code></div>')
-      .replace(/\*\*Search Query:\*\* "(.*?)"<br>/g, '<div style="background: #f0f9ff; padding: 8px 12px; border-radius: 6px; margin: 8px 0;"><strong>Search Query:</strong> <em style="color: #0ea5e9;">"$1"</em></div>')
-      .replace(/\*\*Date of Analysis:\*\* (.*?)<br>/g, '<div style="background: #f0fdf4; padding: 8px 12px; border-radius: 6px; margin: 8px 0;"><strong>Date of Analysis:</strong> $1</div>')
-      // Style relevance scores
-      .replace(/\*\*Relevance Score:\*\* (\d+)%/g, '<span style="background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">$1% Relevance</span>')
-      // Style evidence types
-      .replace(/\*\*Type:\*\* (COMMUNICATION|PHYSICAL|DIGITAL|FINANCIAL)/g, '<span style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">$1</span>')
-      // Style metadata
-      .replace(/\*\*Metadata:\*\* (.*?)<br>/g, '<div style="background: #fafafa; padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #64748b; border-left: 3px solid #cbd5e1; margin: 4px 0;">📋 <strong>Metadata:</strong> $1</div>');
+    let formattedText = text;
+    
+    // First, normalize line breaks
+    formattedText = formattedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Handle the main report title (first line that starts with **Forensic Analysis Report**)
+    formattedText = formattedText.replace(/^\*\*Forensic Analysis Report: (.*?)\*\*$/gm, 
+      '<h1 style="color: #1e293b; font-size: 22px; font-weight: 800; margin: 0 0 20px 0; padding: 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border-radius: 8px; text-align: center;">📋 Forensic Analysis Report: $1</h1>');
+    
+    // Handle Case ID, Search Query, Date with special styling
+    formattedText = formattedText.replace(/^\*\*Case ID:\*\* (.+)$/gm, 
+      '<div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #8b5cf6;"><strong style="color: #7c3aed;">📁 Case ID:</strong> <code style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-weight: 600;">$1</code></div>');
+    
+    formattedText = formattedText.replace(/^\*\*Search Query:\*\* "(.+)"$/gm, 
+      '<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #0ea5e9;"><strong style="color: #0ea5e9;">🔍 Search Query:</strong> <em style="color: #0284c7; font-size: 16px; font-weight: 500;">"$1"</em></div>');
+    
+    formattedText = formattedText.replace(/^\*\*Date of Analysis:\*\* (.+)$/gm, 
+      '<div style="background: #f0fdf4; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #059669;"><strong style="color: #059669;">📅 Date of Analysis:</strong> <span style="color: #047857;">$1</span></div>');
+    
+    // Convert section headers (### format)
+    formattedText = formattedText.replace(/^### (\d+)\.\s*(.+)$/gm, 
+      '<h3 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 24px 0 16px 0; padding: 12px 0 8px 0; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 8px;"><span style="background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 50%; font-size: 14px; font-weight: 600;">$1</span>$2</h3>');
+    
+    // Convert horizontal rules
+    formattedText = formattedText.replace(/^---+$/gm, '<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 20px 0;" />');
+    
+    // Handle evidence items with bullet points and sub-items
+    formattedText = formattedText.replace(/^• (.+)$/gm, '<div style="margin: 8px 0; padding: 8px 16px; background: #f8fafc; border-left: 3px solid #8b5cf6; border-radius: 0 6px 6px 0;">• $1</div>');
+    
+    // Handle Evidence Type headers
+    formattedText = formattedText.replace(/^• \*\*Evidence Type:\*\* (.+)$/gm, 
+      '<div style="margin: 16px 0 8px 0; padding: 12px; background: #faf5ff; border: 1px solid #d8b4fe; border-radius: 8px;"><strong style="color: #7c3aed; font-size: 15px;">🔍 Evidence Type:</strong> <span style="color: #1e293b; font-weight: 600;">$1</span></div>');
+    
+    // Handle numbered findings
+    formattedText = formattedText.replace(/^(\d+)\.\s*\*\*(.+?)\*\*:\s*(.+)$/gm, 
+      '<div style="margin: 16px 0; padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; border-left: 4px solid #059669;"><div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="background: #059669; color: white; padding: 4px 8px; border-radius: 50%; font-size: 12px; font-weight: 600;">$1</span><strong style="color: #047857; font-size: 16px;">$2</strong></div><p style="color: #1e293b; margin: 0; line-height: 1.6;">$3</p></div>');
+    
+    // Handle relevance scores
+    formattedText = formattedText.replace(/• \*\*Relevance Score:\*\* (\d+)%/g, 
+      '<div style="margin: 8px 0; text-align: right;"><span style="background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);">🎯 $1% Relevance</span></div>');
+    
+    // Handle evidence type badges  
+    formattedText = formattedText.replace(/• \*\*Type:\*\* (COMMUNICATION|PHYSICAL|DIGITAL|FINANCIAL)/g, 
+      '<div style="margin: 8px 0;"><span style="background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">$1</span></div>');
+    
+    // Handle descriptions
+    formattedText = formattedText.replace(/• \*\*Description:\*\* (.+)$/gm, 
+      '<div style="margin: 8px 0; padding: 10px; background: #f8fafc; border-radius: 6px;"><strong style="color: #475569;">📄 Description:</strong> <span style="color: #1e293b;">$1</span></div>');
+    
+    // Handle relevance explanations
+    formattedText = formattedText.replace(/• \*\*Relevance:\*\* (.+)$/gm, 
+      '<div style="margin: 8px 0; padding: 10px; background: #fef3c7; border-radius: 6px; border-left: 3px solid #f59e0b;"><strong style="color: #92400e;">🎯 Relevance:</strong> <span style="color: #451a03;">$1</span></div>');
+    
+    // Handle metadata
+    formattedText = formattedText.replace(/• \*\*Metadata:\*\* (.+)$/gm, 
+      '<div style="margin: 8px 0; padding: 8px 12px; background: #f1f5f9; border-radius: 4px; font-size: 12px; color: #64748b; border-left: 3px solid #cbd5e1;"><strong>📋 Metadata:</strong> $1</div>');
+    
+    // Handle general bullet points
+    formattedText = formattedText.replace(/^\* (.+)$/gm, '<div style="margin: 6px 0; padding: 8px 0 8px 20px; color: #475569; position: relative;"><span style="position: absolute; left: 0; color: #8b5cf6; font-weight: bold;">•</span>$1</div>');
+    
+    // Convert remaining **bold** text
+    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #1e293b;">$1</strong>');
+    
+    // Convert line breaks to proper HTML
+    formattedText = formattedText.replace(/\n\n+/g, '<div style="margin: 16px 0;"></div>');
+    formattedText = formattedText.replace(/\n/g, '<br>');
+    
+    // Clean up extra spacing
+    formattedText = formattedText.replace(/<br>\s*<div/g, '<div');
+    formattedText = formattedText.replace(/<\/div>\s*<br>/g, '</div>');
+    
+    return formattedText;
   };
 
   const containerStyle = {
