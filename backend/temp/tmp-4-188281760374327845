@@ -1,0 +1,626 @@
+{
+  "caseId": "FS-2025-003",
+  "caseName": "Operation Data Fortress",
+  "description": "Advanced persistent threat (APT) investigation involving corporate espionage, data exfiltration, and insider threats targeting multinational technology corporations",
+  "investigator": "Agent Michael Thompson",
+  "department": "FBI Cyber Division - APT Task Force",
+  "priority": "CRITICAL",
+  "status": "ACTIVE",
+  "createdDate": "2025-10-01T06:00:00Z",
+  "lastModified": "2025-10-11T16:00:00Z",
+  "summary": "Sophisticated APT campaign targeting intellectual property and trade secrets from Fortune 500 technology companies, involving insider recruitment, advanced malware, and international data trafficking networks.",
+
+  "riskAssessment": {
+    "overallRisk": "CRITICAL",
+    "nationalSecurityThreat": true,
+    "economicImpact": "SEVERE",
+    "ongoingThreat": true
+  },
+
+  "suspects": [
+    {
+      "id": "SUSPECT-001",
+      "name": "Dr. Yuki Tanaka",
+      "alias": ["ShadowArchitect", "data_harvester", "insider_ghost", "corporate_phantom"],
+      "nationality": "Japanese",
+      "age": 38,
+      "occupation": "Senior Software Engineer - TechCorp Industries",
+      "employeeId": "TC-2019-4587",
+      "securityClearance": "TOP SECRET",
+      "knownAddresses": [
+        "Apartment 2401, Shibuya Sky Tower, Tokyo, Japan",
+        "Safe House 15, Industrial District, Osaka, Japan"
+      ],
+      "phoneNumbers": ["+81-3-1234-5678", "+81-6-8765-4321"],
+      "emailAccounts": [
+        "y.tanaka@techcorp.com",
+        "shadowarchitect@protonmail.com",
+        "data.harvester@tutanota.com"
+      ],
+      "socialMedia": {
+        "telegram": "@shadow_architect_secure",
+        "signal": "ShadowArch.2025",
+        "wickr": "DataHarvester"
+      },
+      "digitalFootprint": {
+        "vpnUsage": ["NordVPN", "ExpressVPN", "Custom corporate VPN"],
+        "cryptocurrencyWallets": [
+          "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+          "3FupnrNGpCQBjaC7p8FBktfbnFeb3YHRhq"
+        ],
+        "darktWebPresence": ["shadows_market.onion", "corp_data_exchange.onion"],
+        "hackingTools": ["Metasploit", "Cobalt Strike", "Custom RATs", "Steganography tools"]
+      },
+      "criminalHistory": "No prior arrests - clean background enabled insider access",
+      "role": "Primary insider threat - Data theft coordinator",
+      "riskLevel": "EXTREME",
+      "coordinates": {
+        "lat": 35.6762,
+        "lng": 139.6503,
+        "city": "Tokyo",
+        "country": "Japan"
+      },
+      "corporateAccess": {
+        "departments": ["R&D", "Product Development", "Strategic Planning"],
+        "systemAccess": ["Source code repositories", "Design databases", "Financial systems"],
+        "securityBadges": ["Level 5 - Restricted Areas", "Server Room Access", "Executive Floor"],
+        "workSchedule": "Irregular hours - often works nights and weekends"
+      }
+    },
+    {
+      "id": "SUSPECT-002", 
+      "name": "Elena Volkov",
+      "alias": ["CyberSiren", "data_broker", "network_ghost", "elena_shadow"],
+      "nationality": "Russian",
+      "age": 31,
+      "occupation": "Cybersecurity Consultant (Cover)",
+      "knownAddresses": [
+        "Penthouse Suite, Moscow Financial District, Russia",
+        "Villa 7, Cyprus Offshore Complex, Limassol, Cyprus"
+      ],
+      "phoneNumbers": ["+7-495-555-0147", "+357-25-123456"],
+      "emailAccounts": [
+        "e.volkov@cybersec.ru",
+        "cybersiren@securecomms.onion",
+        "data.broker@encrypted.net"
+      ],
+      "socialMedia": {
+        "telegram": "@cyber_siren_official",
+        "discord": "CyberSiren#8899",
+        "wickr": "NetworkGhost"
+      },
+      "digitalFootprint": {
+        "operatingBases": ["Moscow", "Cyprus", "Singapore"],
+        "cryptocurrencyExchanges": ["Binance", "KuCoin", "Offshore crypto services"],
+        "technicalInfrastructure": ["Bulletproof hosting", "Anonymous VPS networks", "Tor relay networks"]
+      },
+      "role": "International data broker and technical coordinator",
+      "riskLevel": "EXTREME",
+      "coordinates": {
+        "lat": 55.7558,
+        "lng": 37.6176,
+        "city": "Moscow", 
+        "country": "Russia"
+      }
+    },
+    {
+      "id": "SUSPECT-003",
+      "name": "Marcus Weber",
+      "alias": ["EuroLink", "financial_pipeline", "weber_crypto", "swiss_connection"],
+      "nationality": "Swiss",
+      "age": 42,
+      "occupation": "Investment Banker - Alpine Capital",
+      "knownAddresses": [
+        "Bahnhofstrasse 45, Zurich, Switzerland",
+        "Chalet 12, Zermatt Mountain Resort, Switzerland"
+      ],
+      "phoneNumbers": ["+41-44-555-0199", "+41-27-966-7788"],
+      "emailAccounts": [
+        "m.weber@alpinecapital.ch",
+        "eurolink@protonmail.ch",
+        "financial.pipeline@tutanota.com"
+      ],
+      "role": "Money laundering and financial operations",
+      "riskLevel": "HIGH",
+      "coordinates": {
+        "lat": 47.3769,
+        "lng": 8.5417,
+        "city": "Zurich",
+        "country": "Switzerland"
+      }
+    },
+    {
+      "id": "SUSPECT-004",
+      "name": "Li Wei Chang",
+      "alias": ["TechBridge", "asian_connection", "chang_data", "li_network"],
+      "nationality": "Chinese",
+      "age": 35,
+      "occupation": "Technology Transfer Specialist",
+      "knownAddresses": [
+        "High-tech District Office Tower, Shenzhen, China",
+        "International Business Hub, Hong Kong"
+      ],
+      "phoneNumbers": ["+86-755-1234567", "+852-9876-5432"],
+      "emailAccounts": [
+        "l.chang@techbridge.cn",
+        "asian.connection@protonmail.com"
+      ],
+      "role": "Technology acquisition and distribution coordinator",
+      "riskLevel": "HIGH",
+      "coordinates": {
+        "lat": 22.3193,
+        "lng": 114.1694,
+        "city": "Shenzhen",
+        "country": "China"
+      }
+    }
+  ],
+
+  "victims": [
+    {
+      "id": "VICTIM-001",
+      "name": "TechCorp Industries",
+      "type": "CORPORATE",
+      "industry": "Technology & Software Development",
+      "headquartersLocation": "Silicon Valley, CA, USA",
+      "employeeCount": 25000,
+      "annualRevenue": 8500000000.00,
+      "financialLoss": 150000000.00,
+      "incidentDate": "2025-08-15T14:22:00Z",
+      "discoveryDate": "2025-09-20T09:15:00Z",
+      "compromisedAssets": [
+        "Next-generation AI algorithms (Project Phoenix)",
+        "Quantum computing research data", 
+        "Customer database (2.5M records)",
+        "Financial projections and strategic plans",
+        "Source code for 47 proprietary applications",
+        "Employee personal information (25,000 records)"
+      ],
+      "systemsAffected": [
+        "R&D Network (RESEARCH-NET-01)",
+        "Executive Communication Systems",
+        "Financial Database Servers",
+        "Product Development Infrastructure",
+        "Customer Relationship Management (CRM)",
+        "Human Resources Information System (HRIS)"
+      ],
+      "coordinates": {
+        "lat": 37.4419,
+        "lng": -122.1430,
+        "city": "Palo Alto",
+        "country": "USA"
+      }
+    },
+    {
+      "id": "VICTIM-002",
+      "name": "GlobalTech Dynamics",
+      "type": "CORPORATE",
+      "industry": "Aerospace & Defense Technology", 
+      "headquartersLocation": "Arlington, VA, USA",
+      "employeeCount": 15000,
+      "annualRevenue": 4200000000.00,
+      "financialLoss": 85000000.00,
+      "incidentDate": "2025-09-02T11:45:00Z",
+      "discoveryDate": "2025-09-25T16:30:00Z",
+      "compromisedAssets": [
+        "Advanced radar system designs",
+        "Satellite communication protocols",
+        "Defense contract proposals",
+        "Personnel security clearance data"
+      ],
+      "coordinates": {
+        "lat": 38.8816,
+        "lng": -77.0910,
+        "city": "Arlington",
+        "country": "USA"
+      }
+    },
+    {
+      "id": "VICTIM-003",
+      "name": "InnovateLabs Europe",
+      "type": "CORPORATE",
+      "industry": "Biotechnology Research",
+      "headquartersLocation": "Munich, Germany",
+      "employeeCount": 8000,
+      "annualRevenue": 2100000000.00,
+      "financialLoss": 45000000.00,
+      "incidentDate": "2025-09-10T08:20:00Z",
+      "compromisedAssets": [
+        "Pharmaceutical research data",
+        "Clinical trial results",
+        "Patent applications",
+        "Research collaboration agreements"
+      ],
+      "coordinates": {
+        "lat": 48.1351,
+        "lng": 11.5820,
+        "city": "Munich",
+        "country": "Germany"
+      }
+    }
+  ],
+
+  "evidence": [
+    {
+      "id": "EVIDENCE-001",
+      "type": "DIGITAL",
+      "category": "Network Traffic Analysis",
+      "name": "Corporate Network Exfiltration Logs",
+      "description": "Comprehensive network traffic captures showing data exfiltration patterns from TechCorp systems",
+      "collectedDate": "2025-09-21T10:00:00Z",
+      "fileSize": "247 GB",
+      "format": "PCAP, Zeek logs, Suricata alerts",
+      "hash": {
+        "md5": "a1b2c3d4e5f6789012345678901234567890abcd",
+        "sha256": "7b8e9f1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9"
+      },
+      "analysisResults": {
+        "suspiciousConnections": 1847,
+        "dataExfiltratedGB": 127.3,
+        "uniqueDestinations": 23,
+        "encryptedTrafficPercent": 89.2,
+        "peakExfiltrationTimes": ["2025-08-15 02:30 - 04:45", "2025-08-22 01:15 - 03:30"]
+      },
+      "networkTopology": {
+        "nodes": [
+          {
+            "id": "INSIDER-WORKSTATION",
+            "label": "Dr. Tanaka's Workstation",
+            "type": "endpoint",
+            "ip": "192.168.100.45",
+            "riskLevel": "CRITICAL"
+          },
+          {
+            "id": "R&D-SERVER-01",
+            "label": "Research Database Server",
+            "type": "server", 
+            "ip": "10.50.20.15",
+            "riskLevel": "HIGH"
+          },
+          {
+            "id": "EXTERNAL-C2",
+            "label": "Command & Control Server",
+            "type": "external",
+            "ip": "185.220.101.47",
+            "riskLevel": "EXTREME"
+          },
+          {
+            "id": "VPN-EXIT-NODE",
+            "label": "Anonymization Exit Point",
+            "type": "proxy",
+            "ip": "94.230.208.147",
+            "riskLevel": "HIGH"
+          }
+        ],
+        "edges": [
+          {
+            "from": "INSIDER-WORKSTATION",
+            "to": "R&D-SERVER-01",
+            "type": "unauthorized_access",
+            "volume": "45.2 GB",
+            "frequency": "daily"
+          },
+          {
+            "from": "R&D-SERVER-01", 
+            "to": "EXTERNAL-C2",
+            "type": "data_exfiltration",
+            "volume": "127.3 GB",
+            "frequency": "weekly"
+          },
+          {
+            "from": "EXTERNAL-C2",
+            "to": "VPN-EXIT-NODE",
+            "type": "proxy_routing",
+            "volume": "127.3 GB",
+            "frequency": "continuous"
+          }
+        ]
+      }
+    },
+    {
+      "id": "EVIDENCE-002",
+      "type": "DIGITAL",
+      "category": "Malware Analysis",
+      "name": "Advanced Persistent Threat Toolkit",
+      "description": "Custom malware samples recovered from infected corporate systems",
+      "collectedDate": "2025-09-22T14:30:00Z",
+      "malwareSamples": [
+        {
+          "name": "DataSiphon.dll",
+          "type": "Data Exfiltration Tool",
+          "hash": "b2c3d4e5f6a78901234567890abcdef123456789",
+          "capabilities": ["Steganographic hiding", "Encrypted communication", "Database access"],
+          "targetedSystems": ["Oracle databases", "Microsoft SQL Server", "PostgreSQL"]
+        },
+        {
+          "name": "StealthRAT.exe",
+          "type": "Remote Access Trojan",
+          "hash": "c3d4e5f6a7b890123456789abcdef1234567890a",
+          "capabilities": ["Keylogging", "Screen capture", "File system access", "Network reconnaissance"],
+          "persistence": ["Registry modification", "Scheduled tasks", "Service installation"]
+        },
+        {
+          "name": "CorporateMimikatz.bin",
+          "type": "Credential Harvester",
+          "hash": "d4e5f6a7b8c901234567890abcdef123456789ab",
+          "capabilities": ["Memory credential extraction", "Kerberos ticket manipulation", "Hash dumping"]
+        }
+      ]
+    },
+    {
+      "id": "EVIDENCE-003",
+      "type": "FINANCIAL",
+      "category": "Cryptocurrency Transactions", 
+      "name": "International Money Laundering Network",
+      "description": "Blockchain analysis revealing sophisticated cryptocurrency laundering operation",
+      "collectedDate": "2025-09-25T16:00:00Z",
+      "cryptoAnalysis": {
+        "totalValueUSD": 45750000.00,
+        "uniqueWallets": 247,
+        "exchangesUsed": 15,
+        "mixingServices": 8,
+        "primaryWallets": [
+          {
+            "address": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+            "balance": 157.8942,
+            "currency": "Bitcoin",
+            "linkedSuspect": "SUSPECT-001",
+            "firstSeen": "2025-08-10T12:00:00Z",
+            "lastActivity": "2025-10-08T14:22:00Z"
+          },
+          {
+            "address": "0x742d35cc6251c532c3c02b958b0c5b04c9d2f2a5",
+            "balance": 2847.3421,
+            "currency": "Ethereum",
+            "linkedSuspect": "SUSPECT-002",
+            "firstSeen": "2025-08-15T08:30:00Z",
+            "lastActivity": "2025-10-09T11:15:00Z"
+          }
+        ],
+        "transactionFlow": [
+          {
+            "stage": "Initial Collection",
+            "method": "Corporate data sales",
+            "amount": 15750000.00,
+            "timeframe": "2025-08-15 to 2025-09-15"
+          },
+          {
+            "stage": "Primary Mixing",
+            "method": "Cryptocurrency tumblers",
+            "amount": 12600000.00,
+            "services": ["ChipMixer", "Wasabi Wallet", "Samourai Whirlpool"]
+          },
+          {
+            "stage": "Geographic Distribution",
+            "method": "International exchange arbitrage",
+            "amount": 9800000.00,
+            "locations": ["Switzerland", "Cyprus", "Singapore", "Hong Kong"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "EVIDENCE-004",
+      "type": "COMMUNICATION",
+      "category": "Encrypted Communications",
+      "name": "Criminal Coordination Messages",
+      "description": "Decrypted communications between suspects revealing operational details",
+      "collectedDate": "2025-09-28T09:45:00Z",
+      "communicationPlatforms": ["Signal", "Telegram", "Wickr", "Custom encrypted channels"],
+      "keyMessages": [
+        {
+          "timestamp": "2025-08-14T23:15:00Z",
+          "participants": ["SUSPECT-001", "SUSPECT-002"],
+          "platform": "Signal",
+          "content": "Phoenix project data ready for extraction. Package size: 45GB. Delivery window: 48 hours.",
+          "significance": "Coordination of TechCorp data theft"
+        },
+        {
+          "timestamp": "2025-09-01T14:30:00Z",
+          "participants": ["SUSPECT-002", "SUSPECT-003"],
+          "platform": "Wickr",
+          "content": "Swiss accounts ready. BTC conversion rate: 1.2M per package. Clean routing confirmed.",
+          "significance": "Financial laundering coordination"
+        }
+      ]
+    },
+    {
+      "id": "EVIDENCE-005",
+      "type": "PHYSICAL",
+      "category": "Hardware Evidence",
+      "name": "Insider Threat Digital Devices",
+      "description": "Computing devices seized from Dr. Tanaka's residence and office",
+      "collectedDate": "2025-09-30T07:00:00Z",
+      "devices": [
+        {
+          "type": "Laptop",
+          "model": "MacBook Pro 16-inch",
+          "serialNumber": "F4H7N8R2Q1WE",
+          "encryptionStatus": "FileVault encrypted - cracked via forensic tools",
+          "findings": [
+            "Steganography software for hiding data in images",
+            "Multiple VPN clients and Tor browser",
+            "Cryptocurrency wallet software",
+            "Corporate VPN credentials stored in plain text"
+          ]
+        },
+        {
+          "type": "External Storage",
+          "model": "Samsung T7 SSD 2TB",
+          "serialNumber": "S4H2NX0M123456",
+          "encryptionStatus": "BitLocker encrypted - successfully decrypted",
+          "findings": [
+            "127 GB of stolen corporate data",
+            "Customer database dumps",
+            "Source code repositories",
+            "Financial reports and strategic documents"
+          ]
+        }
+      ]
+    }
+  ],
+
+  "geographicData": {
+    "suspectLocations": [
+      {
+        "id": "LOC-SUSPECT-001",
+        "name": "Dr. Tanaka's Corporate Office",
+        "address": "TechCorp Tower, Floor 47, Palo Alto, CA",
+        "coordinates": [139.6503, 35.6762],
+        "type": "workplace",
+        "significance": "Primary data access point",
+        "suspect": "SUSPECT-001"
+      },
+      {
+        "id": "LOC-SUSPECT-002",
+        "name": "Volkov Operations Center",
+        "address": "Moscow Financial District, Russia",
+        "coordinates": [37.6176, 55.7558],
+        "type": "criminal_hq",
+        "significance": "International coordination hub",
+        "suspect": "SUSPECT-002"
+      }
+    ],
+    "criminalActivity": [
+      {
+        "id": "ACT-001",
+        "name": "TechCorp Data Breach",
+        "address": "Silicon Valley, CA, USA",
+        "coordinates": [-122.1430, 37.4419],
+        "type": "data_theft",
+        "date": "2025-08-15T14:22:00Z",
+        "impact": "HIGH"
+      },
+      {
+        "id": "ACT-002", 
+        "name": "Financial Laundering Hub",
+        "address": "Zurich, Switzerland",
+        "coordinates": [8.5417, 47.3769],
+        "type": "money_laundering",
+        "date": "2025-09-01T10:00:00Z",
+        "impact": "MEDIUM"
+      }
+    ],
+    "infrastructure": [
+      {
+        "id": "INFRA-001",
+        "name": "C2 Server Farm",
+        "address": "Anonymous Hosting, Eastern Europe",
+        "coordinates": [30.5234, 50.4501],
+        "type": "command_control",
+        "status": "active"
+      }
+    ]
+  },
+
+  "networkTopology": {
+    "nodes": [
+      {
+        "id": "INSIDER",
+        "label": "Dr. Yuki Tanaka",
+        "type": "insider_threat",
+        "riskLevel": "CRITICAL",
+        "connections": 15
+      },
+      {
+        "id": "BROKER", 
+        "label": "Elena Volkov",
+        "type": "data_broker",
+        "riskLevel": "EXTREME",
+        "connections": 23
+      },
+      {
+        "id": "FINANCIER",
+        "label": "Marcus Weber",
+        "type": "money_launderer", 
+        "riskLevel": "HIGH",
+        "connections": 12
+      },
+      {
+        "id": "DISTRIBUTOR",
+        "label": "Li Wei Chang",
+        "type": "tech_distributor",
+        "riskLevel": "HIGH", 
+        "connections": 8
+      }
+    ],
+    "edges": [
+      {
+        "from": "INSIDER",
+        "to": "BROKER",
+        "type": "data_supply",
+        "strength": "strong",
+        "frequency": "weekly"
+      },
+      {
+        "from": "BROKER",
+        "to": "FINANCIER",
+        "type": "payment_processing",
+        "strength": "strong",
+        "frequency": "bi_weekly"
+      },
+      {
+        "from": "BROKER",
+        "to": "DISTRIBUTOR",
+        "type": "tech_transfer",
+        "strength": "medium",
+        "frequency": "monthly"
+      }
+    ]
+  },
+
+  "digitalForensics": {
+    "keyFindings": [
+      "Advanced steganography techniques used to hide data in corporate presentations",
+      "Custom malware designed specifically for corporate environments", 
+      "Sophisticated anti-forensics measures including secure deletion and timeline manipulation",
+      "Use of legitimate corporate tools for malicious purposes to avoid detection"
+    ],
+    "forensicTools": [
+      "Volatility Framework for memory analysis",
+      "Autopsy for disk forensics",
+      "Wireshark for network analysis", 
+      "YARA rules for malware detection",
+      "Blockchain analytics platforms"
+    ],
+    "dataRecovery": {
+      "recoveredFiles": 24587,
+      "deletedFilesRecovered": 8934,
+      "encryptedDataDecrypted": "89.2%",
+      "timelineReconstructed": "2025-08-01 to 2025-09-30"
+    }
+  },
+
+  "investigationStatus": {
+    "completionPercentage": 75,
+    "activeLeads": 12,
+    "priorityTasks": [
+      "International cooperation for suspect apprehension",
+      "Additional victim identification and notification",
+      "Technical infrastructure disruption",
+      "Asset recovery and forfeiture proceedings"
+    ]
+  },
+
+  "legalStatus": {
+    "charges": [
+      "18 U.S.C. § 1030 - Computer Fraud and Abuse Act",
+      "18 U.S.C. § 1831 - Economic Espionage Act",
+      "18 U.S.C. § 1956 - Money Laundering",
+      "18 U.S.C. § 371 - Conspiracy"
+    ],
+    "internationalWarrants": 4,
+    "assetFreezeOrders": 8,
+    "mutualLegalAssistance": ["Switzerland", "Japan", "Germany", "Hong Kong"]
+  },
+
+  "metadata": {
+    "version": "1.3",
+    "lastBackup": "2025-10-11T16:00:00Z",
+    "accessLevel": "TOP SECRET",
+    "handlingCaveats": ["NOFORN", "ORCON", "TK"],
+    "retentionPeriod": "25 years",
+    "createdBy": "Agent Michael Thompson",
+    "lastModifiedBy": "Agent Sarah Chen"
+  }
+}

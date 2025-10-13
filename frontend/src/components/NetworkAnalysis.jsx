@@ -1,8 +1,9 @@
 import L from 'leaflet';
 import React, { useEffect, useState } from 'react';
-import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { useCaseContext } from '../contexts/CaseContext';
 import { useCaseData } from '../contexts/CaseDataContext';
+import useCaseFileIntegration from '../hooks/useCaseFileIntegration.js';
 
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -26,6 +27,10 @@ const createCustomIcon = (color, symbol) => {
 const NetworkAnalysis = () => {
   const { selectedCase, selectedFiles, getSelectedFileObjects } = useCaseContext();
   const { caseData, hasData, getNetworkData, getGeographicData, statistics } = useCaseData();
+  // Initialize case file integration hook
+  const integrationStatus = useCaseFileIntegration();
+  console.log('🌐 Network Analysis integration status:', integrationStatus);
+  
   const [selectedNode, setSelectedNode] = useState(null);
   const [analysisMode, setAnalysisMode] = useState('contacts'); // 'contacts', 'locations', 'transactions'
   const [timeRange, setTimeRange] = useState('all');
@@ -44,13 +49,8 @@ const NetworkAnalysis = () => {
         50% { transform: translateX(0%); }
         100% { transform: translateX(100%); }
       }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .network-fade-in {
-        animation: fadeIn 0.5s ease-out;
-      }
+      .pulse-animation { animation: pulse 2s infinite; }
+      .loading-bar { animation: loading-bar 2s infinite; }
     `;
     document.head.appendChild(style);
     
@@ -87,61 +87,62 @@ const NetworkAnalysis = () => {
         setAnalysisMode('contacts'); // Default fallback
       }
       
-      console.log('🎯 Analysis mode set to:', analysisMode, 'based on file types:', fileTypes);
-      
-      // Trigger analysis for all selected files
-      triggerAutomaticAnalysis(selectedFileObjects);
-    } else {
-      // Clear analysis when no files selected
-      console.log('🧹 Clearing NetworkAnalysis data - no files selected');
-      setNetworkData({ 
-        contacts: { nodes: [], connections: [] },
-        locations: { nodes: [], connections: [] },
-        transactions: { nodes: [], connections: [] }
-      });
-      setAnalyticsData({
-        totalEntities: 0,
-        totalConnections: 0,
-        riskDistribution: {},
-        connectionTypes: {},
-        timelineData: [],
-        hotspots: []
-      });
-      setSelectedNode(null);
-      setIsAnalyzing(false);
+      // Simulate analysis time for UX
+      const analysisTime = Math.max(1500, selectedFileObjects.length * 500);
+      setTimeout(async () => {
+        try {
+          console.log('🔍 Performing network analysis...');
+          await performNetworkAnalysis(selectedFileObjects);
+          console.log('✅ Network analysis complete');
+        } catch (error) {
+          console.error('❌ Analysis failed:', error);
+        } finally {
+          setIsAnalyzing(false);
+        }
+      }, analysisTime);
     }
   }, [selectedFiles, selectedCase]);
 
-  // Function to trigger analysis with proper loading states
-  const triggerAutomaticAnalysis = (fileObjects) => {
-    console.log('🚀 Triggering automatic network analysis for files:', fileObjects.length);
+  // Helper function to determine file type
+  const getFileType = (filename) => {
+    const name = filename.toLowerCase();
+    if (name.includes('contact') || name.includes('phone') || name.includes('address')) {
+      return 'contacts';
+    } else if (name.includes('location') || name.includes('gps') || name.includes('coordinate')) {
+      return 'location';
+    } else if (name.includes('financial') || name.includes('transaction') || name.includes('bank')) {
+      return 'financial';
+    } else if (name.includes('communication') || name.includes('message') || name.includes('call')) {
+      return 'communications';
+    }
+    return 'general';
+  };
+
+  // Core analysis function
+  const performNetworkAnalysis = async (fileObjects) => {
     setIsAnalyzing(true);
-    setSelectedNode(null); // Clear any selected node during analysis
     
-    // Clear existing data immediately for responsive UI
-    setNetworkData({
-      contacts: { nodes: [], connections: [] },
-      locations: { nodes: [], connections: [] },
-      transactions: { nodes: [], connections: [] }
-    });
+    // Simulate processing time
+    const analysisTime = Math.max(2000, fileObjects.length * 800);
     
-    // Simulate realistic analysis time based on file count and types
-    const analysisTime = Math.min(800 + (fileObjects.length * 200), 2500); // 0.8-2.5 seconds
-    
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
-        // Generate analysis results based on file types
-        const analysisResults = generateAnalysisFromFiles(fileObjects);
-        setNetworkData(analysisResults.networkData);
-        setAnalyticsData(analysisResults.analyticsData);
+        console.log('🔧 Starting network analysis of files:', fileObjects.length);
         
-        console.log('✅ Automatic analysis completed successfully');
-        console.log('📊 Generated data:', {
-          contacts: analysisResults.networkData.contacts.nodes.length,
-          locations: analysisResults.networkData.locations.nodes.length,
-          transactions: analysisResults.networkData.transactions.nodes.length,
-          totalConnections: analysisResults.analyticsData.totalConnections
-        });
+        // Use the enhanced analysis generation
+        const result = await generateAnalysisFromFiles(fileObjects);
+        
+        if (result?.networkData) {
+          setNetworkData(result.networkData);
+          setAnalyticsData(result.analyticsData || {
+            totalEntities: 0,
+            totalConnections: 0,
+            riskDistribution: {},
+            connectionTypes: {},
+            timelineData: [],
+            hotspots: []
+          });
+        }
         
       } catch (error) {
         console.error('❌ Analysis failed:', error);
@@ -153,239 +154,244 @@ const NetworkAnalysis = () => {
   };
 
   // Generate enhanced analysis data based on file types and content
-  const generateAnalysisFromFiles = (fileObjects) => {
+  const generateAnalysisFromFiles = async (fileObjects) => {
     console.log('🔧 Generating enhanced analysis from files:', fileObjects.length);
     
-    // First, try to use actual case data if available
+    // First, try to use actual case data if available from context
     if (hasData && caseData) {
-      console.log('📊 Using actual case data for network analysis');
+      console.log('📊 Using actual case data from context for network analysis');
       return generateNetworkFromCaseData();
     }
     
-    // Return empty network structure when no case data available
-    const networkData = {
-      contacts: { nodes: [], connections: [] },
-      locations: { nodes: [], connections: [] },
-      transactions: { nodes: [], connections: [] }
-    };
-    const analyticsData = {
-      totalEntities: 0,
-      totalConnections: 0,
-      riskDistribution: { low: 0, medium: 0, high: 0, critical: 0 },
-      connectionTypes: {},
-      timelineData: [],
-      hotspots: []
-    };
-
-    console.log('✅ No case data available - returning empty network structure');
-    return { networkData, analyticsData };
+    // Try to load APT case data from public folder
+    try {
+      console.log('📂 Attempting to load APT case data from public folder');
+      const response = await fetch('/apt-case-003.json');
+      if (response.ok) {
+        const aptCaseData = await response.json();
+        console.log('✅ Successfully loaded APT case data:', aptCaseData.caseName);
+        
+        // Temporarily set the case data for network generation
+        const originalCaseData = caseData;
+        const originalHasData = hasData;
+        
+        // Use APT data for generation
+        const aptNetwork = generateNetworkFromAPTData(aptCaseData);
+        
+        return aptNetwork;
+      }
+    } catch (error) {
+      console.log('❌ Failed to load APT case data:', error.message);
+    }
+    
+    // Fallback to demo network if no real case data
+    console.log('🎭 Using demo network as fallback');
+    return generateDemoNetwork();
   };
 
-  // Generate network data from actual case data
-  const generateNetworkFromCaseData = () => {
-    console.log('🎯 Generating network from actual case data');
+  // Generate network specifically from APT case data
+  const generateNetworkFromAPTData = (aptData) => {
+    console.log('🔧 Generating network from APT case data:', aptData.caseName);
     
     const networkData = {
       contacts: { nodes: [], connections: [] },
       locations: { nodes: [], connections: [] },
       transactions: { nodes: [], connections: [] }
     };
-    
-    const analyticsData = {
-      totalEntities: 0,
-      totalConnections: 0,
-      riskDistribution: { low: 0, medium: 0, high: 0, critical: 0 },
-      connectionTypes: {},
-      timelineData: [],
-      hotspots: []
-    };
 
-    // Process suspects as contact nodes
-    if (caseData.suspects) {
-      const suspectNodes = caseData.suspects.map((suspect, index) => ({
-        id: suspect.id,
-        name: suspect.name,
-        label: suspect.name,
-        phone: suspect.phoneNumbers ? suspect.phoneNumbers[0] : 'Unknown',
-        email: suspect.emailAccounts ? suspect.emailAccounts[0] : 'Unknown',
-        type: 'suspect',
-        category: 'suspect',
-        riskLevel: suspect.riskLevel ? suspect.riskLevel.toLowerCase() : 'medium',
-        lastContact: new Date().toISOString(),
-        source: 'Case Data',
-        fileType: 'case-data',
-        aliases: suspect.alias || [],
-        occupation: suspect.occupation,
-        nationality: suspect.nationality,
-        age: suspect.age,
-        role: suspect.role,
-        x: Math.random() * 600 + 100,
-        y: Math.random() * 400 + 100,
-        connections: caseData.networkTopology?.edges?.filter(edge => 
-          edge.from === suspect.id || edge.to === suspect.id).length || 0
-      }));
-      networkData.contacts.nodes.push(...suspectNodes);
-      
-      // Update risk distribution
-      suspectNodes.forEach(node => {
-        const risk = node.riskLevel === 'extreme' ? 'critical' : node.riskLevel;
-        analyticsData.riskDistribution[risk] = (analyticsData.riskDistribution[risk] || 0) + 1;
-      });
-    }
-
-    // Process victims as contact nodes  
-    if (caseData.victims) {
-      const victimNodes = caseData.victims.map((victim, index) => ({
-        id: victim.id,
-        name: victim.name,
-        label: victim.name,
-        phone: victim.contactInfo?.phone || 'Unknown',
-        email: victim.contactInfo?.email || 'Unknown',
-        type: 'victim',
-        category: 'victim',
-        riskLevel: 'low',
-        lastContact: victim.incidentDate || new Date().toISOString(),
-        source: 'Case Data',
-        fileType: 'case-data',
-        victimType: victim.type,
-        financialLoss: victim.financialLoss,
-        industry: victim.industry,
-        location: victim.location || victim.headquartersLocation,
-        x: Math.random() * 600 + 100,
-        y: Math.random() * 400 + 100,
-        connections: 2 // Typically connected to suspects and evidence
-      }));
-      networkData.contacts.nodes.push(...victimNodes);
-      
-      victimNodes.forEach(() => {
-        analyticsData.riskDistribution.low += 1;
-      });
-    }
-
-    // Process geographic data as location nodes
-    if (caseData.geographicData) {
-      // Suspect locations
-      if (caseData.geographicData.suspectLocations) {
-        const suspectLocationNodes = caseData.geographicData.suspectLocations.map(location => ({
-          id: location.id,
-          name: location.name,
-          label: location.name,
-          latitude: location.coordinates[1],
-          longitude: location.coordinates[0],
-          address: location.address,
-          type: 'suspect-location',
+    // Process suspects
+    if (aptData.suspects) {
+      aptData.suspects.forEach((suspect) => {
+        networkData.contacts.nodes.push({
+          id: suspect.id,
+          name: suspect.name,
+          label: suspect.name,
+          type: 'suspect',
           category: 'suspect',
-          riskLevel: 'high',
-          significance: location.significance,
-          suspect: location.suspect,
+          riskLevel: suspect.riskLevel?.toLowerCase() || 'high',
           x: Math.random() * 600 + 100,
           y: Math.random() * 400 + 100,
-          connections: 3
-        }));
-        networkData.locations.nodes.push(...suspectLocationNodes);
-      }
+          connections: 0,
+          age: suspect.age,
+          nationality: suspect.nationality,
+          occupation: suspect.occupation,
+          alias: suspect.alias?.[0] || '',
+          role: suspect.role
+        });
 
-      // Criminal activity locations
-      if (caseData.geographicData.criminalActivity) {
-        const crimeLocationNodes = caseData.geographicData.criminalActivity.map(activity => ({
-          id: activity.id,
-          name: activity.name,
-          label: activity.name,
-          latitude: activity.coordinates[1],
-          longitude: activity.coordinates[0], 
-          address: activity.address,
-          type: 'crime-location',
-          category: 'crime',
-          riskLevel: activity.impact === 'HIGH' ? 'critical' : activity.impact === 'MEDIUM' ? 'high' : 'medium',
-          activityType: activity.type,
-          date: activity.date,
-          x: Math.random() * 600 + 100,
-          y: Math.random() * 400 + 100,
-          connections: 4
-        }));
-        networkData.locations.nodes.push(...crimeLocationNodes);
-      }
-    }
-
-    // Process cryptocurrency data as transaction nodes
-    if (caseData.evidence) {
-      caseData.evidence.forEach(evidence => {
-        if (evidence.type === 'FINANCIAL' && evidence.cryptoAnalysis) {
-          const cryptoNodes = evidence.cryptoAnalysis.primaryWallets?.map((wallet, index) => ({
-            id: `crypto_${wallet.address.slice(-8)}`,
-            name: `${wallet.currency} Wallet`,
-            label: `${wallet.balance} ${wallet.currency}`,
-            type: 'cryptocurrency',
-            category: 'financial', 
-            currency: wallet.currency,
-            balance: wallet.balance,
-            address: wallet.address,
-            linkedSuspect: wallet.linkedSuspect,
-            riskLevel: wallet.balance > 100 ? 'critical' : wallet.balance > 50 ? 'high' : 'medium',
-            lastActivity: wallet.lastActivity,
+        // Add suspect location
+        if (suspect.coordinates) {
+          networkData.locations.nodes.push({
+            id: `loc-${suspect.id}`,
+            name: suspect.coordinates.city,
+            label: `${suspect.name} - ${suspect.coordinates.city}`,
+            type: 'suspect_location',
+            category: 'location',
+            riskLevel: suspect.riskLevel?.toLowerCase() || 'high',
             x: Math.random() * 600 + 100,
             y: Math.random() * 400 + 100,
-            connections: 5
-          })) || [];
-          networkData.transactions.nodes.push(...cryptoNodes);
+            connections: 0,
+            lat: suspect.coordinates.lat,
+            lng: suspect.coordinates.lng,
+            city: suspect.coordinates.city,
+            country: suspect.coordinates.country,
+            suspect: suspect.name
+          });
         }
       });
     }
 
-    // Generate connections based on network topology
-    if (caseData.networkTopology?.edges) {
-      const connections = caseData.networkTopology.edges.map(edge => ({
-        from: edge.from,
-        to: edge.to,
-        type: edge.type,
-        strength: edge.strength,
-        frequency: edge.frequency,
-        volume: edge.volume
-      }));
-      
-      networkData.contacts.connections.push(...connections);
-      analyticsData.totalConnections += connections.length;
-      
-      // Count connection types
-      connections.forEach(conn => {
-        analyticsData.connectionTypes[conn.type] = (analyticsData.connectionTypes[conn.type] || 0) + 1;
+    // Process victims
+    if (aptData.victims) {
+      aptData.victims.forEach((victim) => {
+        networkData.contacts.nodes.push({
+          id: victim.id,
+          name: victim.name,
+          label: victim.name,
+          type: 'victim',
+          category: 'victim',
+          riskLevel: 'medium',
+          x: Math.random() * 600 + 100,
+          y: Math.random() * 400 + 100,
+          connections: 0,
+          industry: victim.industry,
+          financialLoss: victim.financialLoss,
+          employeeCount: victim.employeeCount
+        });
+
+        // Add victim location
+        if (victim.coordinates) {
+          networkData.locations.nodes.push({
+            id: `loc-${victim.id}`,
+            name: victim.coordinates.city,
+            label: `${victim.name} - ${victim.coordinates.city}`,
+            type: 'victim_location',
+            category: 'location',
+            riskLevel: 'medium',
+            x: Math.random() * 600 + 100,
+            y: Math.random() * 400 + 100,
+            connections: 0,
+            lat: victim.coordinates.lat,
+            lng: victim.coordinates.lng,
+            city: victim.coordinates.city,
+            country: victim.coordinates.country,
+            organization: victim.name
+          });
+        }
       });
     }
 
-    // Calculate total entities
-    analyticsData.totalEntities = 
-      networkData.contacts.nodes.length + 
-      networkData.locations.nodes.length + 
-      networkData.transactions.nodes.length;
-
-    // Generate timeline data from evidence
-    if (caseData.evidence) {
-      analyticsData.timelineData = caseData.evidence.map(evidence => ({
-        date: evidence.collectedDate,
-        event: `Evidence collected: ${evidence.name}`,
-        type: evidence.type,
-        category: evidence.category
-      }));
+    // Process cryptocurrency data
+    const cryptoEvidence = aptData.evidence?.find(e => e.category === 'Cryptocurrency Transactions');
+    if (cryptoEvidence?.cryptoAnalysis?.primaryWallets) {
+      cryptoEvidence.cryptoAnalysis.primaryWallets.forEach((wallet, index) => {
+        networkData.transactions.nodes.push({
+          id: `wallet-${index}`,
+          name: `${wallet.currency} Wallet`,
+          label: `${wallet.balance} ${wallet.currency}`,
+          type: 'cryptocurrency',
+          category: 'financial',
+          riskLevel: 'high',
+          x: Math.random() * 600 + 100,
+          y: Math.random() * 400 + 100,
+          connections: 0,
+          address: wallet.address.substring(0, 10) + '...',
+          balance: wallet.balance,
+          currency: wallet.currency,
+          linkedSuspect: wallet.linkedSuspect
+        });
+      });
     }
 
-    console.log('✅ Generated network data from case:', {
+    // Create connections based on APT network topology
+    const contactConnections = [];
+    if (aptData.networkTopology?.edges) {
+      aptData.networkTopology.edges.forEach((edge) => {
+        contactConnections.push({
+          from: edge.from,
+          to: edge.to,
+          type: edge.type,
+          strength: edge.strength === 'strong' ? 9 : edge.strength === 'medium' ? 6 : 4,
+          label: edge.type.replace('_', ' ').toUpperCase(),
+          frequency: edge.frequency
+        });
+      });
+    }
+
+    // Create basic location connections
+    const locationConnections = [];
+    const locationNodes = networkData.locations.nodes;
+    for (let i = 0; i < locationNodes.length; i++) {
+      for (let j = i + 1; j < locationNodes.length; j++) {
+        if (locationNodes[i].country === locationNodes[j].country) {
+          locationConnections.push({
+            from: locationNodes[i].id,
+            to: locationNodes[j].id,
+            type: 'geographic_proximity',
+            strength: 6,
+            label: 'Same Country'
+          });
+        }
+      }
+    }
+
+    // Create transaction connections
+    const transactionConnections = [];
+    const walletNodes = networkData.transactions.nodes;
+    for (let i = 0; i < walletNodes.length; i++) {
+      for (let j = i + 1; j < walletNodes.length; j++) {
+        transactionConnections.push({
+          from: walletNodes[i].id,
+          to: walletNodes[j].id,
+          type: 'fund_transfer',
+          strength: 7,
+          label: 'Transaction Flow'
+        });
+      }
+    }
+
+    networkData.contacts.connections = contactConnections;
+    networkData.locations.connections = locationConnections;
+    networkData.transactions.connections = transactionConnections;
+
+    // Calculate analytics
+    const analyticsData = {
+      totalEntities: networkData.contacts.nodes.length + networkData.locations.nodes.length + networkData.transactions.nodes.length,
+      totalConnections: contactConnections.length + locationConnections.length + transactionConnections.length,
+      riskDistribution: {
+        extreme: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'extreme').length,
+        critical: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'critical').length,
+        high: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'high').length,
+        medium: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'medium').length,
+        low: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'low').length
+      },
+      connectionTypes: {
+        data_supply: contactConnections.filter(c => c.type === 'data_supply').length,
+        payment_processing: contactConnections.filter(c => c.type === 'payment_processing').length,
+        tech_transfer: contactConnections.filter(c => c.type === 'tech_transfer').length
+      },
+      timelineData: [],
+      hotspots: []
+    };
+
+    console.log('✅ Generated APT network:', {
       contacts: networkData.contacts.nodes.length,
-      locations: networkData.locations.nodes.length, 
-      transactions: networkData.transactions.nodes.length,
-      connections: analyticsData.totalConnections
+      locations: networkData.locations.nodes.length,
+      transactions: networkData.transactions.nodes.length
     });
 
     return { networkData, analyticsData };
   };
-  
-  // Search and analytics state
+
+  // State for network data
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCriteria, setFilterCriteria] = useState({
-    riskLevel: 'all', // 'all', 'low', 'medium', 'high', 'critical'
-    entityType: 'all', // 'all', 'person', 'location', 'financial', etc.
-    connectionStrength: 'all', // 'all', 'weak', 'medium', 'strong'
-    timeRange: 'all' // 'all', '7d', '30d', '90d'
+    riskLevel: 'all',
+    entityType: 'all',
+    connectionStrength: 'all',
+    timeRange: 'all'
   });
+  
   const [analyticsData, setAnalyticsData] = useState({
     totalEntities: 0,
     totalConnections: 0,
@@ -409,1531 +415,967 @@ const NetworkAnalysis = () => {
       connections: []
     }
   });
-  
-  // Load network data from case data when available
+
+  // Load network data when component mounts or case data changes
   useEffect(() => {
-    if (hasData && caseData) {
-      const realNetworkData = getNetworkData();
-      
-      // Organize data by analysis mode
-      const organizedData = {
-        contacts: {
-          nodes: getContactNodes(realNetworkData),
-          connections: getContactConnections(realNetworkData)
-        },
-        locations: {
-          nodes: getAllLocationNodes(),
-          connections: getLocationConnections()
-        },
-        transactions: {
-          nodes: getFinancialNodes(realNetworkData),
-          connections: getFinancialConnections(realNetworkData)
+    const loadNetworkData = async () => {
+      if (hasData && caseData) {
+        console.log('🔄 Loading network data from case data');
+        const { networkData: generatedNetworkData, analyticsData: generatedAnalytics } = generateNetworkFromCaseData();
+        setNetworkData(generatedNetworkData);
+        setAnalyticsData(generatedAnalytics);
+      } else {
+        // Auto-load APT case data for demonstration
+        console.log('🔄 Auto-loading APT case data for demonstration');
+        const result = await generateAnalysisFromFiles([]);
+        if (result?.networkData) {
+          setNetworkData(result.networkData);
+          setAnalyticsData(result.analyticsData);
         }
-      };
-      
-      setNetworkData(organizedData);
+      }
+    };
+
+    loadNetworkData();
+  }, [hasData, caseData]);
+
+  // Generate network from APT case data function
+  const generateNetworkFromCaseData = () => {
+    if (!hasData || !caseData) {
+      return generateDemoNetwork();
     }
-  }, [hasData, caseData, getNetworkData]);
 
-  // Search and Analytics Functions
-  const searchNodes = (nodes, searchTerm) => {
-    if (!searchTerm.trim()) return nodes;
+    console.log('🔧 Generating network from APT case data:', caseData.caseName);
     
-    const term = searchTerm.toLowerCase();
-    return nodes.filter(node => {
-      return (
-        (node.label && node.label.toLowerCase().includes(term)) ||
-        (node.name && node.name.toLowerCase().includes(term)) ||
-        (node.id && node.id.toLowerCase().includes(term)) ||
-        (node.type && node.type.toLowerCase().includes(term)) ||
-        (node.email && node.email.toLowerCase().includes(term)) ||
-        (node.phone && node.phone.toLowerCase().includes(term)) ||
-        (node.address && node.address.toLowerCase().includes(term)) ||
-        (node.description && node.description.toLowerCase().includes(term))
-      );
-    });
-  };
-
-  const filterNodes = (nodes, criteria) => {
-    return nodes.filter(node => {
-      // Risk level filter
-      if (criteria.riskLevel !== 'all' && node.risk !== criteria.riskLevel) {
-        return false;
-      }
-      
-      // Entity type filter
-      if (criteria.entityType !== 'all' && node.type !== criteria.entityType) {
-        return false;
-      }
-      
-      return true;
-    });
-  };
-
-  const filterConnections = (connections, criteria) => {
-    return connections.filter(connection => {
-      // Connection strength filter
-      if (criteria.connectionStrength !== 'all') {
-        const strength = connection.strength || 0;
-        switch (criteria.connectionStrength) {
-          case 'weak':
-            return strength < 3;
-          case 'medium':
-            return strength >= 3 && strength < 7;
-          case 'strong':
-            return strength >= 7;
-          default:
-            return true;
-        }
-      }
-      
-      return true;
-    });
-  };
-
-  const calculateAnalytics = (nodes, connections) => {
-    const analytics = {
-      totalEntities: nodes.length,
-      totalConnections: connections.length,
-      riskDistribution: {},
-      connectionTypes: {},
-      entityTypes: {},
-      hotspots: []
+    const networkData = {
+      contacts: { nodes: [], connections: [] },
+      locations: { nodes: [], connections: [] },
+      transactions: { nodes: [], connections: [] }
     };
 
-    // Calculate risk distribution
-    nodes.forEach(node => {
-      const risk = node.risk || 'unknown';
-      analytics.riskDistribution[risk] = (analytics.riskDistribution[risk] || 0) + 1;
-    });
-
-    // Calculate connection types
-    connections.forEach(connection => {
-      const type = connection.type || 'unknown';
-      analytics.connectionTypes[type] = (analytics.connectionTypes[type] || 0) + 1;
-    });
-
-    // Calculate entity types
-    nodes.forEach(node => {
-      const type = node.type || 'unknown';
-      analytics.entityTypes[type] = (analytics.entityTypes[type] || 0) + 1;
-    });
-
-    // Find hotspots (nodes with most connections)
-    const connectionCounts = {};
-    connections.forEach(connection => {
-      connectionCounts[connection.from] = (connectionCounts[connection.from] || 0) + 1;
-      connectionCounts[connection.to] = (connectionCounts[connection.to] || 0) + 1;
-    });
-
-    analytics.hotspots = Object.entries(connectionCounts)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .map(([nodeId, count]) => {
-        const node = nodes.find(n => n.id === nodeId);
-        return {
-          node: node || { id: nodeId, label: nodeId },
-          connections: count
-        };
-      });
-
-    return analytics;
-  };
-
-  // Get filtered and searched data
-  const getFilteredData = () => {
-    const currentData = networkData[analysisMode];
-    let filteredNodes = filterNodes(currentData.nodes, filterCriteria);
-    filteredNodes = searchNodes(filteredNodes, searchTerm);
-    
-    const filteredConnections = filterConnections(
-      currentData.connections.filter(conn => 
-        filteredNodes.some(n => n.id === conn.from) && 
-        filteredNodes.some(n => n.id === conn.to)
-      ),
-      filterCriteria
-    );
-
-    return {
-      nodes: filteredNodes,
-      connections: filteredConnections
-    };
-  };
-
-  // Helper function to get coordinates for victim locations
-  const getVictimCoordinates = (location) => {
-    const locationMap = {
-      'Chicago, IL': { lat: 41.8781, lng: -87.6298 },
-      'New York, NY': { lat: 40.7128, lng: -74.0060 },
-      'Los Angeles, CA': { lat: 34.0522, lng: -118.2437 },
-      'Miami, FL': { lat: 25.7617, lng: -80.1918 },
-      'Seattle, WA': { lat: 47.6062, lng: -122.3321 }
-    };
-    return locationMap[location] || { lat: 39.8283, lng: -98.5795 }; // Default to center US
-  };
-
-  // Helper functions for comprehensive contact data
-  const getContactNodes = (networkData) => {
-    if (!hasData || !caseData) return [];
-    
-    const contactNodes = [];
-    
-    // Add suspects with enhanced information
+    // CONTACTS NETWORK - Process suspects and victims
     if (caseData.suspects) {
-      caseData.suspects.forEach(suspect => {
-        contactNodes.push({
+      caseData.suspects.forEach((suspect) => {
+        networkData.contacts.nodes.push({
           id: suspect.id,
           name: suspect.name,
           label: suspect.name,
-          type: 'person',
-          group: 'suspect',
+          type: 'suspect',
           category: 'suspect',
+          riskLevel: suspect.riskLevel?.toLowerCase() || 'high',
+          x: Math.random() * 600 + 100,
+          y: Math.random() * 400 + 100,
+          connections: 0,
           age: suspect.age,
-          location: suspect.location,
-          role: suspect.role,
-          charges: suspect.charges,
-          riskLevel: suspect.riskLevel,
-          coordinates: suspect.lastKnownLocation?.coordinates,
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 0
+          nationality: suspect.nationality,
+          occupation: suspect.occupation,
+          alias: suspect.alias?.[0] || '',
+          role: suspect.role
         });
       });
     }
-    
-    // Add victims
+
     if (caseData.victims) {
-      caseData.victims.forEach(victim => {
-        contactNodes.push({
+      caseData.victims.forEach((victim) => {
+        networkData.contacts.nodes.push({
           id: victim.id,
           name: victim.name,
           label: victim.name,
-          type: 'person',
-          group: 'victim',
+          type: 'victim',
           category: 'victim',
-          age: victim.age,
-          location: victim.location,
-          impactType: victim.impactType,
+          riskLevel: 'medium',
+          x: Math.random() * 600 + 100,
+          y: Math.random() * 400 + 100,
+          connections: 0,
+          industry: victim.industry,
           financialLoss: victim.financialLoss,
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 0
+          employeeCount: victim.employeeCount
         });
       });
     }
-    
-    // Add network persons from existing network data
-    networkData.nodes.filter(node => 
-      node.type === 'person' && !contactNodes.find(cn => cn.id === node.id)
-    ).forEach(node => {
-      contactNodes.push({
-        ...node,
-        category: node.group || 'person',
-        x: node.x || Math.random() * 800 + 100,
-        y: node.y || Math.random() * 600 + 100
-      });
-    });
-    
-    return contactNodes;
-  };
-  
-  const getContactConnections = (networkData) => {
-    if (!hasData || !caseData) return [];
-    
-    const connections = [];
-    
-    // Add communication and relationship connections
-    networkData.edges.filter(edge => 
-      edge.type === 'communication' || edge.type === 'relationship' || edge.type === 'association'
-    ).forEach(edge => {
-      connections.push({
-        ...edge,
-        from: edge.source || edge.from,
-        to: edge.target || edge.to,
-        strength: edge.weight || edge.strength || 5,
-        label: edge.label || edge.type
-      });
-    });
-    
-    // Add suspect-victim relationships based on case data
-    if (caseData.suspects && caseData.victims) {
-      caseData.suspects.forEach(suspect => {
-        caseData.victims.forEach(victim => {
-          connections.push({
-            id: `${suspect.id}-${victim.id}`,
-            from: suspect.id,
-            to: victim.id,
-            type: 'crime-relationship',
-            strength: 8,
-            label: 'Crime Association'
-          });
-        });
-      });
-    }
-    
-    return connections;
-  };
-  
-  const getFinancialNodes = (networkData) => {
-    if (!hasData || !caseData) return [];
-    
-    const financialNodes = [];
-    
-    // Add suspects as financial entities
-    if (caseData.suspects) {
-      caseData.suspects.forEach(suspect => {
-        financialNodes.push({
-          id: `${suspect.id}-financial`,
-          name: `${suspect.name} (Financial)`,
-          label: suspect.name,
-          type: 'person-financial',
-          group: 'suspect',
-          category: 'suspect',
-          originalId: suspect.id,
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 0
-        });
-      });
-    }
-    
-    // Add victims as financial entities
-    if (caseData.victims) {
-      caseData.victims.forEach(victim => {
-        financialNodes.push({
-          id: `${victim.id}-financial`,
-          name: `${victim.name} (Loss: $${victim.financialLoss || 0})`,
-          label: victim.name,
-          type: 'person-financial',
-          group: 'victim',
-          category: 'victim',
-          originalId: victim.id,
-          financialLoss: victim.financialLoss,
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 0
-        });
-      });
-    }
-    
-    // Add financial accounts and wallets
-    networkData.nodes.filter(node => 
-      node.type === 'wallet' || node.type === 'account' || node.group === 'financial'
-    ).forEach(node => {
-      financialNodes.push({
-        ...node,
-        x: node.x || Math.random() * 800 + 100,
-        y: node.y || Math.random() * 600 + 100
-      });
-    });
-    
-    return financialNodes;
-  };
-  
-  const getFinancialConnections = (networkData) => {
-    if (!hasData || !caseData) return [];
-    
-    const connections = [];
-    
-    // Add financial and transaction connections
-    networkData.edges.filter(edge => 
-      edge.type === 'financial' || edge.type === 'transaction' || edge.type === 'money-flow'
-    ).forEach(edge => {
-      connections.push({
-        ...edge,
-        from: edge.source || edge.from,
-        to: edge.target || edge.to,
-        strength: edge.weight || edge.amount || edge.strength || 5,
-        label: edge.label || `$${edge.amount || 'Unknown'}` || edge.type
-      });
-    });
-    
-    // Add suspect-victim financial connections
-    if (caseData.suspects && caseData.victims) {
-      caseData.suspects.forEach(suspect => {
-        caseData.victims.forEach(victim => {
-          if (victim.financialLoss) {
-            connections.push({
-              id: `${suspect.id}-${victim.id}-financial`,
-              from: `${suspect.id}-financial`,
-              to: `${victim.id}-financial`,
-              type: 'financial-crime',
-              strength: Math.min(victim.financialLoss / 1000, 10),
-              label: `Loss: $${victim.financialLoss}`,
-              amount: victim.financialLoss
-            });
-          }
-        });
-      });
-    }
-    
-    return connections;
-  };
 
-  // Helper functions for comprehensive location data
-  const getAllLocationNodes = () => {
-    if (!hasData || !caseData) return [];
-    
-    const locationNodes = [];
-    
-    // Add suspect locations with real coordinates
+    // LOCATIONS NETWORK - Process geographic data
     if (caseData.suspects) {
-      caseData.suspects.forEach((suspect, index) => {
-        if (suspect.lastKnownLocation) {
-          locationNodes.push({
-            id: `suspect-loc-${suspect.id}`,
-            name: `${suspect.name} Location`,
-            label: suspect.lastKnownLocation.address || 'Unknown Location',
-            type: 'suspect-location',
-            category: 'suspect',
-            latitude: suspect.lastKnownLocation.coordinates[1],
-            longitude: suspect.lastKnownLocation.coordinates[0],
-            address: suspect.lastKnownLocation.address,
-            timestamp: suspect.lastKnownLocation.timestamp,
-            suspectName: suspect.name,
-            riskLevel: suspect.riskLevel,
-            x: Math.random() * 800 + 100,
-            y: Math.random() * 600 + 100,
-            connections: 1
+      caseData.suspects.forEach((suspect) => {
+        if (suspect.coordinates) {
+          networkData.locations.nodes.push({
+            id: `loc-${suspect.id}`,
+            name: suspect.coordinates.city,
+            label: `${suspect.name} - ${suspect.coordinates.city}`,
+            type: 'suspect_location',
+            category: 'location',
+            riskLevel: suspect.riskLevel?.toLowerCase() || 'high',
+            x: Math.random() * 600 + 100,
+            y: Math.random() * 400 + 100,
+            connections: 0,
+            lat: suspect.coordinates.lat,
+            lng: suspect.coordinates.lng,
+            city: suspect.coordinates.city,
+            country: suspect.coordinates.country,
+            suspect: suspect.name
           });
         }
       });
     }
-    
-    // Add victim locations
+
     if (caseData.victims) {
-      caseData.victims.forEach((victim, index) => {
-        // Use default coordinates for victims (can be enhanced with real data)
-        const coords = getVictimCoordinates(victim.location);
-        locationNodes.push({
-          id: `victim-loc-${victim.id}`,
-          name: `${victim.name} Location`,
-          label: victim.location || 'Unknown Location',
-          type: 'victim-location', 
-          category: 'victim',
-          latitude: coords.lat,
-          longitude: coords.lng,
-          address: victim.location,
-          victimName: victim.name,
-          impactType: victim.impactType,
-          financialLoss: victim.financialLoss,
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 1
-        });
-      });
-    }
-    
-    // Add geographic data locations to supplement
-    if (hasData) {
-      const geoData = getGeographicData();
-      
-      // Add additional suspect locations from geographic data
-      geoData.suspectLocations.forEach((location, index) => {
-        if (!locationNodes.find(node => 
-          Math.abs(node.latitude - location.lat) < 0.001 && 
-          Math.abs(node.longitude - location.lng) < 0.001
-        )) {
-          locationNodes.push({
-            id: `geo-suspect-loc-${index}`,
-            label: location.address || 'Suspect Area',
-            type: 'suspect-location',
-            category: 'suspect',
-            latitude: location.lat,
-            longitude: location.lng,
-            address: location.address,
-            suspectId: location.suspectId,
-            confidence: location.confidence,
-            riskLevel: 'HIGH',
-            x: Math.random() * 800 + 100,
-            y: Math.random() * 600 + 100,
-            connections: 1
+      caseData.victims.forEach((victim) => {
+        if (victim.coordinates) {
+          networkData.locations.nodes.push({
+            id: `loc-${victim.id}`,
+            name: victim.coordinates.city,
+            label: `${victim.name} - ${victim.coordinates.city}`,
+            type: 'victim_location',
+            category: 'location',
+            riskLevel: 'medium',
+            x: Math.random() * 600 + 100,
+            y: Math.random() * 400 + 100,
+            connections: 0,
+            lat: victim.coordinates.lat,
+            lng: victim.coordinates.lng,
+            city: victim.coordinates.city,
+            country: victim.coordinates.country,
+            organization: victim.name
           });
         }
       });
-      
-      // Add crime locations
-      geoData.crimeLocations.forEach((location, index) => {
-        locationNodes.push({
-          id: `crime-loc-${index}`,
-          label: location.address || 'Crime Scene',
-          type: 'crime-location',
-          category: 'crime',
-          latitude: location.lat,
-          longitude: location.lng,
-          address: location.address,
-          criminalActivity: location.type,
-          financialImpact: location.financialImpact,
-          riskLevel: 'CRITICAL',
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 1
+    }
+
+    // TRANSACTIONS NETWORK - Process cryptocurrency data
+    if (caseData.evidence) {
+      const cryptoEvidence = caseData.evidence.find(e => e.category === 'Cryptocurrency Transactions');
+      if (cryptoEvidence?.cryptoAnalysis?.primaryWallets) {
+        cryptoEvidence.cryptoAnalysis.primaryWallets.forEach((wallet, index) => {
+          networkData.transactions.nodes.push({
+            id: `wallet-${index}`,
+            name: `${wallet.currency} Wallet`,
+            label: `${wallet.balance} ${wallet.currency}`,
+            type: 'cryptocurrency',
+            category: 'financial',
+            riskLevel: 'high',
+            x: Math.random() * 600 + 100,
+            y: Math.random() * 400 + 100,
+            connections: 0,
+            address: wallet.address.substring(0, 10) + '...',
+            balance: wallet.balance,
+            currency: wallet.currency,
+            linkedSuspect: wallet.linkedSuspect
+          });
         });
-      });
-      
-      // Add infrastructure locations
-      geoData.infrastructureLocations.forEach((location, index) => {
-        locationNodes.push({
-          id: `infra-loc-${index}`,
-          label: location.description || 'Infrastructure',
-          type: 'infrastructure-location',
-          category: 'infrastructure',
-          latitude: location.lat,
-          longitude: location.lng,
-          address: location.description,
-          status: location.status,
-          riskLevel: 'MEDIUM',
-          x: Math.random() * 800 + 100,
-          y: Math.random() * 600 + 100,
-          connections: 1
+      }
+
+      // Add transaction flow nodes
+      if (cryptoEvidence?.cryptoAnalysis?.transactionFlow) {
+        cryptoEvidence.cryptoAnalysis.transactionFlow.forEach((flow, index) => {
+          networkData.transactions.nodes.push({
+            id: `flow-${index}`,
+            name: flow.stage,
+            label: `$${(flow.amount / 1000000).toFixed(1)}M`,
+            type: 'transaction_flow',
+            category: 'financial',
+            riskLevel: 'medium',
+            x: Math.random() * 600 + 100,
+            y: Math.random() * 400 + 100,
+            connections: 0,
+            method: flow.method,
+            amount: flow.amount,
+            timeframe: flow.timeframe
+          });
+        });
+      }
+    }
+
+    // Create connections based on networkTopology if available
+    const contactConnections = [];
+    if (caseData.networkTopology?.edges) {
+      caseData.networkTopology.edges.forEach((edge) => {
+        contactConnections.push({
+          from: edge.from,
+          to: edge.to,
+          type: edge.type,
+          strength: edge.strength === 'strong' ? 9 : edge.strength === 'medium' ? 6 : 4,
+          label: edge.type.replace('_', ' ').toUpperCase(),
+          frequency: edge.frequency
         });
       });
     }
-    
-    return locationNodes;
-  };
 
-  // Original helper functions for backward compatibility
-  const getLocationNodes = () => {
-    if (!hasData || !caseData) return [];
+    // Create location connections (geographic relationships)
+    const locationConnections = [];
+    const locationNodes = networkData.locations.nodes;
+    for (let i = 0; i < locationNodes.length; i++) {
+      for (let j = i + 1; j < locationNodes.length; j++) {
+        if (locationNodes[i].country === locationNodes[j].country) {
+          locationConnections.push({
+            from: locationNodes[i].id,
+            to: locationNodes[j].id,
+            type: 'geographic_proximity',
+            strength: 6,
+            label: 'Same Country'
+          });
+        }
+      }
+    }
+
+    // Create transaction connections
+    const transactionConnections = [];
+    const walletNodes = networkData.transactions.nodes.filter(n => n.type === 'cryptocurrency');
+    const flowNodes = networkData.transactions.nodes.filter(n => n.type === 'transaction_flow');
     
-    const geoData = getGeographicData();
-    const locationNodes = [];
-    
-    // Add suspect locations
-    geoData.suspectLocations.forEach((location, index) => {
-      locationNodes.push({
-        id: `suspect-loc-${index}`,
-        label: location.address || 'Unknown Location',
-        type: 'suspect-location',
-        category: 'location',
-        lat: location.lat,
-        lng: location.lng,
-        x: 100 + (location.lng + 180) * 3, // Convert to screen coordinates
-        y: 100 + (90 - location.lat) * 3,
-        suspectId: location.suspectId,
-        confidence: location.confidence,
-        riskLevel: 'HIGH',
-        details: location
-      });
-    });
-    
-    // Add crime locations
-    geoData.crimeLocations.forEach((location, index) => {
-      locationNodes.push({
-        id: `crime-loc-${index}`,
-        label: location.address || 'Crime Scene',
-        type: 'crime-location',
-        category: 'location',
-        lat: location.lat,
-        lng: location.lng,
-        x: 100 + (location.lng + 180) * 3,
-        y: 100 + (90 - location.lat) * 3,
-        criminalActivity: location.type,
-        financialImpact: location.financialImpact,
-        riskLevel: 'CRITICAL',
-        details: location
-      });
-    });
-    
-    // Add infrastructure locations
-    geoData.infrastructureLocations.forEach((location, index) => {
-      locationNodes.push({
-        id: `infra-loc-${index}`,
-        label: location.description || 'Infrastructure',
-        type: 'infrastructure-location',
-        category: 'location',
-        lat: location.lat,
-        lng: location.lng,
-        x: 100 + (location.lng + 180) * 3,
-        y: 100 + (90 - location.lat) * 3,
-        status: location.status,
-        riskLevel: 'MEDIUM',
-        details: location
-      });
-    });
-    
-    return locationNodes;
-  };
-  
-  const getLocationConnections = () => {
-    if (!hasData || !caseData) return [];
-    
-    const connections = [];
-    const locationNodes = getLocationNodes();
-    
-    // Connect suspect locations to crime locations if they're related
-    locationNodes.forEach(fromNode => {
-      if (fromNode.type === 'suspect-location') {
-        locationNodes.forEach(toNode => {
-          if (toNode.type === 'crime-location' && fromNode.suspectId) {
-            // Check if this suspect is related to this crime
-            const suspectInEvidence = toNode.details.evidenceIds?.some(evidenceId => 
-              caseData.evidence?.some(evidence => 
-                evidence.id === evidenceId && evidence.description?.includes(fromNode.suspectId)
-              )
-            );
-            
-            if (suspectInEvidence) {
-              connections.push({
-                id: `${fromNode.id}-${toNode.id}`,
-                from: fromNode.id,
-                to: toNode.id,
-                type: 'suspect-crime-link',
-                strength: 8,
-                label: 'Suspected involvement'
-              });
-            }
-          }
+    walletNodes.forEach((wallet, index) => {
+      if (flowNodes[index]) {
+        transactionConnections.push({
+          from: wallet.id,
+          to: flowNodes[index].id,
+          type: 'fund_transfer',
+          strength: 8,
+          label: 'Money Flow'
         });
       }
     });
-    
-    return connections;
-  };
 
-  // Enhanced file type detection for forensic analysis
-  const getFileType = (filename) => {
-    if (!filename) return 'unknown';
-    
-    const name = filename.toLowerCase();
-    const ext = name.split('.').pop();
-    
-    // Check file content based on name patterns
-    if (name.includes('contact') || name.includes('phone') || name.includes('call') || name.includes('sms')) {
-      return 'contacts';
-    }
-    if (name.includes('location') || name.includes('gps') || name.includes('coordinate') || name.includes('position')) {
-      return 'location';
-    }
-    if (name.includes('transaction') || name.includes('financial') || name.includes('payment') || name.includes('bank') || name.includes('wallet')) {
-      return 'financial';
-    }
-    if (name.includes('network') || name.includes('traffic') || name.includes('communication')) {
-      return 'communications';
-    }
-    
-    // Check by file extension
-    const extensionTypes = {
-      // Network/Communication files
-      'pcap': 'communications', 'pcapng': 'communications', 'cap': 'communications',
-      'har': 'communications', 'log': 'communications',
-      
-      // Database files (likely to contain contacts/transactions)
-      'db': 'contacts', 'sqlite': 'contacts', 'sql': 'contacts',
-      
-      // Data files
-      'json': 'data', 'xml': 'data', 'csv': 'data',
-      'txt': 'data', 'tsv': 'data',
-      
-      // Mobile forensic files
-      'tar': 'mobile', 'ufdr': 'mobile', 'ufd': 'mobile',
-      
-      // Location files
-      'kml': 'location', 'gpx': 'location', 'geo': 'location'
+    // Assign connections
+    networkData.contacts.connections = contactConnections;
+    networkData.locations.connections = locationConnections;
+    networkData.transactions.connections = transactionConnections;
+
+    // Update connection counts
+    const updateConnectionCounts = (nodes, connections) => {
+      connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+        if (fromNode) fromNode.connections = (fromNode.connections || 0) + 1;
+        if (toNode) toNode.connections = (toNode.connections || 0) + 1;
+      });
     };
-    
-    return extensionTypes[ext] || 'data';
+
+    updateConnectionCounts(networkData.contacts.nodes, contactConnections);
+    updateConnectionCounts(networkData.locations.nodes, locationConnections);
+    updateConnectionCounts(networkData.transactions.nodes, transactionConnections);
+
+    const analyticsData = {
+      totalEntities: networkData.contacts.nodes.length + networkData.locations.nodes.length + networkData.transactions.nodes.length,
+      totalConnections: contactConnections.length + locationConnections.length + transactionConnections.length,
+      riskDistribution: {
+        extreme: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'extreme').length,
+        critical: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'critical').length,
+        high: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'high').length,
+        medium: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'medium').length,
+        low: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes].filter(n => n.riskLevel === 'low').length
+      },
+      connectionTypes: {
+        data_supply: contactConnections.filter(c => c.type === 'data_supply').length,
+        payment_processing: contactConnections.filter(c => c.type === 'payment_processing').length,
+        tech_transfer: contactConnections.filter(c => c.type === 'tech_transfer').length,
+        geographic_proximity: locationConnections.filter(c => c.type === 'geographic_proximity').length,
+        fund_transfer: transactionConnections.filter(c => c.type === 'fund_transfer').length
+      },
+      timelineData: [],
+      hotspots: [...networkData.contacts.nodes, ...networkData.locations.nodes, ...networkData.transactions.nodes]
+        .sort((a, b) => (b.connections || 0) - (a.connections || 0))
+        .slice(0, 5)
+        .map(node => ({ node, connections: node.connections || 0 }))
+    };
+
+    console.log('✅ Generated APT network from case data:', {
+      contacts: { nodes: networkData.contacts.nodes.length, connections: networkData.contacts.connections.length },
+      locations: { nodes: networkData.locations.nodes.length, connections: networkData.locations.connections.length },
+      transactions: { nodes: networkData.transactions.nodes.length, connections: networkData.transactions.connections.length }
+    });
+
+    return { networkData, analyticsData };
   };
-  
-  // Get processed files from selected files
-  const processedFiles = getSelectedFileObjects();
-  const hasProcessedData = processedFiles.length > 0 || hasData;
-  const availableDataTypes = processedFiles.map(file => {
-    const filename = file.originalName || file.filename || '';
-    return getFileType(filename);
-  }).filter(Boolean);
 
-  // TODO: Load network data from API
-  // useEffect(() => {
-  //   const loadNetworkData = async () => {
-  //     try {
-  //       const response = await fetch(`/api/network-analysis/${analysisMode}`);
-  //       const data = await response.json();
-  //       setNetworkData(prev => ({ ...prev, [analysisMode]: data }));
-  //     } catch (error) {
-  //       console.error('Failed to load network data:', error);
-  //     }
-  //   };
-  //   loadNetworkData();
-  // }, [analysisMode]);
+  // PLACEHOLDER: Generate demo network function  
+  const generateDemoNetwork = () => {
+    console.log('🎭 Generating demo network with guaranteed connections');
+    
+    const demoNetworkData = {
+      contacts: { nodes: [], connections: [] },
+      locations: { nodes: [], connections: [] },
+      transactions: { nodes: [], connections: [] }
+    };
 
+    // Demo contact nodes
+    const demoContacts = [
+      { id: 'demo-suspect-1', name: 'Alex Morrison', label: 'Alex Morrison', type: 'suspect', category: 'suspect', riskLevel: 'critical', x: 200, y: 200, connections: 0 },
+      { id: 'demo-suspect-2', name: 'Sarah Chen', label: 'Sarah Chen', type: 'suspect', category: 'suspect', riskLevel: 'high', x: 400, y: 180, connections: 0 },
+      { id: 'demo-victim-1', name: 'TechCorp Inc', label: 'TechCorp Inc', type: 'victim', category: 'victim', riskLevel: 'low', x: 300, y: 350, connections: 0 }
+    ];
+
+    // Demo financial nodes
+    const demoFinancial = [
+      { id: 'demo-crypto-1', name: 'Bitcoin Wallet', label: '2.5 BTC', type: 'cryptocurrency', category: 'financial', riskLevel: 'critical', x: 250, y: 150, connections: 0 },
+      { id: 'demo-account-1', name: 'Bank Account', label: '$45,000', type: 'bank_account', category: 'financial', riskLevel: 'high', x: 450, y: 200, connections: 0 }
+    ];
+
+    // Demo location nodes
+    const demoLocations = [
+      { id: 'demo-location-1', name: 'Downtown Office', label: 'Downtown Office', type: 'crime-location', category: 'location', riskLevel: 'high', x: 300, y: 100, connections: 0 },
+      { id: 'demo-location-2', name: 'Residential Area', label: 'Residential Area', type: 'suspect-location', category: 'location', riskLevel: 'medium', x: 180, y: 400, connections: 0 }
+    ];
+
+    // Add nodes to respective categories
+    demoNetworkData.contacts.nodes = demoContacts;
+    demoNetworkData.transactions.nodes = demoFinancial;
+    demoNetworkData.locations.nodes = demoLocations;
+
+    // Demo connections
+    const demoConnections = [
+      { from: 'demo-suspect-1', to: 'demo-suspect-2', type: 'collaboration', strength: 9, label: 'Criminal Partnership' },
+      { from: 'demo-suspect-1', to: 'demo-victim-1', type: 'targeting', strength: 10, label: 'Primary Target' }
+    ];
+
+    const demoFinancialConnections = [
+      { from: 'demo-suspect-1', to: 'demo-crypto-1', type: 'ownership', strength: 10, label: 'Wallet Owner' },
+      { from: 'demo-crypto-1', to: 'demo-account-1', type: 'transaction', strength: 8, label: '$15,000 Transfer' }
+    ];
+
+    const demoLocationConnections = [
+      { from: 'demo-suspect-1', to: 'demo-location-1', type: 'frequent_visits', strength: 8, label: 'Regular Presence' },
+      { from: 'demo-location-1', to: 'demo-victim-1', type: 'incident_location', strength: 10, label: 'Crime Scene' }
+    ];
+
+    // Add connections
+    demoNetworkData.contacts.connections = demoConnections;
+    demoNetworkData.transactions.connections = demoFinancialConnections;
+    demoNetworkData.locations.connections = demoLocationConnections;
+
+    const demoAnalytics = {
+      totalEntities: demoContacts.length + demoFinancial.length + demoLocations.length,
+      totalConnections: demoConnections.length + demoFinancialConnections.length + demoLocationConnections.length,
+      riskDistribution: { critical: 2, high: 2, medium: 1, low: 1 },
+      connectionTypes: { collaboration: 1, targeting: 1, ownership: 1, transaction: 1, frequent_visits: 1, incident_location: 1 },
+      timelineData: [],
+      hotspots: []
+    };
+
+    console.log('✅ Demo network generated');
+    return { networkData: demoNetworkData, analyticsData: demoAnalytics };
+  };
+
+  // Style definitions
   const containerStyle = {
     display: 'flex',
-    height: '100vh',
-    width: '100%',
-    backgroundColor: '#ffffff',
-    color: '#1e293b'
-  };
-  
-  const emptyStateStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    textAlign: 'center',
-    padding: '40px'
+    height: 'calc(100vh - 80px)',
+    backgroundColor: '#f8fafc',
+    fontFamily: 'system-ui, -apple-system, sans-serif'
   };
 
   const canvasContainerStyle = {
     flex: 1,
-    position: 'relative',
-    backgroundColor: '#f8fafc',
-    margin: '24px',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    overflow: 'hidden'
-  };
-
-  const sidebarStyle = {
-    width: '320px',
-    backgroundColor: '#f8fafc',
-    padding: '24px',
-    borderLeft: '1px solid #e2e8f0',
-    overflowY: 'auto'
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative'
   };
 
   const toolbarStyle = {
-    position: 'absolute',
-    top: '20px',
-    left: '20px',
+    padding: '16px',
+    backgroundColor: 'white',
+    borderBottom: '1px solid #e2e8f0',
     display: 'flex',
-    gap: '12px',
-    zIndex: 10
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '12px'
   };
 
-  const getNodeColor = (node) => {
-    // Risk-based coloring first
-    const riskColors = {
-      'critical': '#dc2626', // Red
-      'high': '#f59e0b',     // Orange
-      'medium': '#10b981',   // Green
-      'low': '#64748b'       // Gray
-    };
-    
-    if (node.riskLevel && riskColors[node.riskLevel]) {
-      return riskColors[node.riskLevel];
-    }
-    
-    // Category-based coloring
-    const categoryColors = {
-      'suspect': '#dc2626',      // Red
-      'victim': '#059669',       // Dark green
-      'witness': '#0ea5e9',      // Blue
-      'contact': '#3b82f6',      // Light blue
-      'person': '#6366f1',       // Indigo
-      'financial': '#f59e0b',    // Orange
-      'location': '#8b5cf6',     // Purple
-      'crime': '#ef4444',        // Bright red
-      'infrastructure': '#0891b2' // Cyan
-    };
-    
-    if (node.category && categoryColors[node.category]) {
-      return categoryColors[node.category];
-    }
-    
-    // Type-based fallback
-    const typeColors = {
-      'subject': '#ef4444',
-      'contact': '#3b82f6',
-      'unknown': '#f59e0b',
-      'international': '#8b5cf6',
-      'wallet': '#f59e0b',
-      'account': '#059669',
-      'exchange': '#8b5cf6'
-    };
-    
-    return typeColors[node.type] || '#6b7280';
+  const sidebarStyle = {
+    width: '350px',
+    backgroundColor: 'white',
+    borderLeft: '1px solid #e2e8f0',
+    display: 'flex',
+    flexDirection: 'column'
   };
 
-  const getNodeSize = (node) => {
-    // Base size
-    let size = 15;
-    
-    // Risk-based sizing
-    const riskMultipliers = {
-      'critical': 2.0,
-      'high': 1.5,
-      'medium': 1.2,
-      'low': 1.0
-    };
-    
-    if (node.riskLevel && riskMultipliers[node.riskLevel]) {
-      size *= riskMultipliers[node.riskLevel];
-    }
-    
-    // Connection-based sizing
-    const connections = node.connections || 0;
-    size += Math.min(connections * 2, 15); // Max additional 15px
-    
-    return Math.max(size, 12); // Minimum size of 12px
+  const emptyStateStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    textAlign: 'center',
+    padding: '40px'
   };
 
-  const getNodeStrokeColor = (node) => {
-    // Enhanced stroke colors for better visibility
-    if (node.riskLevel === 'critical') return '#7f1d1d'; // Dark red
-    if (node.riskLevel === 'high') return '#b91c1c'; // Red
-    if (node.riskLevel === 'medium') return '#047857'; // Dark green
-    if (node.riskLevel === 'low') return '#475569'; // Dark gray
+  // Location map rendering function
+  const renderLocationMap = () => {
+    const locationNodes = networkData.locations?.nodes || [];
     
-    // Category-based stroke colors
-    if (node.category === 'suspect') return '#7f1d1d'; // Dark red
-    if (node.category === 'victim') return '#047857'; // Dark green
-    if (node.category === 'witness') return '#0c4a6e'; // Dark blue
-    if (node.category === 'financial') return '#b45309'; // Dark orange
-    
-    return '#374151'; // Default dark gray
-  };
-
-  const getConnectionColor = (connection) => {
-    // Risk-based connection colors
-    if (connection.riskLevel === 'critical') return '#dc2626';
-    if (connection.riskLevel === 'high') return '#f59e0b';
-    
-    // Type-based colors
-    const colors = {
-      'communication': '#10b981',
-      'relationship': '#3b82f6', 
-      'suspect-relationship': '#ef4444',
-      'business': '#0ea5e9',
-      'family': '#059669',
-      'movement': '#8b5cf6',
-      'travel': '#6366f1',
-      'crime-scene': '#dc2626',
-      'transfer': '#f59e0b',
-      'payment': '#10b981',
-      'suspicious-activity': '#ef4444',
-      'calls': '#10b981',
-      'messages': '#3b82f6',
-      'encrypted': '#ef4444',
-      'financial': '#f59e0b'
-    };
-    return colors[connection.type] || '#6b7280';
-  };
-
-  const getLocationIcon = (node) => {
-    const getIconSymbol = (type, category) => {
-      switch (type) {
-        case 'suspect-location': return '👤';
-        case 'victim-location': return '👥';
-        case 'crime-location': return '⚠️';  
-        case 'infrastructure-location': return '🏢';
-        default: 
-          // Fallback to category-based icons
-          switch (category) {
-            case 'suspect': return '👤';
-            case 'victim': return '👥';
-            case 'crime': return '⚠️';
-            case 'infrastructure': return '🏢';
-            default: return '📍';
-          }
-      }
-    };
-
-    const getIconColor = (type, category, riskLevel) => {
-      switch (type) {
-        case 'suspect-location': return '#dc2626'; // Red for suspects
-        case 'victim-location': return '#059669'; // Green for victims
-        case 'crime-location': return '#f59e0b'; // Yellow/orange for crime scenes
-        case 'infrastructure-location': return '#0ea5e9'; // Blue for infrastructure
-        default: 
-          // Fallback to category or risk-based colors
-          switch (category) {
-            case 'suspect': return '#dc2626';
-            case 'victim': return '#059669';
-            case 'crime': return '#f59e0b';
-            case 'infrastructure': return '#0ea5e9';
-            default: 
-              // Risk-based coloring as final fallback
-              switch (riskLevel) {
-                case 'HIGH': case 'CRITICAL': return '#dc2626';
-                case 'MEDIUM': return '#f59e0b';
-                case 'LOW': return '#059669';
-                default: return '#64748b';
-              }
-          }
-      }
-    };
-
-    return createCustomIcon(
-      getIconColor(node.type, node.category, node.riskLevel), 
-      getIconSymbol(node.type, node.category)
-    );
-  };
-
-  const renderNetworkGraph = () => {
-    const data = networkData[analysisMode];
-    
-    console.log('🌐 Rendering network graph for mode:', analysisMode);
-    console.log('📊 Network data:', data);
-    console.log('📋 Nodes:', data?.nodes?.length || 0);
-    console.log('🔗 Connections:', data?.connections?.length || 0);
-    
-    // Show loading state during analysis
-    if (isAnalyzing) {
+    if (locationNodes.length === 0) {
       return (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100%', 
-          color: '#0ea5e9',
-          padding: '20px',
-          textAlign: 'center',
-          backgroundColor: '#f8fafc'
-        }}>
-          <div style={{ 
-            fontSize: '48px', 
-            marginBottom: '20px',
-            animation: 'pulse 2s infinite'
-          }}>🔄</div>
-          <div style={{ 
-            fontSize: '18px', 
-            marginBottom: '12px',
-            fontWeight: '600'
-          }}>Analyzing Network Data</div>
-          <div style={{ 
-            fontSize: '14px',
-            marginBottom: '16px',
-            color: '#64748b'
-          }}>
-            Processing {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''} for {analysisMode} connections...
-          </div>
-          <div style={{
-            width: '200px',
-            height: '4px',
-            backgroundColor: '#e2e8f0',
-            borderRadius: '2px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#0ea5e9',
-              borderRadius: '2px',
-              animation: 'loading-bar 2s infinite'
-            }}></div>
-          </div>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗺️</div>
+          <h3>No Location Data</h3>
+          <p>No geographic locations available for mapping</p>
         </div>
       );
     }
-    
-    // Safety check - ensure data exists and has required properties
-    if (!data || !data.nodes || data.nodes.length === 0) {
-      console.log('❌ No network data available for analysis mode:', analysisMode);
-      
-      const emptyStateConfig = {
-        contacts: {
-          icon: '👥',
-          title: 'No Contact Data Available',
-          description: 'No contacts, phone calls, or communication records found in the selected files.',
-          suggestion: 'Try selecting files that contain contact information, call logs, or messaging data.'
-        },
-        locations: {
-          icon: '📍',
-          title: 'No Location Data Available', 
-          description: 'No GPS coordinates, location records, or geographic data found in the selected files.',
-          suggestion: 'Try selecting files that contain GPS logs, location history, or geographic metadata.'
-        },
-        transactions: {
-          icon: '💰',
-          title: 'No Financial Data Available',
-          description: 'No financial transactions, bank records, or payment data found in the selected files.',
-          suggestion: 'Try selecting files that contain financial records, transaction logs, or payment history.'
-        }
-      };
-      
-      const config = emptyStateConfig[analysisMode] || {
-        icon: '🔍',
-        title: 'No Data Available',
-        description: 'No network data found in the selected files.',
-        suggestion: 'Select different files to analyze network connections.'
-      };
-      
-      return (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100%', 
-          color: '#64748b',
-          padding: '40px',
-          textAlign: 'center',
-          maxWidth: '500px',
-          margin: '0 auto'
-        }}>
-          <div style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.7 }}>{config.icon}</div>
-          <div style={{ fontSize: '20px', marginBottom: '12px', fontWeight: '600', color: '#1e293b' }}>
-            {config.title}
-          </div>
-          <div style={{ fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
-            {config.description}
-          </div>
-          <div style={{ 
-            fontSize: '13px', 
-            padding: '12px 16px',
-            backgroundColor: '#f1f5f9',
-            border: '1px solid #e2e8f0',
-            borderRadius: '8px',
-            color: '#475569',
-            maxWidth: '400px'
-          }}>
-            💡 {config.suggestion}
-          </div>
-        </div>
-      );
-    }
-    
-    console.log('✅ Rendering', data.nodes.length, 'nodes and', data.connections?.length || 0, 'connections');
-    
-    // For locations mode, render a map-like view
-    if (analysisMode === 'locations') {
-      return renderLocationMap(data);
-    }
-    
-    return (
-      <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
-        {/* Render connections */}
-        {data.connections.map((connection, index) => {
-          const fromNode = data.nodes.find(n => n.id === connection.from);
-          const toNode = data.nodes.find(n => n.id === connection.to);
-          
-          // Skip rendering if either node is not found
-          if (!fromNode || !toNode) {
-            return null;
-          }
-          
-          return (
-            <g key={index}>
-              <line
-                x1={fromNode.x}
-                y1={fromNode.y}
-                x2={toNode.x}
-                y2={toNode.y}
-                stroke={getConnectionColor(connection)}
-                strokeWidth={Math.max(2, Math.min(connection.strength / 2, 6))}
-                strokeOpacity={0.7}
-                style={{
-                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
-                }}
-              />
-              {/* Connection label */}
-              <text
-                x={(fromNode.x + toNode.x) / 2}
-                y={(fromNode.y + toNode.y) / 2 - 5}
-                fill="#1e293b"
-                fontSize="10"
-                fontWeight="500"
-                textAnchor="middle"
-                style={{ 
-                  textShadow: '0 1px 3px rgba(255,255,255,0.9)',
-                  pointerEvents: 'none'
-                }}
-              >
-                {connection.label || connection.type || `${connection.strength} contacts`}
-              </text>
-            </g>
-          );
-        })}
-        
-        {/* Render nodes */}
-        {data.nodes.map((node, index) => {
-          // Skip rendering if node doesn't have position data
-          if (!node || typeof node.x === 'undefined' || typeof node.y === 'undefined') {
-            return null;
-          }
-          
-          return (
-            <g key={index}>
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={getNodeSize(node)}
-                fill={getNodeColor(node)}
-                stroke={selectedNode?.id === node.id ? '#ffffff' : getNodeStrokeColor(node)}
-                strokeWidth={selectedNode?.id === node.id ? "4" : "2"}
-                style={{ 
-                  cursor: 'pointer', 
-                  filter: selectedNode?.id === node.id ? 
-                    'drop-shadow(0 0 12px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.6))' : 
-                    'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                  transition: 'all 0.2s ease'
-                }}
-                onClick={() => setSelectedNode(node)}
-              />
-              <text
-                x={node.x}
-                y={node.y + 35}
-                fill="#1e293b"
-                fontSize="12"
-                fontWeight="600"
-                textAnchor="middle"
-                style={{ 
-                  cursor: 'pointer', 
-                  userSelect: 'none',
-                  textShadow: '0 1px 2px rgba(255,255,255,0.8)'
-                }}
-                onClick={() => setSelectedNode(node)}
-              >
-                {(node.label || node.name || 'Unknown').length > 15 ? (node.label || node.name || 'Unknown').substring(0, 15) + '...' : (node.label || node.name || 'Unknown')}
-              </text>
-          </g>
-        );
-        })}
-      </svg>
-    );
-  };
 
-  const renderLocationMap = (data) => {
-    // Convert geographic data to lat/lng coordinates
-    const locations = data.nodes.map(node => {
-      let lat = 40.7128; // Default to NYC
-      let lng = -74.0060;
-      
-      // Extract coordinates from node data
-      if (node.latitude && node.longitude) {
-        lat = parseFloat(node.latitude);
-        lng = parseFloat(node.longitude);
-      } else if (node.coordinates) {
-        const coords = node.coordinates.split(',');
-        if (coords.length === 2) {
-          lat = parseFloat(coords[0].trim());
-          lng = parseFloat(coords[1].trim());
-        }
-      } else if (node.location && typeof node.location === 'object') {
-        lat = node.location.lat || node.location.latitude || lat;
-        lng = node.location.lng || node.location.longitude || lng;
+    // Calculate center point from all locations
+    const avgLat = locationNodes.reduce((sum, node) => sum + (node.lat || 0), 0) / locationNodes.length;
+    const avgLng = locationNodes.reduce((sum, node) => sum + (node.lng || 0), 0) / locationNodes.length;
+    const centerPosition = [avgLat || 40, avgLng || 0];
+
+    const getMarkerColor = (riskLevel) => {
+      switch (riskLevel) {
+        case 'extreme': return '#dc2626';
+        case 'critical': return '#dc2626';
+        case 'high': return '#f59e0b';
+        case 'medium': return '#10b981';
+        case 'low': return '#6b7280';
+        default: return '#3b82f6';
       }
-      
-      return {
-        ...node,
-        lat,
-        lng,
-        icon: getLocationIcon(node)
-      };
-    });
+    };
 
-    // Get center point for map
-    const centerLat = locations.length > 0 
-      ? locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length 
-      : 40.7128;
-    const centerLng = locations.length > 0 
-      ? locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length 
-      : -74.0060;
-
-    // Create polylines for connections
-    const connectionLines = data.connections
-      .map(connection => {
-        const fromNode = locations.find(n => n.id === connection.from);
-        const toNode = locations.find(n => n.id === connection.to);
-        
-        if (fromNode && toNode) {
-          return {
-            positions: [[fromNode.lat, fromNode.lng], [toNode.lat, toNode.lng]],
-            color: getConnectionColor(connection),
-            weight: Math.max(2, connection.strength / 10),
-            opacity: 0.7
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
+    const getMarkerIcon = (type) => {
+      switch (type) {
+        case 'suspect_location': return '🔴';
+        case 'victim_location': return '🏢';
+        case 'crime_scene': return '⚠️';
+        case 'financial_center': return '💰';
+        default: return '📍';
+      }
+    };
 
     return (
-      <div style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
-        height: '100%',
-        zIndex: 1
-      }}>
+      <div style={{ height: '100%', width: '100%', position: 'relative' }}>
         <MapContainer
-          center={[centerLat, centerLng]}
-          zoom={10}
+          center={centerPosition}
+          zoom={3}
           style={{ height: '100%', width: '100%' }}
-          zoomControl={true}
-          scrollWheelZoom={true}
+          key={`map-${locationNodes.length}`}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
-          {/* Render connection lines */}
-          {connectionLines.map((line, index) => (
-            <Polyline
-              key={index}
-              positions={line.positions}
-              color={line.color}
-              weight={line.weight}
-              opacity={line.opacity}
-            />
-          ))}
-          
           {/* Render location markers */}
-          {locations.map((location, index) => (
-            <Marker
-              key={index}
-              position={[location.lat, location.lng]}
-              icon={location.icon}
-            >
-              <Popup>
-                <div style={{ minWidth: '250px' }}>
-                  <h3 style={{ margin: '0 0 8px 0', color: '#1f2937' }}>
-                    {location.label || location.name || 'Unknown Location'}
-                  </h3>
-                  <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
-                    <strong>Type:</strong> {location.type || 'Unknown'}
-                  </p>
-                  <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
-                    <strong>Coordinates:</strong> {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-                  </p>
-                  {location.address && (
-                    <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
-                      <strong>Address:</strong> {location.address}
-                    </p>
-                  )}
-                  
-                  {/* Suspect-specific information */}
-                  {location.type === 'suspect-location' && (
-                    <>
-                      {location.suspectName && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#dc2626' }}>
-                          <strong>Suspect:</strong> {location.suspectName}
-                        </p>
-                      )}
-                      {location.riskLevel && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#dc2626' }}>
-                          <strong>Risk Level:</strong> {location.riskLevel}
-                        </p>
-                      )}
-                      {location.timestamp && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
-                          <strong>Last Seen:</strong> {new Date(location.timestamp).toLocaleString()}
-                        </p>
-                      )}
-                    </>
-                  )}
-                  
-                  {/* Victim-specific information */}
-                  {location.type === 'victim-location' && (
-                    <>
-                      {location.victimName && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#059669' }}>
-                          <strong>Victim:</strong> {location.victimName}
-                        </p>
-                      )}
-                      {location.impactType && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
-                          <strong>Impact Type:</strong> {location.impactType}
-                        </p>
-                      )}
-                      {location.financialLoss && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#dc2626' }}>
-                          <strong>Financial Loss:</strong> ${location.financialLoss.toLocaleString()}
-                        </p>
-                      )}
-                    </>
-                  )}
-                  
-                  {/* Crime location information */}
-                  {location.type === 'crime-location' && (
-                    <>
-                      {location.criminalActivity && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#f59e0b' }}>
-                          <strong>Activity:</strong> {location.criminalActivity}
-                        </p>
-                      )}
-                      {location.financialImpact && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#dc2626' }}>
-                          <strong>Financial Impact:</strong> ${location.financialImpact.toLocaleString()}
-                        </p>
-                      )}
-                    </>
-                  )}
-                  
-                  {/* Infrastructure information */}
-                  {location.type === 'infrastructure-location' && (
-                    <>
-                      {location.status && (
-                        <p style={{ margin: '4px 0', fontSize: '12px', color: '#0ea5e9' }}>
-                          <strong>Status:</strong> {location.status}
-                        </p>
-                      )}
-                    </>
-                  )}
-                  
-                  {location.confidence && (
-                    <p style={{ margin: '4px 0', fontSize: '12px', color: '#6b7280' }}>
-                      <strong>Confidence:</strong> {(location.confidence * 100).toFixed(1)}%
-                    </p>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          {locationNodes.map((node) => {
+            if (!node.lat || !node.lng) return null;
+            
+            const icon = createCustomIcon(getMarkerColor(node.riskLevel), getMarkerIcon(node.type));
+            
+            return (
+              <Marker
+                key={node.id}
+                position={[node.lat, node.lng]}
+                icon={icon}
+                eventHandlers={{
+                  click: () => setSelectedNode(node)
+                }}
+              >
+                <Popup>
+                  <div style={{ minWidth: '200px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>
+                      {node.name}
+                    </h4>
+                    <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                      <strong>Type:</strong> {node.type?.replace('_', ' ')}
+                    </div>
+                    <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                      <strong>Risk Level:</strong> 
+                      <span style={{ 
+                        color: getMarkerColor(node.riskLevel),
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase'
+                      }}>
+                        {' ' + node.riskLevel}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                      <strong>Location:</strong> {node.city}, {node.country}
+                    </div>
+                    {node.suspect && (
+                      <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                        <strong>Suspect:</strong> {node.suspect}
+                      </div>
+                    )}
+                    {node.organization && (
+                      <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                        <strong>Organization:</strong> {node.organization}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>
+                      Connections: {node.connections || 0}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
+
+          {/* Render connection lines between locations */}
+          {networkData.locations?.connections?.map((connection, index) => {
+            const fromNode = locationNodes.find(n => n.id === connection.from);
+            const toNode = locationNodes.find(n => n.id === connection.to);
+            
+            if (!fromNode?.lat || !fromNode?.lng || !toNode?.lat || !toNode?.lng) return null;
+            
+            const positions = [
+              [fromNode.lat, fromNode.lng],
+              [toNode.lat, toNode.lng]
+            ];
+            
+            return (
+              <Polyline
+                key={`connection-${index}`}
+                positions={positions}
+                color={connection.type === 'geographic_proximity' ? '#10b981' : '#f59e0b'}
+                weight={Math.max(2, (connection.strength || 5) / 2)}
+                opacity={0.7}
+                dashArray={connection.type === 'suspicious' ? '10, 10' : undefined}
+              >
+                <Popup>
+                  <div>
+                    <strong>{connection.label || connection.type}</strong>
+                    <br />
+                    Strength: {connection.strength}/10
+                  </div>
+                </Popup>
+              </Polyline>
+            );
+          })}
         </MapContainer>
 
         {/* Map Legend */}
         <div style={{
           position: 'absolute',
-          top: '20px',
-          right: '20px',
-          backgroundColor: 'rgba(248, 250, 252, 0.95)',
-          padding: '16px',
+          top: '10px',
+          right: '10px',
+          backgroundColor: 'white',
+          padding: '12px',
           borderRadius: '8px',
-          border: '1px solid #e2e8f0',
-          minWidth: '200px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          zIndex: 1000
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          fontSize: '12px'
         }}>
-          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#1e293b' }}>Location Types</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
-              <span style={{ fontSize: '16px' }}>👤</span>
-              <span>Suspect Locations</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
-              <span style={{ fontSize: '16px' }}>👥</span>
-              <span>Victim Locations</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
-              <span style={{ fontSize: '16px' }}>⚠️</span>
-              <span>Crime Scenes</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
-              <span style={{ fontSize: '16px' }}>🏢</span>
-              <span>Infrastructure</span>
-            </div>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Legend</h4>
+          <div style={{ marginBottom: '4px' }}>
+            <span style={{ color: '#dc2626', fontWeight: 'bold' }}>●</span> Critical/Extreme Risk
           </div>
-          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
-            <div style={{ fontSize: '11px', color: '#64748b' }}>
-              <div>🔴 High Risk</div>
-              <div>🟡 Medium Risk</div>
-              <div>🟢 Low Risk</div>
-            </div>
+          <div style={{ marginBottom: '4px' }}>
+            <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>●</span> High Risk
+          </div>
+          <div style={{ marginBottom: '4px' }}>
+            <span style={{ color: '#10b981', fontWeight: 'bold' }}>●</span> Medium Risk
+          </div>
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ color: '#6b7280', fontWeight: 'bold' }}>●</span> Low Risk
+          </div>
+          <div style={{ fontSize: '11px', color: '#64748b' }}>
+            Click markers for details
           </div>
         </div>
       </div>
     );
   };
 
+  // Improved layout algorithm to prevent node overlap
+  const calculateOptimalLayout = (nodes, connections) => {
+    const width = 800;
+    const height = 600;
+    const margin = 80;
+    
+    // Create a copy of nodes with positioned coordinates
+    const layoutNodes = nodes.map((node, index) => ({ ...node }));
+    
+    if (layoutNodes.length === 1) {
+      layoutNodes[0].x = width / 2;
+      layoutNodes[0].y = height / 2;
+      return layoutNodes;
+    }
+    
+    // Calculate circular layout as base positioning
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2 - margin;
+    
+    layoutNodes.forEach((node, index) => {
+      const angle = (2 * Math.PI * index) / layoutNodes.length;
+      node.x = centerX + radius * Math.cos(angle);
+      node.y = centerY + radius * Math.sin(angle);
+    });
+    
+    // Force-directed layout simulation to improve positioning
+    for (let iteration = 0; iteration < 50; iteration++) {
+      // Repulsive forces between nodes
+      for (let i = 0; i < layoutNodes.length; i++) {
+        for (let j = i + 1; j < layoutNodes.length; j++) {
+          const dx = layoutNodes[j].x - layoutNodes[i].x;
+          const dy = layoutNodes[j].y - layoutNodes[i].y;
+          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+          const minDistance = 120; // Minimum distance between nodes
+          
+          if (distance < minDistance) {
+            const force = (minDistance - distance) / distance * 0.5;
+            const forceX = dx * force;
+            const forceY = dy * force;
+            
+            layoutNodes[i].x -= forceX;
+            layoutNodes[i].y -= forceY;
+            layoutNodes[j].x += forceX;
+            layoutNodes[j].y += forceY;
+          }
+        }
+      }
+      
+      // Attractive forces for connected nodes
+      connections.forEach(conn => {
+        const fromNode = layoutNodes.find(n => n.id === conn.from);
+        const toNode = layoutNodes.find(n => n.id === conn.to);
+        
+        if (fromNode && toNode) {
+          const dx = toNode.x - fromNode.x;
+          const dy = toNode.y - fromNode.y;
+          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+          const idealDistance = 150;
+          
+          const force = (distance - idealDistance) / distance * 0.1;
+          const forceX = dx * force;
+          const forceY = dy * force;
+          
+          fromNode.x += forceX;
+          fromNode.y += forceY;
+          toNode.x -= forceX;
+          toNode.y -= forceY;
+        }
+      });
+      
+      // Keep nodes within bounds
+      layoutNodes.forEach(node => {
+        node.x = Math.max(margin, Math.min(width - margin, node.x));
+        node.y = Math.max(margin, Math.min(height - margin, node.y));
+      });
+    }
+    
+    return layoutNodes;
+  };
+
+  // Network rendering function
+  const renderNetworkGraph = () => {
+    const currentNetwork = networkData[analysisMode];
+    let nodes = currentNetwork?.nodes || [];
+    const connections = currentNetwork?.connections || [];
+
+    if (nodes.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
+          <h3>No Network Data</h3>
+          <p>No {analysisMode} data available for visualization</p>
+        </div>
+      );
+    }
+
+    // Apply optimal layout to prevent overlapping
+    nodes = calculateOptimalLayout(nodes, connections);
+
+    const getNodeColor = (node) => {
+      switch (node.riskLevel) {
+        case 'extreme': return '#991b1b';
+        case 'critical': return '#dc2626';
+        case 'high': return '#f59e0b';
+        case 'medium': return '#10b981';
+        case 'low': return '#6b7280';
+        default: return '#3b82f6';
+      }
+    };
+
+    const getNodeIcon = (node) => {
+      switch (node.type) {
+        case 'suspect': return '👤';
+        case 'victim': return '🎯';
+        case 'witness': return '👁️';
+        case 'cryptocurrency': return '₿';
+        case 'bank_account': return '🏦';
+        case 'location': return '📍';
+        default: return '●';
+      }
+    };
+
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 800 600" style={{ border: '1px solid #e2e8f0', background: '#fafafa' }}>
+        <defs>
+          {/* Arrow marker for directed connections */}
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+            refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+        </defs>
+        
+        {/* Render connections first (behind nodes) */}
+        {connections.map((conn, index) => {
+          const fromNode = nodes.find(n => n.id === conn.from);
+          const toNode = nodes.find(n => n.id === conn.to);
+          
+          if (!fromNode || !toNode) return null;
+
+          const strokeWidth = Math.max(2, (conn.strength || 5) / 2);
+          const opacity = Math.max(0.6, (conn.strength || 5) / 10);
+          
+          // Connection type colors
+          const getConnectionColor = (type) => {
+            switch (type) {
+              case 'data_supply': return '#3b82f6';
+              case 'payment_processing': return '#f59e0b';
+              case 'tech_transfer': return '#10b981';
+              case 'fund_transfer': return '#dc2626';
+              case 'geographic_proximity': return '#8b5cf6';
+              default: return '#64748b';
+            }
+          };
+
+          return (
+            <g key={`connection-${index}`}>
+              <line
+                x1={fromNode.x}
+                y1={fromNode.y}
+                x2={toNode.x}
+                y2={toNode.y}
+                stroke={getConnectionColor(conn.type)}
+                strokeWidth={strokeWidth}
+                opacity={opacity}
+                strokeDasharray={conn.type === 'suspicious' ? '8,4' : 'none'}
+                markerEnd="url(#arrowhead)"
+              />
+              {/* Connection label with background */}
+              {conn.label && (
+                <g>
+                  <rect
+                    x={(fromNode.x + toNode.x) / 2 - 20}
+                    y={(fromNode.y + toNode.y) / 2 - 10}
+                    width="40"
+                    height="16"
+                    fill="white"
+                    stroke="#e2e8f0"
+                    rx="8"
+                    opacity="0.9"
+                  />
+                  <text
+                    x={(fromNode.x + toNode.x) / 2}
+                    y={(fromNode.y + toNode.y) / 2}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="10"
+                    fill="#475569"
+                    fontWeight="500"
+                  >
+                    {conn.label}
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Render nodes */}
+        {nodes.map((node, index) => (
+          <g 
+            key={`node-${index}`}
+            onClick={() => setSelectedNode(node)}
+            style={{ cursor: 'pointer' }}
+            transform={`translate(${node.x}, ${node.y})`}
+          >
+            {/* Node circle */}
+            <circle
+              r={selectedNode?.id === node.id ? 25 : 20}
+              fill={getNodeColor(node)}
+              stroke={selectedNode?.id === node.id ? '#1e293b' : 'white'}
+              strokeWidth={selectedNode?.id === node.id ? 3 : 2}
+              className={isAnalyzing ? 'pulse-animation' : ''}
+            />
+            
+            {/* Node icon */}
+            <text
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize="16"
+              fill="white"
+            >
+              {getNodeIcon(node)}
+            </text>
+            
+            {/* Node label */}
+            <text
+              y={35}
+              textAnchor="middle"
+              fontSize="12"
+              fill="#1e293b"
+              fontWeight="500"
+            >
+              {node.label || node.name}
+            </text>
+            
+            {/* Connection count */}
+            <text
+              y={50}
+              textAnchor="middle"
+              fontSize="10"
+              fill="#64748b"
+            >
+              {node.connections || 0} connections
+            </text>
+          </g>
+        ))}
+      </svg>
+    );
+  };
+
+  // Node details panel
   const renderNodeDetails = () => {
     if (!selectedNode) {
       return (
-        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-          <p>Select a node to view details</p>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+          <div style={{ fontSize: '32px', marginBottom: '12px' }}>👆</div>
+          <p>Click on a node to view details</p>
         </div>
       );
     }
 
     return (
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-          <div style={{
-            width: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            backgroundColor: getNodeColor(selectedNode)
-          }}></div>
-          <h3 style={{ fontSize: '18px', fontWeight: '600' }}>{selectedNode.label || selectedNode.name || 'Unknown'}</h3>
+      <div style={{ padding: '20px' }}>
+        <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#1e293b' }}>
+          {selectedNode.name || selectedNode.label}
+        </h4>
+        
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>TYPE</div>
+          <div style={{ fontSize: '14px', textTransform: 'capitalize', color: '#1e293b' }}>
+            {selectedNode.type || 'Unknown'}
+          </div>
         </div>
 
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ color: '#64748b' }}>Type:</span>
-            <span style={{ textTransform: 'capitalize' }}>{selectedNode.type?.replace('-', ' ')}</span>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>RISK LEVEL</div>
+          <span style={{
+            backgroundColor: selectedNode.riskLevel === 'critical' ? '#dc2626' :
+                            selectedNode.riskLevel === 'high' ? '#f59e0b' :
+                            selectedNode.riskLevel === 'medium' ? '#10b981' : '#6b7280',
+            color: 'white',
+            padding: '2px 8px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            fontWeight: '600'
+          }}>
+            {selectedNode.riskLevel || 'Unknown'}
+          </span>
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>CONNECTIONS</div>
+          <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '600' }}>
+            {selectedNode.connections || 0}
           </div>
-          
-          {/* Location-specific details */}
-          {analysisMode === 'locations' && (
-            <>
-              {selectedNode.lat && selectedNode.lng && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#64748b' }}>Coordinates:</span>
-                  <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>
-                    {selectedNode.lat.toFixed(4)}, {selectedNode.lng.toFixed(4)}
-                  </span>
-                </div>
-              )}
-              
-              {selectedNode.confidence && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#64748b' }}>Confidence:</span>
-                  <span style={{
-                    backgroundColor: selectedNode.confidence === 'HIGH' ? '#10b981' : 
-                                  selectedNode.confidence === 'MEDIUM' ? '#f59e0b' : '#6b7280',
-                    color: '#1e293b',
-                    padding: '2px 8px',
-                    borderRadius: '8px',
-                    fontSize: '12px'
-                  }}>
-                    {selectedNode.confidence}
-                  </span>
-                </div>
-              )}
-              
-              {selectedNode.financialImpact && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#64748b' }}>Financial Impact:</span>
-                  <span style={{ color: '#ef4444', fontWeight: '600' }}>
-                    ${selectedNode.financialImpact.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              
-              {selectedNode.criminalActivity && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#64748b' }}>Activity:</span>
-                  <span>{selectedNode.criminalActivity}</span>
-                </div>
-              )}
-              
-              {selectedNode.status && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#64748b' }}>Status:</span>
-                  <span style={{
-                    backgroundColor: selectedNode.status === 'SECURED' ? '#10b981' : '#f59e0b',
-                    color: '#1e293b',
-                    padding: '2px 8px',
-                    borderRadius: '8px',
-                    fontSize: '12px'
-                  }}>
-                    {selectedNode.status}
-                  </span>
-                </div>
-              )}
-            </>
-          )}
-          
-          {/* Non-location details */}
-          {analysisMode !== 'locations' && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: '#64748b' }}>Connections:</span>
-              <span>{selectedNode.connections || 0}</span>
+        </div>
+
+        {/* Additional details based on node type and network */}
+        {selectedNode.age && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Age: {selectedNode.age}</div>
+          </div>
+        )}
+        
+        {selectedNode.nationality && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Nationality: {selectedNode.nationality}</div>
+          </div>
+        )}
+
+        {selectedNode.occupation && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Occupation: {selectedNode.occupation}</div>
+          </div>
+        )}
+
+        {selectedNode.alias && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Alias: {selectedNode.alias}</div>
+          </div>
+        )}
+
+        {selectedNode.role && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Role: {selectedNode.role}</div>
+          </div>
+        )}
+
+        {selectedNode.industry && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>Industry: {selectedNode.industry}</div>
+          </div>
+        )}
+
+        {selectedNode.financialLoss && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Financial Loss: ${(selectedNode.financialLoss / 1000000).toFixed(1)}M
             </div>
-          )}
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ color: '#64748b' }}>Risk Level:</span>
-            <span style={{
-              backgroundColor: selectedNode.riskLevel === 'CRITICAL' ? '#ef4444' : 
-                            selectedNode.riskLevel === 'HIGH' ? '#f59e0b' :
-                            selectedNode.riskLevel === 'MEDIUM' ? '#10b981' : '#6b7280',
-              color: '#1e293b',
-              padding: '2px 8px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              textTransform: 'uppercase'
-            }}>
-              {selectedNode.riskLevel || selectedNode.risk || 'UNKNOWN'}
-            </span>
           </div>
-        </div>
+        )}
 
-        {/* Connection Details */}
-        <div style={{ marginBottom: '24px' }}>
-          <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
-            {analysisMode === 'contacts' ? 'Communications' : 
-             analysisMode === 'locations' ? 'Location Links' : 'Financial Connections'} ({selectedNode.connections || 0})
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {networkData[analysisMode].connections
-              .filter(conn => conn.from === selectedNode.id || conn.to === selectedNode.id)
-              .map((conn, index) => {
-                const otherNodeId = conn.from === selectedNode.id ? conn.to : conn.from;
-                const otherNode = networkData[analysisMode].nodes.find(n => n.id === otherNodeId);
-                
-                return (
-                  <div key={index} style={{
-                    backgroundColor: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
-                          {otherNode?.label || otherNode?.name || 'Unknown Entity'}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>
-                          {conn.label || conn.type || 'Connected'}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                        <span style={{
-                          backgroundColor: getConnectionColor(conn),
-                          color: '#ffffff',
-                          padding: '3px 8px',
-                          borderRadius: '12px',
-                          fontSize: '10px',
-                          fontWeight: '500',
-                          textTransform: 'capitalize'
-                        }}>
-                          {conn.type?.replace('-', ' ') || 'Link'}
-                        </span>
-                        <span style={{ fontSize: '11px', color: '#64748b' }}>
-                          Strength: {conn.strength || 1}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            {networkData[analysisMode].connections
-              .filter(conn => conn.from === selectedNode.id || conn.to === selectedNode.id).length === 0 && (
-              <div style={{
-                backgroundColor: '#f8fafc',
-                padding: '16px',
-                borderRadius: '8px',
-                border: '1px dashed #e2e8f0',
-                textAlign: 'center',
-                color: '#64748b',
-                fontSize: '13px'
-              }}>
-                No connections found for this entity
-              </div>
-            )}
+        {selectedNode.employeeCount && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Employees: {selectedNode.employeeCount.toLocaleString()}
+            </div>
           </div>
-        </div>
+        )}
 
+        {selectedNode.city && selectedNode.country && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Location: {selectedNode.city}, {selectedNode.country}
+            </div>
+          </div>
+        )}
 
+        {selectedNode.currency && selectedNode.balance && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Balance: {selectedNode.balance} {selectedNode.currency}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.address && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Address: {selectedNode.address}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.linkedSuspect && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Linked to: {selectedNode.linkedSuspect}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.method && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Method: {selectedNode.method}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.amount && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#64748b' }}>
+              Amount: ${(selectedNode.amount / 1000000).toFixed(1)}M
+            </div>
+          </div>
+        )}
       </div>
     );
   };
 
-  // Show empty state if no processed data
-  if (!hasProcessedData) {
-    return (
-      <div style={emptyStateStyle}>
-        <div>
-          <div style={{ fontSize: '64px', marginBottom: '24px' }}>🌐</div>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>
-            Network Analysis Ready
-          </h2>
-          <p style={{ color: '#64748b', fontSize: '16px', marginBottom: '24px', maxWidth: '400px' }}>
-            {hasData ? 
-              'Case data loaded successfully. Network analysis is available with real forensic data.' :
-              'Upload and process UFDR files to generate network visualizations of contacts, locations, and transaction patterns.'
-            }
-          </p>
-          {hasData && (
-            <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-              <div style={{ fontSize: '14px', marginBottom: '8px' }}>Case: {caseData.caseName}</div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>
-                {statistics.totalSuspects} suspects, {statistics.networkComplexity} network elements
-              </div>
-            </div>
-          )}
-
-        </div>
-      </div>
-    );
-  }
+  // Check if we have processed data or network data loaded
+  const processedFiles = selectedFiles.filter(file => file && (file.processed || file.analysisComplete));
+  const hasProcessedData = processedFiles.length > 0 || hasData || networkData.contacts.nodes.length > 0;
 
   // Show file selection prompt if no files are selected
   if (!selectedCase) {
@@ -2012,7 +1454,6 @@ const NetworkAnalysis = () => {
 
   return (
     <div style={containerStyle}>
-
       {/* Main Canvas */}
       <div style={canvasContainerStyle}>
         {/* Toolbar */}
@@ -2023,273 +1464,118 @@ const NetworkAnalysis = () => {
             borderRadius: '8px', 
             padding: '4px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(8px)'
+            border: '1px solid #e2e8f0'
           }}>
-            {[
-              { id: 'contacts', label: '👥 Contacts', icon: '👥' },
-              { id: 'locations', label: '📍 Locations', icon: '📍' },
-              { id: 'transactions', label: '💰 Finance', icon: '💰' }
-            ].map(mode => (
+            {['contacts', 'locations', 'transactions'].map((mode) => (
               <button
-                key={mode.id}
+                key={mode}
+                onClick={() => setAnalysisMode(mode)}
                 style={{
-                  backgroundColor: analysisMode === mode.id ? '#0ea5e9' : 'transparent',
-                  color: analysisMode === mode.id ? '#ffffff' : '#1e293b',
+                  padding: '8px 16px',
                   border: 'none',
                   borderRadius: '6px',
-                  padding: '10px 16px',
-                  cursor: 'pointer',
                   fontSize: '14px',
-                  fontWeight: analysisMode === mode.id ? '600' : '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.2s ease',
-                  boxShadow: analysisMode === mode.id ? '0 2px 4px rgba(14, 165, 233, 0.3)' : 'none'
-                }}
-                onClick={() => setAnalysisMode(mode.id)}
-                onMouseEnter={(e) => {
-                  if (analysisMode !== mode.id) {
-                    e.target.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (analysisMode !== mode.id) {
-                    e.target.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                {mode.icon} {mode.label.split(' ')[1]}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ 
-            display: 'flex', 
-            backgroundColor: 'rgba(248, 250, 252, 0.95)', 
-            borderRadius: '8px', 
-            padding: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(8px)'
-          }}>
-            {[
-              { id: 'all', label: 'All Time' },
-              { id: '7d', label: '7 Days' },
-              { id: '30d', label: '30 Days' }
-            ].map(range => (
-              <button
-                key={range.id}
-                style={{
-                  backgroundColor: timeRange === range.id ? '#059669' : 'transparent',
-                  color: timeRange === range.id ? '#ffffff' : '#1e293b',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '8px 12px',
+                  fontWeight: '500',
                   cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: timeRange === range.id ? '600' : '500',
-                  transition: 'all 0.2s ease',
-                  boxShadow: timeRange === range.id ? '0 2px 4px rgba(5, 150, 105, 0.3)' : 'none'
-                }}
-                onClick={() => setTimeRange(range.id)}
-                onMouseEnter={(e) => {
-                  if (timeRange !== range.id) {
-                    e.target.style.backgroundColor = 'rgba(5, 150, 105, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (timeRange !== range.id) {
-                    e.target.style.backgroundColor = 'transparent';
-                  }
+                  backgroundColor: analysisMode === mode ? '#3b82f6' : 'transparent',
+                  color: analysisMode === mode ? 'white' : '#64748b',
+                  transition: 'all 0.2s ease'
                 }}
               >
-                {range.label}
+                {mode === 'contacts' ? '👥 Contacts' : 
+                 mode === 'locations' ? '📍 Locations' : '💰 Transactions'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Legend */}
-        <div style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          backgroundColor: 'rgba(248, 250, 252, 0.95)',
-          padding: '16px',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          backdropFilter: 'blur(8px)'
+        {/* Network Visualization Area */}
+        <div style={{ 
+          flex: 1, 
+          position: 'relative', 
+          backgroundColor: '#ffffff',
+          overflow: 'hidden'
         }}>
-          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#1e293b' }}>Risk Levels</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ 
-                width: '14px', 
-                height: '14px', 
-                borderRadius: '50%', 
-                backgroundColor: '#dc2626',
-                border: '2px solid #7f1d1d'
-              }}></div>
-              <span style={{ color: '#1e293b', fontWeight: '500' }}>Critical Risk</span>
+          {isAnalyzing ? (
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              flexDirection: 'column'
+            }}>
+              <div className="pulse-animation" style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+              <h3 style={{ marginBottom: '8px' }}>Analyzing Network...</h3>
+              <p style={{ color: '#64748b' }}>Processing {selectedFiles.length} files</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          ) : (
+            <>
+              {/* Network Stats Header */}
               <div style={{ 
-                width: '14px', 
-                height: '14px', 
-                borderRadius: '50%', 
-                backgroundColor: '#f59e0b',
-                border: '2px solid #b45309'
-              }}></div>
-              <span style={{ color: '#1e293b', fontWeight: '500' }}>High Risk</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ 
-                width: '14px', 
-                height: '14px', 
-                borderRadius: '50%', 
-                backgroundColor: '#10b981',
-                border: '2px solid #047857'
-              }}></div>
-              <span style={{ color: '#1e293b', fontWeight: '500' }}>Medium Risk</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ 
-                width: '14px', 
-                height: '14px', 
-                borderRadius: '50%', 
-                backgroundColor: '#64748b',
-                border: '2px solid #374151'
-              }}></div>
-              <span style={{ color: '#1e293b', fontWeight: '500' }}>Low Risk</span>
-            </div>
-          </div>
-          
-          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
-            <h5 style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#1e293b' }}>Categories</h5>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#dc2626' }}>●</span>
-                <span style={{ color: '#64748b' }}>Suspects</span>
+                padding: '12px 16px',
+                backgroundColor: '#f8fafc',
+                borderBottom: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600' }}>
+                  {analysisMode === 'contacts' ? '👥 Contact Network' :
+                   analysisMode === 'locations' ? '📍 Location Network' : '💰 Transaction Network'}
+                </h3>
+                <div style={{ fontSize: '14px', color: '#64748b' }}>
+                  {networkData[analysisMode]?.nodes?.length || 0} nodes, {networkData[analysisMode]?.connections?.length || 0} connections
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#059669' }}>●</span>
-                <span style={{ color: '#64748b' }}>Victims</span>
+              
+              {/* Network Graph or Map */}
+              <div style={{ height: 'calc(100% - 60px)', padding: '16px' }}>
+                {analysisMode === 'locations' ? renderLocationMap() : renderNetworkGraph()}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#0ea5e9' }}>●</span>
-                <span style={{ color: '#64748b' }}>Witnesses</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#f59e0b' }}>●</span>
-                <span style={{ color: '#64748b' }}>Financial</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Network Graph */}
-        {renderNetworkGraph()}
-
-        {/* Stats Overlay */}
-        <div style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          backgroundColor: 'rgba(248, 250, 252, 0.95)',
-          padding: '16px',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          backdropFilter: 'blur(8px)'
-        }}>
-          <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                borderRadius: '50%', 
-                backgroundColor: '#3b82f6' 
-              }}></div>
-              <span style={{ color: '#64748b', fontWeight: '500' }}>
-                {analysisMode === 'contacts' ? 'Contacts' : 
-                 analysisMode === 'locations' ? 'Locations' : 'Accounts'}: 
-              </span>
-              <span style={{ fontWeight: '700', color: '#1e293b' }}>{networkData[analysisMode]?.nodes?.length || 0}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                borderRadius: '50%', 
-                backgroundColor: '#10b981' 
-              }}></div>
-              <span style={{ color: '#64748b', fontWeight: '500' }}>
-                {analysisMode === 'contacts' ? 'Communications' : 
-                 analysisMode === 'locations' ? 'Movements' : 'Transactions'}: 
-              </span>
-              <span style={{ fontWeight: '700', color: '#1e293b' }}>{networkData[analysisMode]?.connections?.length || 0}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                borderRadius: '50%', 
-                backgroundColor: '#ef4444' 
-              }}></div>
-              <span style={{ color: '#64748b', fontWeight: '500' }}>High Risk: </span>
-              <span style={{ fontWeight: '700', color: '#dc2626' }}>
-                {networkData[analysisMode]?.nodes?.filter(n => n.riskLevel === 'high' || n.riskLevel === 'critical' || n.risk === 'high' || n.risk === 'critical').length || 0}
-              </span>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Sidebar */}
       <div style={sidebarStyle}>
-        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '24px' }}>
-          🌐 Network Analysis
-        </h2>
-
-        {/* Analysis Summary */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '16px',
-          borderRadius: '8px',
-          marginBottom: '24px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Summary</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Total Entities:</span>
-              <span>{networkData[analysisMode]?.nodes?.length || 0}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Relationships:</span>
-              <span>{networkData[analysisMode]?.connections?.length || 0}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Risk Entities:</span>
-              <span style={{ color: '#ef4444' }}>
-                {networkData[analysisMode]?.nodes?.filter(n => n.riskLevel === 'high' || n.riskLevel === 'critical' || n.risk === 'high' || n.risk === 'critical').length || 0}
-              </span>
-            </div>
+        <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+            Analysis Details
+          </h3>
+          <div style={{ fontSize: '14px', color: '#64748b' }}>
+            <div>Total Entities: {analyticsData.totalEntities}</div>
+            <div>Total Connections: {analyticsData.totalConnections}</div>
           </div>
         </div>
-
-        {/* Node Details */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '16px',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-            {selectedNode ? 'Node Details' : 'Select Node'}
+        
+        <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
+          <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+            Risk Distribution
           </h4>
-          {renderNodeDetails()}
+          {Object.entries(analyticsData.riskDistribution || {}).map(([risk, count]) => (
+            <div key={risk} style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              marginBottom: '8px',
+              fontSize: '14px'
+            }}>
+              <span style={{ textTransform: 'capitalize' }}>{risk}:</span>
+              <span style={{ fontWeight: '600' }}>{count}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Node Details Panel */}
+        <div style={{ flex: 1 }}>
+          <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '600' }}>
+              {selectedNode ? 'Node Details' : 'Select Node'}
+            </h4>
+          </div>
+          <div style={{ overflowY: 'auto', height: 'calc(100% - 60px)' }}>
+            {renderNodeDetails()}
+          </div>
         </div>
       </div>
     </div>

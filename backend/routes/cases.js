@@ -263,6 +263,40 @@ router.get('/:id/files', async (req, res) => {
   }
 });
 
+// Get file content
+router.get('/:id/files/:fileId/content', async (req, res) => {
+  try {
+    console.log('📤 GET /:id/files/:fileId/content - Getting file content');
+    const { id, fileId } = req.params;
+    console.log('🆔 Case ID:', id);
+    console.log('📄 File ID:', fileId);
+    
+    const result = await CaseAPI.getFileContent(id, fileId);
+    
+    if (result.success) {
+      console.log('✅ File content retrieved successfully');
+      res.json({
+        success: true,
+        content: result.content,
+        fileName: result.fileName,
+        mimeType: result.mimeType
+      });
+    } else {
+      console.log('❌ Failed to get file content:', result.error);
+      res.status(404).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('💥 Error in GET /:id/files/:fileId/content route:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error: ' + error.message
+    });
+  }
+});
+
 // Add evidence to case
 router.post('/:id/evidence', async (req, res) => {
   try {

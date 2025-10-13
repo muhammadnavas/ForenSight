@@ -429,6 +429,7 @@ const FileSelector = () => {
 // Case Selector Component
 const CaseSelector = () => {
   const { cases, loading, selectedCase, setSelectedCase, loadCases } = useCaseContext();
+  const { hasData, statistics, caseData } = useCaseData();
 
   useEffect(() => {
     loadCases();
@@ -470,33 +471,37 @@ const CaseSelector = () => {
           Active Case:
         </span>
         
-        <select
-          value={selectedCase?._id || selectedCase?.caseId || ''}
-          onChange={(e) => handleCaseSelect(e.target.value)}
-          disabled={loading}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#ffffff',
-            border: '1px solid #cbd5e1',
-            borderRadius: '8px',
-            color: '#1e293b',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            minWidth: '200px',
-            outline: 'none'
-          }}
-        >
-          <option value="">Select a case...</option>
-          {cases.map((caseItem) => (
-            <option 
-              key={caseItem._id || caseItem.caseId} 
-              value={caseItem._id || caseItem.caseId}
-            >
-              {caseItem.name} {caseItem.status && `(${caseItem.status})`}
-            </option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <select
+            value={selectedCase?._id || selectedCase?.caseId || ''}
+            onChange={(e) => handleCaseSelect(e.target.value)}
+            disabled={loading}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#ffffff',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              color: '#1e293b',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              minWidth: '200px',
+              outline: 'none'
+            }}
+          >
+            <option value="">Select a case...</option>
+            {cases.map((caseItem) => (
+              <option 
+                key={caseItem._id || caseItem.caseId} 
+                value={caseItem._id || caseItem.caseId}
+              >
+                {caseItem.name} {caseItem.status && `(${caseItem.status})`}
+              </option>
+            ))}
+          </select>
+          
+
+        </div>
       </div>
     );
 };
@@ -2337,12 +2342,25 @@ const DashboardInner = ({ onNavigateToHome }) => {
   });
   
   // File operations
-  const addFiles = async (files) => {
-    console.log('Adding files:', files);
-    setUploadedFiles(prev => [...prev, ...files]);
+  const addFiles = (files) => {
+    console.log('Adding files to context:', files);
+    setUploadedFiles(prev => {
+      // Filter out duplicates based on name and size
+      const newFiles = files.filter(newFile => 
+        !prev.some(existingFile => 
+          existingFile.name === newFile.name && 
+          existingFile.size === newFile.size &&
+          existingFile.caseId === newFile.caseId
+        )
+      );
+      console.log('Filtered new files (duplicates removed):', newFiles);
+      return [...prev, ...newFiles];
+    });
     updateAnalytics(files);
-    
-    // Process uploaded files for case data
+  };
+
+  // Separate function for processing case data files (called explicitly)
+  const processCaseDataFiles = async (files) => {
     for (const fileMetadata of files) {
       const originalFile = fileMetadata.originalFile;
       console.log('Processing file:', fileMetadata.name, 'Original file:', originalFile);
@@ -2401,6 +2419,7 @@ const DashboardInner = ({ onNavigateToHome }) => {
     processedFiles,
     fileAnalytics,
     addFiles,
+    processCaseDataFiles,
     updateFileStatus,
     removeFile,
     setUploadedFiles,

@@ -338,6 +338,115 @@ class CaseAPI {
       return { success: false, error: error.message };
     }
   }
+
+  static async getFileContent(caseId, fileId) {
+    try {
+      console.log(`CaseService: Getting file content for case ${caseId}, file ${fileId}`);
+      
+      // Validate inputs
+      if (!caseId || !fileId) {
+        return { 
+          success: false, 
+          error: 'Case ID and File ID are required' 
+        };
+      }
+
+      const database = await connectToMongoDB();
+      const cases = database.collection('cases');
+      
+      // Find the case and locate the specific file
+      const caseDoc = await cases.findOne({ 
+        _id: new ObjectId(caseId) 
+      });
+
+      if (!caseDoc) {
+        console.log(`Case not found: ${caseId}`);
+        return { 
+          success: false, 
+          error: 'Case not found' 
+        };
+      }
+
+      // Find the file in the case's files array
+      // Handle both string and ObjectId comparisons
+      const file = caseDoc.files?.find(f => {
+        if (f.fileId instanceof ObjectId) {
+          return f.fileId.toString() === fileId;
+        }
+        return f.fileId === fileId;
+      });
+      
+      if (!file) {
+        console.log(`File not found: ${fileId} in case ${caseId}`);
+        console.log('Available files:', caseDoc.files?.map(f => ({ fileId: f.fileId, name: f.name })));
+        return { 
+          success: false, 
+          error: 'File not found in case' 
+        };
+      }
+
+      console.log(`Found file: ${file.name}, uploadPath: ${file.uploadPath}`);
+
+      // Read the file content from the filesystem
+      const fs = require('fs').promises;
+      const path = require('path');
+      
+      // Construct the full file path (use uploadPath from file record)
+      const fullPath = file.uploadPath || file.path;
+      
+      try {
+        // Check if file exists
+        await fs.access(fullPath);
+        
+        // Read file content
+        const fileContent = await fs.readFile(fullPath, 'utf-8');
+        
+        // Parse JSON content if it's a JSON file
+        let parsedContent;
+        const filename = file.name || file.originalName || file.filename;
+        if (filename && filename.endsWith('.json')) {
+          try {
+            parsedContent = JSON.parse(fileContent);
+          } catch (parseError) {
+            console.error('Error parsing JSON:', parseError);
+            return { 
+              success: false, 
+              error: 'Invalid JSON file format' 
+            };
+          }
+        } else {
+          parsedContent = fileContent;
+        }
+
+        console.log(`Successfully retrieved content for file ${fileId}`);
+        
+        return { 
+          success: true, 
+          content: parsedContent,
+          metadata: {
+            filename: file.filename,
+            size: file.size,
+            mimeType: file.mimeType,
+            uploadedAt: file.uploadedAt
+          }
+        };
+
+      } catch (fileError) {
+        console.error('Error reading file:', fileError);
+        return { 
+          success: false, 
+          error: `File not accessible: ${fileError.message}` 
+        };
+      }
+
+    } catch (error) {
+      console.error('Error getting file content:', error);
+      return { 
+        success: false, 
+        error: error.message 
+      };
+    }
+  }
 }
 
 module.exports = {

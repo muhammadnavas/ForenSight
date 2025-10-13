@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { makeGeminiRequest } from '../config/geminiConfig.js';
 import { useCaseContext } from '../contexts/CaseContext.jsx';
 import { useCaseData } from '../contexts/CaseDataContext.jsx';
+import useCaseFileIntegration from '../hooks/useCaseFileIntegration.js';
 
 const AIInvestigation = () => {
   const { selectedCase, caseFiles, getSelectedFileObjects } = useCaseContext();
   const { caseData, hasData, statistics, getNetworkData, getGeographicData, getEvidenceData } = useCaseData();
+  // Initialize case file integration hook
+  const integrationStatus = useCaseFileIntegration();
+  console.log('🤖 AI Investigation integration status:', integrationStatus);
+  
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);

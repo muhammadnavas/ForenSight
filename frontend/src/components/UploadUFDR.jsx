@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useCaseContext } from '../contexts/CaseContext';
 import { useFiles } from './Dashboard';
+
+// Global upload tracking to prevent duplicates across component re-renders
+window.globalUploadTracker = window.globalUploadTracker || new Set();
 
 const UploadUFDR = ({ setCurrentView }) => {
   const { uploadedFiles, addFiles, updateFileStatus, removeFile: removeFileFromContext } = useFiles();
@@ -10,6 +13,7 @@ const UploadUFDR = ({ setCurrentView }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCaseSelector, setShowCaseSelector] = useState(true);
   const [error, setError] = useState(null);
+  const processingFiles = useRef(new Set()); // Track files currently being processed
 
   const containerStyle = {
     padding: '24px',
@@ -112,6 +116,8 @@ const UploadUFDR = ({ setCurrentView }) => {
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     handleFiles(files);
+    // Clear the file input to prevent duplicate processing
+    e.target.value = '';
   };
 
   const validateFile = (file) => {
@@ -141,10 +147,36 @@ const UploadUFDR = ({ setCurrentView }) => {
     const errors = [];
     
     files.forEach(file => {
+      // Create unique file identifier for processing tracking
+      const fileId = `${file.name}-${file.size}-${file.lastModified || Date.now()}-${selectedCase._id || selectedCase.caseId}`;
+      
+      // Check if this file is already being processed globally (prevents StrictMode double processing)
+      if (processingFiles.current.has(fileId) || window.globalUploadTracker.has(fileId)) {
+        console.log('🚫 File already being processed globally, skipping:', file.name);
+        return;
+      }
+      
+      // Check for duplicate files already in context
+      const isDuplicate = uploadedFiles.some(existingFile => 
+        existingFile.name === file.name && 
+        existingFile.size === file.size &&
+        existingFile.caseId === selectedCase
+      );
+      
+      if (isDuplicate) {
+        errors.push({ fileName: file.name, error: 'File already uploaded to this case' });
+        return;
+      }
+
       const validation = validateFile(file);
       if (validation.valid) {
+        // Mark file as being processed (both locally and globally)
+        processingFiles.current.add(fileId);
+        window.globalUploadTracker.add(fileId);
+        console.log('🔒 Tracking file globally:', fileId);
+        
         const fileMetadata = {
-          id: Date.now() + Math.random(),
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${file.name}`,
           name: file.name,
           size: file.size,
           type: file.type,
@@ -154,7 +186,8 @@ const UploadUFDR = ({ setCurrentView }) => {
           uploadedAt: new Date().toISOString(),
           fileType: getFileType(file.name),
           caseId: selectedCase, // Associate with selected case
-          originalFile: file // Keep reference to original File object
+          originalFile: file, // Keep reference to original File object
+          processingId: fileId // Track processing ID for cleanup
         };
         validFiles.push(fileMetadata);
       } else {
@@ -167,16 +200,38 @@ const UploadUFDR = ({ setCurrentView }) => {
     }
 
     if (validFiles.length > 0) {
+      console.log('📁 Adding files to context:', validFiles.map(f => f.name));
       addFiles(validFiles);
       
       // Start upload to backend for valid files
-      validFiles.forEach(file => {
+      console.log('🔄 Starting backend uploads for:', validFiles.length, 'files');
+      validFiles.forEach((file, index) => {
+        console.log(`📤 Initiating upload ${index + 1}:`, file.name, 'ProcessingID:', file.processingId);
         uploadToBackend(file);
       });
     }
   };
 
   const uploadToBackend = async (fileMetadata) => {
+    const uploadKey = `${fileMetadata.name}-${fileMetadata.size}-${selectedCase._id || selectedCase.caseId}`;
+    console.log('🚀 Starting upload for:', fileMetadata.name, 'ID:', fileMetadata.id, 'Key:', uploadKey);
+    
+    // Check if this exact upload is already in progress
+    if (window.globalUploadTracker.has(uploadKey)) {
+      console.log('⚠️ Upload already in progress for this file, aborting:', uploadKey);
+      return;
+    }
+    
+    // Mark as uploading globally
+    window.globalUploadTracker.add(uploadKey);
+    console.log('🔒 Marked upload as in progress:', uploadKey);
+    
+    // Safety timeout to prevent permanent locks
+    const timeoutId = setTimeout(() => {
+      window.globalUploadTracker.delete(uploadKey);
+      console.log('⏰ Timeout cleanup for upload:', uploadKey);
+    }, 600000); // 10 minute timeout
+    
     try {
       // Show initial progress
       updateFileStatus(fileMetadata.id, 'uploading', { progress: 5 });
@@ -206,6 +261,15 @@ const UploadUFDR = ({ setCurrentView }) => {
                 completedAt: new Date().toISOString(),
                 backendFileId: data.fileId
               });
+              
+              // Clean up processing tracking (both local and global)
+              const uploadKey = `${fileMetadata.name}-${fileMetadata.size}-${selectedCase._id || selectedCase.caseId}`;
+              if (fileMetadata.processingId) {
+                processingFiles.current.delete(fileMetadata.processingId);
+              }
+              window.globalUploadTracker.delete(uploadKey);
+              clearTimeout(timeoutId);
+              console.log('🔓 Released upload tracking:', uploadKey);
               
               // Update the case context with the new file
               if (data.file && addFileToCase && selectedCase?._id) {
@@ -245,6 +309,16 @@ const UploadUFDR = ({ setCurrentView }) => {
         error: error.message,
         progress: 0
       });
+      
+      // Clean up processing tracking on error (both local and global)
+      const uploadKey = `${fileMetadata.name}-${fileMetadata.size}-${selectedCase._id || selectedCase.caseId}`;
+      if (fileMetadata.processingId) {
+        processingFiles.current.delete(fileMetadata.processingId);
+      }
+      window.globalUploadTracker.delete(uploadKey);
+      clearTimeout(timeoutId);
+      console.log('🔓 Released upload tracking (error):', uploadKey);
+      
       setError(`Upload failed for ${fileMetadata.name}: ${error.message}`);
     }
   };
