@@ -22,6 +22,42 @@ const QueryInterface = () => {
   const availableFiles = selectedFiles.length;
   const totalDataSize = selectedCaseData ? JSON.stringify(selectedCaseData).length : 0;
 
+  // Format markdown report for proper display
+  const formatMarkdownReport = (text) => {
+    if (!text) return '';
+    
+    return text
+      // Convert **bold** to <strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Convert ### headers to h3
+      .replace(/^### (.*$)/gm, '<h3 style="color: #1e293b; font-size: 16px; font-weight: 700; margin: 20px 0 10px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">$1</h3>')
+      // Convert ## headers to h2  
+      .replace(/^## (.*$)/gm, '<h2 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 24px 0 12px 0;">$1</h2>')
+      // Convert # headers to h1
+      .replace(/^# (.*$)/gm, '<h1 style="color: #1e293b; font-size: 20px; font-weight: 700; margin: 24px 0 16px 0;">$1</h1>')
+      // Convert numbered lists
+      .replace(/^\d+\.\s+\*\*(.*?)\*\*(.*?)$/gm, '<div style="margin: 12px 0;"><strong style="color: #059669;">$1</strong>$2</div>')
+      .replace(/^\d+\.\s+(.*?)$/gm, '<div style="margin: 8px 0; padding-left: 16px; border-left: 3px solid #059669;"><strong style="color: #059669;">$1</strong></div>')
+      // Convert bullet points with indentation
+      .replace(/^(\s*)\*\s+\*\*(.*?)\*\*(.*?)$/gm, '<div style="margin: 8px 0; padding-left: 24px;"><strong style="color: #0ea5e9;">$2</strong>$3</div>')
+      .replace(/^(\s*)\*\s+(.*?)$/gm, '<div style="margin: 6px 0; padding-left: 20px; color: #475569;">• $2</div>')
+      // Convert horizontal rules
+      .replace(/^---$/gm, '<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 20px 0;" />')
+      // Convert line breaks
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>')
+      // Style case ID and metadata
+      .replace(/\*\*Case ID:\*\* (.*?)<br>/g, '<div style="background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin: 8px 0;"><strong>Case ID:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">$1</code></div>')
+      .replace(/\*\*Search Query:\*\* "(.*?)"<br>/g, '<div style="background: #f0f9ff; padding: 8px 12px; border-radius: 6px; margin: 8px 0;"><strong>Search Query:</strong> <em style="color: #0ea5e9;">"$1"</em></div>')
+      .replace(/\*\*Date of Analysis:\*\* (.*?)<br>/g, '<div style="background: #f0fdf4; padding: 8px 12px; border-radius: 6px; margin: 8px 0;"><strong>Date of Analysis:</strong> $1</div>')
+      // Style relevance scores
+      .replace(/\*\*Relevance Score:\*\* (\d+)%/g, '<span style="background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">$1% Relevance</span>')
+      // Style evidence types
+      .replace(/\*\*Type:\*\* (COMMUNICATION|PHYSICAL|DIGITAL|FINANCIAL)/g, '<span style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">$1</span>')
+      // Style metadata
+      .replace(/\*\*Metadata:\*\* (.*?)<br>/g, '<div style="background: #fafafa; padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #64748b; border-left: 3px solid #cbd5e1; margin: 4px 0;">📋 <strong>Metadata:</strong> $1</div>');
+  };
+
   const containerStyle = {
     padding: '24px',
     backgroundColor: '#ffffff',
@@ -146,7 +182,65 @@ const QueryInterface = () => {
     try {
       // Create AI-powered search prompt with detailed case data
       const searchPrompt = `
-You are a forensic digital evidence search AI. Analyze the following case data and respond to the search query with relevant evidence.
+You are an expert forensic investigator and digital evidence analyst. Create a comprehensive forensic analysis report in the following EXACT format for the search query. Use proper markdown formatting with headers, bullet points, and structured sections.
+
+**Forensic Analysis Report: [Query Topic]**
+
+**Case ID:** ${hasData ? (caseData.caseId || 'FS-2025-XXX') : 'FS-2025-XXX'}
+**Search Query:** "${query}"
+**Date of Analysis:** ${new Date().toISOString().split('T')[0]}
+
+---
+
+### 1. Relevant Evidence Items that Match the Query
+
+[List all evidence items with detailed analysis including:]
+*   **Evidence Type:** [Type]
+    *   **Description:** [Detailed description]
+    *   **Type:** [COMMUNICATION/PHYSICAL/DIGITAL/FINANCIAL]
+    *   **Relevance:** [How it relates to the query]
+    *   **Relevance Score:** [X]%
+    *   **Metadata:** Source: [Source], Status: [Status], Hash: [Hash], Timeline: [Timeline]
+
+---
+
+### 2. Key Findings and Insights from the Case Data
+
+[Numbered list of key discoveries with relevance scores:]
+1.  **[Finding Title]:** [Detailed explanation]
+    *   **Relevance Score:** [X]%
+
+---
+
+### 3. Context and Significance of the Findings
+
+[Analysis of what the findings mean for the investigation, explaining the broader context and implications]
+
+---
+
+### 4. Connections Between Different Evidence Pieces
+
+*   [Detailed explanation of how evidence items connect and support each other]
+
+---
+
+### 5. Relevance Score for Each Finding
+
+[Summary of relevance scores with justification]
+
+---
+
+### 6. Timestamps and Metadata
+
+*   **Timestamps:** [Available timestamp information]
+*   **Metadata:** [Hash values, sources, status information]
+
+---
+
+### 7. Investigative Recommendations Based on the Findings
+
+[Numbered list of specific actionable recommendations for investigators:]
+1.  **[Recommendation Title]:** [Detailed explanation of what investigators should do next]
 
 CASE DATA:
 ${hasData ? `
@@ -231,16 +325,16 @@ ${caseData.digitalForensics ? `
 
 SEARCH QUERY: "${query}"
 
-Please provide:
-1. Relevant evidence items that match the query
-2. Key findings and insights from the case data
-3. Context and significance of the findings
-4. Connections between different evidence pieces
-5. Relevance score (0-100%) for each finding
-6. Timestamps and metadata when available
-7. Investigative recommendations based on the findings
-
-Format your response as a structured forensic analysis with clear sections for each relevant finding. If no relevant evidence is found, explain why and suggest alternative search terms or investigative approaches based on the available case data.
+CRITICAL INSTRUCTIONS:
+- Follow the EXACT report format shown above with proper markdown formatting
+- Use **bold** for headers and important terms
+- Use numbered lists (1. 2. 3.) for key findings and recommendations
+- Use bullet points (*) for evidence items and sub-items
+- Include relevance scores as percentages (X%) for ALL findings
+- Provide detailed, professional forensic analysis
+- Include specific actionable investigative recommendations
+- If insufficient data exists, explain limitations and suggest additional data collection approaches
+- Maintain the professional tone and structure of a forensic investigation report
       `;
 
       const requestBody = {
@@ -326,24 +420,47 @@ Format your response as a structured forensic analysis with clear sections for e
           </div>
         </div>
         <div style={{ 
-          backgroundColor: '#f8fafc', 
-          padding: '16px', 
+          backgroundColor: '#ffffff', 
+          padding: '24px', 
           borderRadius: '8px',
-          border: '1px solid #e2e8f0'
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
         }}>
-          <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#1e293b' }}>
-            🔍 AI Analysis Results:
-          </h4>
-          <pre style={{ 
-            color: '#1e293b', 
-            marginBottom: '12px', 
-            lineHeight: '1.6',
-            whiteSpace: 'pre-wrap',
-            fontSize: '14px',
-            fontFamily: 'system-ui, -apple-system, sans-serif'
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            marginBottom: '16px',
+            paddingBottom: '12px',
+            borderBottom: '2px solid #e2e8f0'
           }}>
-            {result.aiAnalysis}
-          </pre>
+            <span style={{ fontSize: '20px' }}>📋</span>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', margin: 0, color: '#1e293b' }}>
+              Forensic Analysis Report
+            </h4>
+            <span style={{
+              backgroundColor: '#059669',
+              color: 'white',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '11px',
+              fontWeight: '600',
+              marginLeft: 'auto'
+            }}>
+              AI Generated
+            </span>
+          </div>
+          <div 
+            style={{ 
+              color: '#1e293b', 
+              lineHeight: '1.7',
+              fontSize: '14px',
+              fontFamily: 'system-ui, -apple-system, sans-serif'
+            }}
+            dangerouslySetInnerHTML={{ 
+              __html: formatMarkdownReport(result.aiAnalysis) 
+            }}
+          />
         </div>
         <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#64748b', marginTop: '12px' }}>
           <span><strong>Case:</strong> {result.caseId}</span>
@@ -431,9 +548,9 @@ Format your response as a structured forensic analysis with clear sections for e
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>🤖 AI Query Interface - {selectedCase ? (selectedCase.name || selectedCase.caseId || selectedCase._id) : 'No Case'}</h1>
+        <h1 style={titleStyle}>📋 Forensic Report Generator - {selectedCase ? (selectedCase.name || selectedCase.caseId || selectedCase._id) : 'No Case'}</h1>
         <p style={subtitleStyle}>
-          Use natural language to search and analyze evidence data with AI-powered insights
+          Generate comprehensive forensic analysis reports on any aspect of the case using AI-powered investigation
         </p>
         <div style={statusStyle}>
           <div style={statusItemStyle}>
@@ -441,8 +558,8 @@ Format your response as a structured forensic analysis with clear sections for e
             <span>Case: {selectedCase ? (selectedCase.name || selectedCase.caseId || selectedCase._id) : 'None'}</span>
           </div>
           <div style={statusItemStyle}>
-            <span>🤖</span>
-            <span>AI: Gemini Ready</span>
+            <span>📋</span>
+            <span>Report Generator: Ready</span>
           </div>
           <div style={statusItemStyle}>
             <span>💾</span>
@@ -474,14 +591,14 @@ Format your response as a structured forensic analysis with clear sections for e
       {/* AI Search Interface */}
       <div style={searchContainerStyle}>
         <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
-          🤖 AI-Powered Investigation Query:
+          📋 Forensic Analysis Query:
         </label>
         <input
           style={inputStyle}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="Ask AI anything about the evidence: communications, files, timeline, patterns..."
+          placeholder="Enter topic for forensic analysis: suspects, evidence, victims, financial data, network analysis..."
         />
         <button 
           style={{
@@ -493,28 +610,31 @@ Format your response as a structured forensic analysis with clear sections for e
           onMouseEnter={(e) => !isSearching && selectedCaseData && (e.target.style.backgroundColor = '#7c3aed')}
           onMouseLeave={(e) => !isSearching && selectedCaseData && (e.target.style.backgroundColor = '#8b5cf6')}
         >
-          {isSearching ? '🤖' : '🔍'}
-          {isSearching ? 'AI Analyzing...' : 'Ask AI'}
+          {isSearching ? '⚖️' : '⚖️'}
+          {isSearching ? 'Generating Report...' : 'Generate Report'}
         </button>
 
         {/* AI Query Suggestions */}
         <div style={suggestionsStyle}>
-          <span style={{ fontSize: '14px', color: '#64748b', marginRight: '8px' }}>AI suggestions:</span>
+          <span style={{ fontSize: '14px', color: '#64748b', marginRight: '8px' }}>📋 Report suggestions:</span>
           {[
-            'suspicious communication patterns',
-            'timeline of events',  
-            'digital evidence anomalies',
-            'key contacts and relationships',
-            'deleted or hidden data'
+            'suspects',
+            'evidence',
+            'victims', 
+            'financial transactions',
+            'network connections',
+            'timeline analysis',
+            'digital artifacts',
+            'communication patterns'
           ].map((suggestion, index) => (
             <button
               key={index}
               style={suggestionButtonStyle}
-              onClick={() => setQuery(`Analyze ${suggestion} in this case`)}
+              onClick={() => setQuery(suggestion)}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#e2e8f0'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#f1f5f9'}
             >
-              🤖 {suggestion}
+              📋 {suggestion}
             </button>
           ))}
         </div>

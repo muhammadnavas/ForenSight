@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { detectFileType } from '../config/fileAnalysisUtils.js';
 import { useCaseContext } from '../contexts/CaseContext';
 import { useCaseData } from '../contexts/CaseDataContext';
 import useCaseFileIntegration from '../hooks/useCaseFileIntegration.js';
@@ -154,26 +153,38 @@ const DatabaseSearch = () => {
   // Parse actual file content to extract real data
   const parseFileContent = async (file, caseId) => {
     try {
-      console.log('📄 Attempting to parse file content for:', file.originalName || file.filename);
+      const fileName = file.originalName || file.filename || file.name || 'unknown';
+      console.log('📄 Attempting to parse file content for:', fileName);
       
       // Try to get file content from different possible sources
       let fileContent = null;
       
-      // If file has content property
+      // Priority order for finding content
       if (file.content) {
         fileContent = file.content;
+        console.log('📄 Using file.content property');
       }
-      // If file has data property  
       else if (file.data) {
         fileContent = file.data;
+        console.log('📄 Using file.data property');
       }
-      // If file has text content
       else if (file.textContent) {
         fileContent = file.textContent;
+        console.log('📄 Using file.textContent property');
       }
-      // If it's a JSON file with parsed content
       else if (file.parsedContent) {
-        fileContent = JSON.stringify(file.parsedContent);
+        // If parsedContent is already an object, use it directly
+        if (typeof file.parsedContent === 'object') {
+          console.log('📄 Using file.parsedContent object directly');
+          return file.parsedContent;
+        } else {
+          fileContent = file.parsedContent;
+          console.log('📄 Using file.parsedContent property');
+        }
+      }
+      else if (file.fileContent) {
+        fileContent = file.fileContent;
+        console.log('📄 Using file.fileContent property');
       }
       
       // If no content in file object, try to fetch from backend
@@ -183,23 +194,50 @@ const DatabaseSearch = () => {
       }
       
       if (!fileContent) {
-        console.log('⚠️ No content available - returning empty results');
-        return [];
+        console.log('❌ No content available for file:', fileName);
+        return null;
       }
       
-      console.log('📝 File content found, length:', typeof fileContent === 'string' ? fileContent.length : 'Not string');
+      const contentType = typeof fileContent;
+      const contentLength = contentType === 'string' ? fileContent.length : 'object';
+      console.log('📝 File content found - Type:', contentType, 'Length:', contentLength);
+      
+      // If content is already an object, return it directly
+      if (contentType === 'object' && fileContent !== null) {
+        console.log('✅ Content is already parsed object');
+        console.log('📊 Object keys:', Object.keys(fileContent));
+        return fileContent;
+      }
       
       // Try to parse as JSON first
-      let parsedData = null;
-      try {
-        parsedData = typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent;
-        console.log('✅ Successfully parsed JSON content');
-      } catch (e) {
-        console.log('ℹ️ Not JSON format, treating as text');
-        parsedData = { rawText: fileContent };
+      if (contentType === 'string') {
+        // Handle empty or very short content
+        if (fileContent.trim().length < 2) {
+          console.log('⚠️ Content too short or empty');
+          return null;
+        }
+        
+        try {
+          const parsedData = JSON.parse(fileContent);
+          console.log('✅ Successfully parsed JSON content');
+          console.log('📊 Parsed data structure:', Object.keys(parsedData));
+          return parsedData;
+        } catch (jsonError) {
+          console.log('ℹ️ Not valid JSON format, treating as text content');
+          console.log('🔍 JSON parse error:', jsonError.message.substring(0, 100));
+          
+          // For non-JSON files, return structured text data
+          return {
+            rawText: fileContent,
+            fileName: fileName,
+            fileType: fileName.split('.').pop()?.toLowerCase() || 'unknown'
+          };
+        }
       }
       
-      return parsedData;
+      console.log('⚠️ Unknown content format');
+      return null;
+      
     } catch (error) {
       console.error('❌ Error parsing file content:', error);
       return null;
@@ -475,51 +513,167 @@ const DatabaseSearch = () => {
       });
     }
     
-    // Handle flat object with name properties
+    // Handle flat object with name properties (contacts, messages, etc.)
     if (typeof parsedContent === 'object' && !Array.isArray(parsedContent)) {
       Object.entries(parsedContent).forEach(([key, value], index) => {
         if (typeof value === 'object' && value !== null) {
-          // Check if this looks like a person object
+          // Check if this looks like a person/contact object
           if (value.name || value.firstName || value.lastName) {
-            const name = value.name || `${value.firstName || ''} ${value.lastName || ''}`.trim();
+            const personName = value.name || `${value.firstName || ''} ${value.lastName || ''}`.trim();
             results.push({
               id: `person_${key}_${index}`,
               type: 'Person',
-              title: name || key,
-              content: JSON.stringify(value, null, 2),
+              name: personName || key,
+              content: `Name: ${personName}\n${Object.entries(value).map(([k, v]) => `${k}: ${v}`).join('\n')}`,
               source: filename,
               category: 'person',
-              riskLevel: value.riskLevel || value.risk || 'low',
+              riskLevel: value.riskLevel || value.risk || 'medium',
               timestamp: value.timestamp || value.date || new Date().toISOString(),
               relevance: 70 + index,
               rawData: value
             });
-          } else {
-            // Generic data entry
+          } 
+          // Check if this looks like a message object
+          else if (value.message || value.text || value.content) {
+            results.push({
+              id: `message_${key}_${index}`,
+              type: 'Message',
+              name: (value.message || value.text || value.content || `Message ${index + 1}`).substring(0, 50) + '...',
+              content: `Message: ${value.message || value.text || value.content}\n${Object.entries(value).filter(([k]) => !['message', 'text', 'content'].includes(k)).map(([k, v]) => `${k}: ${v}`).join('\n')}`,
+              source: filename,
+              category: 'communication',
+              riskLevel: 'medium',
+              timestamp: value.timestamp || value.date || new Date().toISOString(),
+              relevance: 75 + index,
+              rawData: value
+            });
+          }
+          // Check if this looks like a location object
+          else if (value.latitude || value.longitude || value.coordinates || value.address) {
+            results.push({
+              id: `location_${key}_${index}`,
+              type: 'Location',
+              name: value.address || value.name || `Location ${index + 1}`,
+              content: `Location: ${value.address || value.name || 'Unknown'}\n${Object.entries(value).map(([k, v]) => `${k}: ${v}`).join('\n')}`,
+              source: filename,
+              category: 'location',
+              riskLevel: 'medium',
+              timestamp: value.timestamp || new Date().toISOString(),
+              relevance: 70 + index,
+              rawData: value
+            });
+          }
+          // Generic object with useful data
+          else if (Object.keys(value).length > 0) {
             results.push({
               id: `data_${key}_${index}`,
               type: 'Data Entry',
-              title: key,
-              content: typeof value === 'string' ? value : JSON.stringify(value, null, 2),
+              name: value.title || value.name || key || `Entry ${index + 1}`,
+              content: `${Object.entries(value).map(([k, v]) => `${k}: ${v}`).join('\n')}`,
               source: filename,
               category: 'data',
               riskLevel: 'low',
-              timestamp: new Date().toISOString(),
-              relevance: 50 + index,
+              timestamp: value.timestamp || value.date || new Date().toISOString(),
+              relevance: 60 + index,
               rawData: value
             });
           }
         }
+        // Handle simple key-value pairs
+        else if (value && typeof value === 'string' && value.length > 0) {
+          results.push({
+            id: `field_${key}_${index}`,
+            type: 'Data Field',
+            name: `${key}: ${value.substring(0, 30)}${value.length > 30 ? '...' : ''}`,
+            content: `Field: ${key}\nValue: ${value}`,
+            source: filename,
+            category: 'data',
+            riskLevel: 'low',
+            timestamp: new Date().toISOString(),
+            relevance: 50 + index,
+            rawData: { [key]: value }
+          });
+        }
       });
     }
+
+    // Handle arrays at root level
+    if (Array.isArray(parsedContent)) {
+      console.log('📋 Processing array data with', parsedContent.length, 'items');
+      parsedContent.forEach((item, index) => {
+        if (typeof item === 'object' && item !== null) {
+          // Process each item in the array
+          const itemName = item.name || item.title || item.id || `Item ${index + 1}`;
+          results.push({
+            id: `array_item_${index}`,
+            type: 'Array Item',
+            name: itemName,
+            content: `${Object.entries(item).map(([k, v]) => `${k}: ${v}`).join('\n')}`,
+            source: filename,
+            category: 'data',
+            riskLevel: 'medium',
+            timestamp: item.timestamp || item.date || new Date().toISOString(),
+            relevance: 65 + index,
+            rawData: item
+          });
+        }
+      });
+    }
+
+    // Handle text content that might contain structured data
+    if (parsedContent.rawText) {
+      console.log('📝 Processing raw text content');
+      const textContent = parsedContent.rawText;
+      
+      // Try to extract phone numbers
+      const phoneRegex = /(\+?\d{1,4}[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{1,4}[\s\-]?\d{1,9})/g;
+      const phones = textContent.match(phoneRegex);
+      if (phones) {
+        phones.forEach((phone, index) => {
+          results.push({
+            id: `phone_text_${index}`,
+            type: 'Phone Number',
+            name: phone,
+            content: `Phone: ${phone}\nFound in: ${filename}`,
+            source: filename,
+            category: 'communication',
+            riskLevel: 'medium',
+            timestamp: new Date().toISOString(),
+            relevance: 80,
+            rawData: { phone }
+          });
+        });
+      }
+      
+      // Try to extract email addresses
+      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+      const emails = textContent.match(emailRegex);
+      if (emails) {
+        emails.forEach((email, index) => {
+          results.push({
+            id: `email_text_${index}`,
+            type: 'Email Address',
+            name: email,
+            content: `Email: ${email}\nFound in: ${filename}`,
+            source: filename,
+            category: 'communication',
+            riskLevel: 'medium',
+            timestamp: new Date().toISOString(),
+            relevance: 80,
+            rawData: { email }
+          });
+        });
+      }
+    }
     
-    console.log('✅ Extracted', results.length, 'real data entries');
+    console.log('✅ Extracted', results.length, 'real data entries from', filename);
+    console.log('📊 Data categories found:', [...new Set(results.map(r => r.category))]);
     return results;
   };
 
 
 
-  // Generate database search results from files (updated to use real content with enhanced mock fallback)
+  // Generate database search results from files (real data only)
   const generateSearchResultsFromFiles = async (fileObjects) => {
     const results = [];
     const caseId = selectedCase?._id || selectedCase?.caseId;
@@ -538,317 +692,26 @@ const DatabaseSearch = () => {
         results.push(...fileResults);
         console.log('✅ Extracted', fileResults.length, 'real data entries from', filename);
       } else {
-        // Generate enhanced mock data based on file type when no real content available
-        console.log('🎭 Generating enhanced mock database results for', filename);
-        const mockResults = generateEnhancedMockDatabaseResults(file);
-        results.push(...mockResults);
-        console.log('✅ Generated', mockResults.length, 'mock database entries for', filename);
+        console.log('⚠️ No extractable data found in file:', filename);
+        console.log('📊 File content structure:', parsedContent ? Object.keys(parsedContent) : 'null');
       }
     }
-      
+    
+    if (results.length === 0) {
+      console.log('ℹ️ No data extracted from any files. Please ensure files contain valid JSON data with suspects, victims, evidence, or other case data.');
+    }
     
     // Sort by relevance and timestamp
     return results.sort((a, b) => b.relevance - a.relevance || new Date(b.timestamp) - new Date(a.timestamp));
   };
 
-  // Generate enhanced mock database results based on file type and name
-  const generateEnhancedMockDatabaseResults = (file) => {
-    const filename = file.originalName || file.filename || file.name || '';
-    const fileType = getFileTypeFromName(filename);
-    const results = [];
-    
-    console.log('🎯 Generating mock database results for file type:', fileType, 'filename:', filename);
 
-    switch (fileType) {
-      case 'contacts':
-        results.push(...generateMockContactsDatabase(filename));
-        break;
-      case 'messages':
-        results.push(...generateMockMessagesDatabase(filename));
-        break;
-      case 'calls':
-        results.push(...generateMockCallLogDatabase(filename));
-        break;
-      case 'location':
-        results.push(...generateMockLocationDatabase(filename));
-        break;
-      default:
-        results.push(...generateMockGenericDatabase(filename, fileType));
-        break;
-    }
 
-    // Also check for specific database types by filename patterns
-    const name = filename.toLowerCase();
-    if (name.includes('financial') || name.includes('bank') || name.includes('transaction') || name.includes('payment')) {
-      results.push(...generateMockFinancialDatabase(filename));
-    }
-    if (name.includes('network') || name.includes('traffic') || name.includes('log') || name.includes('pcap')) {
-      results.push(...generateMockNetworkDatabase(filename));
-    }
-    if (name.includes('mobile') || name.includes('phone') || name.includes('device') || name.includes('ufdr')) {
-      results.push(...generateMockMobileForensicsDatabase(filename));
-    }
-    if (name.includes('browser') || name.includes('history') || name.includes('web') || name.includes('chrome') || name.includes('firefox')) {
-      results.push(...generateMockBrowserDatabase(filename));
-    }
 
-    return results;
-  };
 
-  // Mock contacts database
-  const generateMockContactsDatabase = (filename) => {
-    const contacts = [
-      { name: 'Michael Rodriguez', phone: '+1-555-0123', email: 'mrodriguez@email.com', relationship: 'Colleague' },
-      { name: 'Sarah Chen', phone: '+1-555-0234', email: 'schen@business.com', relationship: 'Business Partner' },
-      { name: 'David Kim', phone: '+1-555-0345', email: 'dkim@suspect.net', relationship: 'Unknown' },
-      { name: 'Maria Santos', phone: '+1-555-0456', email: 'msantos@gmail.com', relationship: 'Friend' },
-      { name: 'James Wilson', phone: '+1-555-0567', email: 'jwilson@company.org', relationship: 'Associate' },
-      { name: 'Lisa Zhang', phone: '+1-555-0678', email: 'lzhang@proton.me', relationship: 'Encrypted Contact' },
-      { name: 'Robert Johnson', phone: '+1-555-0789', email: 'rjohnson@temp.mail', relationship: 'Suspicious' },
-      { name: 'Anna Petrov', phone: '+1-555-0890', email: 'apetrov@darkweb.onion', relationship: 'High Risk' }
-    ];
 
-    return contacts.map((contact, index) => ({
-      id: `contact_${index}`,
-      type: 'Contact',
-      title: contact.name,
-      content: `Phone: ${contact.phone}\nEmail: ${contact.email}\nRelationship: ${contact.relationship}\nLast Contact: ${new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`,
-      source: filename,
-      category: 'person',
-      riskLevel: contact.relationship.includes('Suspicious') || contact.relationship.includes('High Risk') ? 'high' : 
-                 contact.relationship.includes('Unknown') || contact.email.includes('suspect') ? 'medium' : 'low',
-      timestamp: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
-      relevance: contact.relationship.includes('High Risk') ? 95 : 
-                 contact.relationship.includes('Suspicious') ? 85 : 70,
-      rawData: contact
-    }));
-  };
 
-  // Mock messages database
-  const generateMockMessagesDatabase = (filename) => {
-    const messages = [
-      { from: '+1-555-0123', to: '+1-555-0234', message: 'Meeting at the usual place tonight', timestamp: '2024-01-15 18:30' },
-      { from: '+1-555-0234', to: '+1-555-0345', message: 'The package is ready for delivery', timestamp: '2024-01-15 19:45' },
-      { from: '+1-555-0345', to: '+1-555-0123', message: 'Transfer completed. Check your account.', timestamp: '2024-01-16 09:15' },
-      { from: '+1-555-0456', to: '+1-555-0567', message: 'Delete all traces. They are getting close.', timestamp: '2024-01-16 14:20' },
-      { from: '+1-555-0567', to: '+1-555-0678', message: 'New encrypted channel: xyz123abc', timestamp: '2024-01-16 16:30' },
-      { from: '+1-555-0678', to: '+1-555-0789', message: 'Coordinates: 40.7128, -74.0060', timestamp: '2024-01-17 08:45' },
-      { from: '+1-555-0789', to: '+1-555-0890', message: '5 BTC transferred to wallet addr...xyz', timestamp: '2024-01-17 11:20' }
-    ];
 
-    return messages.map((msg, index) => ({
-      id: `message_${index}`,
-      type: 'Message',
-      title: `SMS: ${msg.from} → ${msg.to}`,
-      content: `Message: "${msg.message}"\nFrom: ${msg.from}\nTo: ${msg.to}\nTime: ${msg.timestamp}`,
-      source: filename,
-      category: 'communication',
-      riskLevel: msg.message.includes('delete') || msg.message.includes('traces') || msg.message.includes('encrypted') ? 'critical' :
-                 msg.message.includes('transfer') || msg.message.includes('BTC') || msg.message.includes('package') ? 'high' : 'medium',
-      timestamp: new Date(msg.timestamp).toISOString(),
-      relevance: msg.message.includes('delete') ? 95 : msg.message.includes('BTC') ? 90 : 75,
-      rawData: msg
-    }));
-  };
-
-  // Mock call log database
-  const generateMockCallLogDatabase = (filename) => {
-    const calls = [
-      { caller: '+1-555-0123', receiver: '+1-555-0234', duration: '00:03:45', type: 'Outgoing', timestamp: '2024-01-15 14:30' },
-      { caller: '+1-555-0345', receiver: '+1-555-0123', duration: '00:12:30', type: 'Incoming', timestamp: '2024-01-15 18:15' },
-      { caller: '+1-555-0234', receiver: '+1-555-0567', duration: '00:01:15', type: 'Outgoing', timestamp: '2024-01-16 09:45' },
-      { caller: '+1-555-0678', receiver: '+1-555-0234', duration: '00:25:40', type: 'Incoming', timestamp: '2024-01-16 15:20' },
-      { caller: '+1-555-0123', receiver: '+1-555-0789', duration: '00:00:45', type: 'Missed', timestamp: '2024-01-17 08:30' },
-      { caller: '+1-555-0890', receiver: '+1-555-0345', duration: '00:08:20', type: 'Incoming', timestamp: '2024-01-17 19:10' }
-    ];
-
-    return calls.map((call, index) => ({
-      id: `call_${index}`,
-      type: 'Call Record',
-      title: `${call.type} Call: ${call.caller} → ${call.receiver}`,
-      content: `Caller: ${call.caller}\nReceiver: ${call.receiver}\nDuration: ${call.duration}\nType: ${call.type}\nTime: ${call.timestamp}`,
-      source: filename,
-      category: 'communication',
-      riskLevel: call.duration === '00:00:45' ? 'medium' : 
-                 parseInt(call.duration.split(':')[1]) > 15 ? 'high' : 'low',
-      timestamp: new Date(call.timestamp).toISOString(),
-      relevance: call.type === 'Missed' ? 85 : parseInt(call.duration.split(':')[1]) > 15 ? 80 : 70,
-      rawData: call
-    }));
-  };
-
-  // Mock location database
-  const generateMockLocationDatabase = (filename) => {
-    const locations = [
-      { name: 'Financial District Office', lat: 40.7074, lng: -74.0113, accuracy: '5m', timestamp: '2024-01-15 09:30' },
-      { name: 'Suspicious Warehouse', lat: 40.6892, lng: -74.0445, accuracy: '10m', timestamp: '2024-01-15 18:45' },
-      { name: 'Luxury Hotel Suite', lat: 40.7589, lng: -73.9851, accuracy: '3m', timestamp: '2024-01-16 14:20' },
-      { name: 'Cryptocurrency Exchange', lat: 40.7505, lng: -73.9934, accuracy: '8m', timestamp: '2024-01-16 16:15' },
-      { name: 'Abandoned Building', lat: 40.6743, lng: -73.9194, accuracy: '15m', timestamp: '2024-01-17 02:30' },
-      { name: 'International Airport', lat: 40.6413, lng: -73.7781, accuracy: '20m', timestamp: '2024-01-17 11:45' }
-    ];
-
-    return locations.map((location, index) => ({
-      id: `location_${index}`,
-      type: 'GPS Location',
-      title: location.name,
-      content: `Location: ${location.name}\nCoordinates: ${location.lat}, ${location.lng}\nAccuracy: ${location.accuracy}\nTime: ${location.timestamp}`,
-      source: filename,
-      category: 'location',
-      riskLevel: location.name.includes('Suspicious') || location.name.includes('Abandoned') ? 'critical' :
-                 location.name.includes('Cryptocurrency') ? 'high' : 'medium',
-      timestamp: new Date(location.timestamp).toISOString(),
-      relevance: location.name.includes('Suspicious') ? 95 : location.name.includes('Cryptocurrency') ? 90 : 75,
-      rawData: location
-    }));
-  };
-
-  // Mock financial database
-  const generateMockFinancialDatabase = (filename) => {
-    const transactions = [
-      { account: 'Account ***2134', amount: '$15,750.00', type: 'Wire Transfer', recipient: 'Offshore Holdings LLC', date: '2024-01-15' },
-      { account: 'Wallet 1A2b3C...', amount: '2.5 BTC', type: 'Cryptocurrency', recipient: 'Anonymous Wallet', date: '2024-01-16' },
-      { account: 'Account ***5678', amount: '$850,000.00', type: 'Large Deposit', recipient: 'Suspicious Entity Inc', date: '2024-01-16' },
-      { account: 'Card ***9012', amount: '$3,200.00', type: 'ATM Withdrawal', recipient: 'Cash', date: '2024-01-17' },
-      { account: 'Wallet 9Z8y7X...', amount: '0.8 ETH', type: 'Smart Contract', recipient: 'DeFi Protocol', date: '2024-01-17' }
-    ];
-
-    return transactions.map((txn, index) => ({
-      id: `transaction_${index}`,
-      type: 'Financial Transaction',
-      title: `${txn.type}: ${txn.amount}`,
-      content: `Amount: ${txn.amount}\nAccount: ${txn.account}\nType: ${txn.type}\nRecipient: ${txn.recipient}\nDate: ${txn.date}`,
-      source: filename,
-      category: 'financial',
-      riskLevel: txn.amount.includes('850,000') || txn.recipient.includes('Suspicious') || txn.recipient.includes('Anonymous') ? 'critical' :
-                 txn.type.includes('Cryptocurrency') || txn.recipient.includes('Offshore') ? 'high' : 'medium',
-      timestamp: new Date(txn.date).toISOString(),
-      relevance: txn.amount.includes('850,000') ? 98 : txn.type.includes('Cryptocurrency') ? 88 : 78,
-      rawData: txn
-    }));
-  };
-
-  // Mock network database
-  const generateMockNetworkDatabase = (filename) => {
-    const networkLogs = [
-      { src_ip: '192.168.1.100', dst_ip: '203.45.67.89', protocol: 'TCP', port: '443', bytes: '2.5MB', timestamp: '2024-01-15 14:30:22' },
-      { src_ip: '10.0.0.50', dst_ip: '85.123.45.67', protocol: 'UDP', port: '53', bytes: '1.2KB', timestamp: '2024-01-15 18:45:11' },
-      { src_ip: '172.16.0.25', dst_ip: '198.51.100.42', protocol: 'TCP', port: '8080', bytes: '15.8MB', timestamp: '2024-01-16 09:15:33' },
-      { src_ip: '192.168.1.100', dst_ip: '124.56.78.90', protocol: 'HTTPS', port: '443', bytes: '850KB', timestamp: '2024-01-16 16:20:44' },
-      { src_ip: '10.0.0.75', dst_ip: '203.45.67.89', protocol: 'TCP', port: '9050', bytes: '25.3MB', timestamp: '2024-01-17 02:45:15' }
-    ];
-
-    return networkLogs.map((log, index) => ({
-      id: `network_${index}`,
-      type: 'Network Traffic',
-      title: `${log.protocol}: ${log.src_ip} → ${log.dst_ip}`,
-      content: `Source: ${log.src_ip}\nDestination: ${log.dst_ip}\nProtocol: ${log.protocol}\nPort: ${log.port}\nBytes: ${log.bytes}\nTime: ${log.timestamp}`,
-      source: filename,
-      category: 'network',
-      riskLevel: log.port === '9050' || log.bytes.includes('25.3MB') ? 'high' :
-                 log.protocol === 'TCP' && log.port === '8080' ? 'medium' : 'low',
-      timestamp: new Date(log.timestamp).toISOString(),
-      relevance: log.port === '9050' ? 92 : log.bytes.includes('25.3MB') ? 85 : 72,
-      rawData: log
-    }));
-  };
-
-  // Mock mobile forensics database
-  const generateMockMobileForensicsDatabase = (filename) => {
-    const mobileData = [
-      { app: 'WhatsApp', data_type: 'Messages', count: '1,247 messages', last_activity: '2024-01-17 10:30' },
-      { app: 'Telegram', data_type: 'Secret Chats', count: '89 messages', last_activity: '2024-01-17 08:15' },
-      { app: 'Signal', data_type: 'Encrypted Messages', count: '456 messages', last_activity: '2024-01-16 22:45' },
-      { app: 'Instagram', data_type: 'Direct Messages', count: '234 messages', last_activity: '2024-01-16 19:20' },
-      { app: 'Crypto Wallet', data_type: 'Transaction History', count: '23 transactions', last_activity: '2024-01-15 16:30' },
-      { app: 'Banking App', data_type: 'Account Access', count: '12 logins', last_activity: '2024-01-17 09:45' }
-    ];
-
-    return mobileData.map((data, index) => ({
-      id: `mobile_${index}`,
-      type: 'Mobile App Data',
-      title: `${data.app}: ${data.data_type}`,
-      content: `App: ${data.app}\nData Type: ${data.data_type}\nCount: ${data.count}\nLast Activity: ${data.last_activity}`,
-      source: filename,
-      category: 'digital',
-      riskLevel: data.app.includes('Telegram') || data.app.includes('Signal') || data.app.includes('Crypto') ? 'high' :
-                 data.app.includes('WhatsApp') || data.app.includes('Banking') ? 'medium' : 'low',
-      timestamp: new Date(data.last_activity).toISOString(),
-      relevance: data.app.includes('Secret') ? 95 : data.app.includes('Crypto') ? 90 : 75,
-      rawData: data
-    }));
-  };
-
-  // Mock browser database
-  const generateMockBrowserDatabase = (filename) => {
-    const browserData = [
-      { url: 'https://darkweb.onion/marketplace', title: 'Underground Marketplace', visits: 23, last_visit: '2024-01-17 03:15' },
-      { url: 'https://cryptocurrency-exchange.com/trade', title: 'Crypto Trading Platform', visits: 67, last_visit: '2024-01-16 18:30' },
-      { url: 'https://protonmail.com/encrypted-email', title: 'Secure Email Service', visits: 45, last_visit: '2024-01-16 14:20' },
-      { url: 'https://banking.suspicious-offshore.com', title: 'Offshore Banking Portal', visits: 12, last_visit: '2024-01-15 09:45' },
-      { url: 'https://tor-browser.org/download', title: 'Anonymous Browser Download', visits: 8, last_visit: '2024-01-15 16:10' }
-    ];
-
-    return browserData.map((data, index) => ({
-      id: `browser_${index}`,
-      type: 'Browser History',
-      title: data.title,
-      content: `URL: ${data.url}\nTitle: ${data.title}\nVisits: ${data.visits}\nLast Visit: ${data.last_visit}`,
-      source: filename,
-      category: 'digital',
-      riskLevel: data.url.includes('darkweb') || data.url.includes('suspicious') ? 'critical' :
-                 data.url.includes('cryptocurrency') || data.url.includes('protonmail') || data.url.includes('tor') ? 'high' : 'medium',
-      timestamp: new Date(data.last_visit).toISOString(),
-      relevance: data.url.includes('darkweb') ? 98 : data.url.includes('suspicious') ? 95 : 80,
-      rawData: data
-    }));
-  };
-
-  // Mock generic database
-  const generateMockGenericDatabase = (filename, fileType) => {
-    const genericData = [
-      { type: 'System Log', entry: 'Unauthorized access attempt detected', severity: 'High', timestamp: '2024-01-17 05:30' },
-      { type: 'User Account', entry: 'Account created with fake credentials', severity: 'Critical', timestamp: '2024-01-16 12:15' },
-      { type: 'Configuration', entry: 'Security settings modified', severity: 'Medium', timestamp: '2024-01-16 08:45' },
-      { type: 'Database Query', entry: 'Sensitive data access logged', severity: 'High', timestamp: '2024-01-15 19:20' },
-      { type: 'File Access', entry: 'Confidential document downloaded', severity: 'Critical', timestamp: '2024-01-15 14:10' }
-    ];
-
-    return genericData.map((data, index) => ({
-      id: `generic_${index}`,
-      type: data.type,
-      title: `${data.type}: ${data.entry}`,
-      content: `Entry: ${data.entry}\nSeverity: ${data.severity}\nTime: ${data.timestamp}\nFile: ${filename}`,
-      source: filename,
-      category: 'data',
-      riskLevel: data.severity === 'Critical' ? 'critical' : data.severity === 'High' ? 'high' : 'medium',
-      timestamp: new Date(data.timestamp).toISOString(),
-      relevance: data.severity === 'Critical' ? 95 : data.severity === 'High' ? 85 : 75,
-      rawData: data
-    }));
-  };
-
-  // Enhanced helper function to determine file type from filename (using utility)
-  const getFileTypeFromName = (filename, fileSize = 0) => {
-    const detectedType = detectFileType(filename, fileSize);
-    
-    // Map the detailed types to our database search categories
-    const typeMapping = {
-      'mobile_forensics': 'messages',
-      'network_capture': 'network',
-      'communications': 'messages', 
-      'contacts': 'contacts',
-      'call_logs': 'calls',
-      'location_data': 'location',
-      'financial_data': 'financial',
-      'browser_data': 'messages',
-      'system_logs': 'calls',
-      'database': 'contacts',
-      'case_data': 'data'
-    };
-    
-    return typeMapping[detectedType] || 'data';
-  };
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
