@@ -1,7 +1,0 @@
-# Exclude backend artifacts from frontend build context
-backend/uploads
-backend/node_modules
-**/*.log
-*.log
-.gitignore
-README.md
